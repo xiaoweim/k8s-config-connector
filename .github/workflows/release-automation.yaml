@@ -1,4 +1,4 @@
-# Copyright 2024 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,12 +12,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-namespace: configconnector-operator-system
-commonLabels:
-  cnrm.cloud.google.com/operator-system: "true"
-commonAnnotations:
-  cnrm.cloud.google.com/operator-version: "1.128.0"
-resources:
-  - ../../../../operator/config/rbac
-  - ../../../../operator/config/crd
-  - ../../../../operator/config/manager
+name: Config Connector Release Automation
+
+on:
+  push:
+    tags:
+      - 'v*' 
+
+jobs:
+  create-and-push-release-bundle:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v1
+
+      - name: Run the create-relese-bundle script
+        run: |
+          chmod +x ./scripts/github-actions/create-release-bundle.sh
+          ./scripts/github-actions/create-release-bundle.sh
