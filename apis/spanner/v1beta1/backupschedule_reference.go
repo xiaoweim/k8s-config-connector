@@ -26,13 +26,13 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-var _ refsv1beta1.ExternalNormalizer = &BackupScheduleRef{}
+var _ refsv1beta1.ExternalNormalizer = &BackupSchedulesRef{}
 
-// BackupScheduleRef defines the resource reference to SpannerBackupSchedule, which "External" field
+// BackupSchedulesRef defines the resource reference to SpannerBackupSchedule, which "External" field
 // holds the GCP identifier for the KRM object.
-type BackupScheduleRef struct {
+type BackupSchedulesRef struct {
 	// A reference to an externally managed SpannerBackupSchedule resource.
-	// Should be in the format "projects/{{projectID}}/locations/{{location}}/backupschedules/{{backupscheduleID}}".
+	// Should be in the format "projects/{{projectID}}/instances/{{instance}}/databases/{{database}}/backupSchedules/{{backupscheduleID}}".
 	External string `json:"external,omitempty"`
 
 	// The name of a SpannerBackupSchedule resource.
@@ -45,7 +45,7 @@ type BackupScheduleRef struct {
 // NormalizedExternal provision the "External" value for other resource that depends on SpannerBackupSchedule.
 // If the "External" is given in the other resource's spec.SpannerBackupScheduleRef, the given value will be used.
 // Otherwise, the "Name" and "Namespace" will be used to query the actual SpannerBackupSchedule object from the cluster.
-func (r *BackupScheduleRef) NormalizedExternal(ctx context.Context, reader client.Reader, otherNamespace string) (string, error) {
+func (r *BackupSchedulesRef) NormalizedExternal(ctx context.Context, reader client.Reader, otherNamespace string) (string, error) {
 	if r.External != "" && r.Name != "" {
 		return "", fmt.Errorf("cannot specify both name and external on %s reference", SpannerBackupScheduleGVK.Kind)
 	}
