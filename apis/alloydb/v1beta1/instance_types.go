@@ -177,7 +177,7 @@ type AlloyDBInstanceStatus struct {
 // AlloyDBInstanceObservedState is the state of the AlloyDBInstance resource as most recently observed in GCP.
 type AlloyDBInstanceObservedState struct {
 	// Observability feature status for an instance.
-	// +kcc:observedstate:proto=google.cloud.alloydb.v1beta.Instance.ObservabilityInstanceConfig
+	// +kcc:observedstate:proto=google.cloud.alloydb.beta.Instance.ObservabilityInstanceConfig
 	ObservabilityInstanceConfig *Instance_ObservabilityInstanceConfigObservedState `json:"observabilityConfig,omitempty"`
 }
 

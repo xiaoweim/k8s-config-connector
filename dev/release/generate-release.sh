@@ -79,7 +79,7 @@ if ! (cd operator && go test ./pkg/controllers/...); then
   WRITE_GOLDEN_OUTPUT="true" go test ./pkg/controllers/...
   git add .
   git commit -m "Update golden files for operator controllers"
-  
+
   echo "Retrying unit tests..."
   if ! (go test ./pkg/controllers/...); then
     echo "Unit tests failed even after updating golden files."
@@ -87,6 +87,13 @@ if ! (cd operator && go test ./pkg/controllers/...); then
     exit 1
   fi
 fi
+
+echo "Validating resource reference docs..."
+cd ..
+# With VALIDATE_URLS=="true", the doc validation test also validates
+# whether the embedded URLs in the template files are accessible.
+# If failed, fix the inaccessible URLs in the template files and rerun `make resource-docs`.
+VALIDATE_URLS="true" go test ./scripts/generate-google3-docs/...
 
 # Step 6: Format Code
 echo "Formatting code..."
