@@ -24,10 +24,12 @@ X-Frame-Options: SAMEORIGIN
 X-Xss-Protection: 0
 
 {
+  "done": true,
   "metadata": {
     "@type": "type.googleapis.com/google.cloud.security.privateca.v1.OperationMetadata",
     "apiVersion": "v1",
     "createTime": "2024-04-01T12:34:56.123456Z",
+    "requestedCancellation": false,
     "target": "projects/${projectId}/locations/us-central1/caPools/test-pool-${uniqueId}",
     "verb": "create"
   },
@@ -58,6 +60,7 @@ X-Xss-Protection: 0
     "apiVersion": "v1",
     "createTime": "2024-04-01T12:34:56.123456Z",
     "endTime": "2024-04-01T12:34:56.123456Z",
+    "requestedCancellation": false,
     "target": "projects/${projectId}/locations/us-central1/caPools/test-pool-${uniqueId}",
     "verb": "create"
   },
@@ -70,31 +73,6 @@ X-Xss-Protection: 0
       "publishCaCert": true
     },
     "tier": "DEVOPS"
-  }
-}
-
----
-
-GET https://privateca.googleapis.com/v1/projects/${projectId}/locations?alt=json
-Accept: application/json
-Authorization: (removed)
-Connection: keep-alive
-
-404 Not Found
-Content-Type: application/json; charset=UTF-8
-Server: ESF
-Vary: Origin
-Vary: X-Origin
-Vary: Referer
-X-Content-Type-Options: nosniff
-X-Frame-Options: SAMEORIGIN
-X-Xss-Protection: 0
-
-{
-  "error": {
-    "code": 404,
-    "message": "Not Found",
-    "status": "NOT_FOUND"
   }
 }
 
@@ -201,10 +179,12 @@ X-Frame-Options: SAMEORIGIN
 X-Xss-Protection: 0
 
 {
+  "done": true,
   "metadata": {
     "@type": "type.googleapis.com/google.cloud.security.privateca.v1.OperationMetadata",
     "apiVersion": "v1",
     "createTime": "2024-04-01T12:34:56.123456Z",
+    "requestedCancellation": false,
     "target": "projects/${projectId}/locations/us-central1/caPools/test-pool-${uniqueId}/certificateAuthorities/test-ca-${uniqueId}",
     "verb": "create"
   },
@@ -235,26 +215,29 @@ X-Xss-Protection: 0
     "apiVersion": "v1",
     "createTime": "2024-04-01T12:34:56.123456Z",
     "endTime": "2024-04-01T12:34:56.123456Z",
+    "requestedCancellation": false,
     "target": "projects/${projectId}/locations/us-central1/caPools/test-pool-${uniqueId}/certificateAuthorities/test-ca-${uniqueId}",
     "verb": "create"
   },
   "name": "projects/${projectId}/locations/us-central1/operations/${operationID}",
   "response": {
     "@type": "type.googleapis.com/google.cloud.security.privateca.v1.CertificateAuthority",
+    "accessUrls": {
+      "caCertificateAccessUrl": "http://privateca-content-69bc3d23-0000-2c75-9cf6-d4f547ec76dc.storage.googleapis.com/22c659be87c1421efb5e/ca.crt"
+    },
     "caCertificateDescriptions": [
       {
         "authorityKeyId": {
-          "keyId": "58ff0120decc0d87caa30eb45fef39e38133e733"
+          "keyId": "9640ce7ac66a8aa49ba7ae02b2e2190c580ea0b4"
         },
         "certFingerprint": {
-          "sha256Hash": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789test-ca-${uniqueId}"
+          "sha256Hash": "6bba3cfd9f02e6f38c1be95dedcb5faf331df2a9fa97854aaa4f704292354cbe"
         },
         "publicKey": {
-          "format": "PEM",
-          "key": "LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUlJQ0lqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FnOEFNSUlDQ2dLQ0FnRUFyeGt3dVBoREZTNlc1eEgvMW1MVApTYXhzMTNONnpGYlRXSUY4aG4vTlk1cXlJYmFpd0FYdEVOeU53NkhSSmd4R2c0WElkRXlMVGpCK1VNVVVLYU9OCnd0WFJTUW9CeGR2VitKeWRlL05jTUUzM3QyT3d1UDBRVzY2UnRLak52b2R5dzRLTHphVmp6T1hPY0YwV0NNYy8KRjV4cU5uUHpOalVncUlBanozSHkrejROWmNnT0lnM3dVdEJRRlNTUm16TmtzdjMwejhLQjdXUXJkaElWb3JuOQpuWVFPeW11eTZPT0dLM3FIUXRZYk1MYU9oREY1VnJ3amozblUxeStQMzdRR1kwdG5KS3VYbGNwR3hJN0tkWTI5CjRJM1F6K0JHemI0Wll0WE1uTzNOZFZVaTRteG14VTBMbVE3VlJkdHpkTGN6cTJDUEoyV2JjTTZkUldmVERoNisKYzdDQys3K1ZBdzlxeW1OSnFXN0wxb2JNSkNuTHpwcHBPVWg0RjNXU1V0SXVLcUZ2alo1eFMzUXBFSGJsRFoybgpUaTY1Tm4yR2JzeVYrc2FxTkpOdUdmVEpvUzRJOGFoakljY2hDaXUzRDMxNm5MczlENmMwckRLNmxsbUpHdFRLCmZsSVEyQkZmY2FtV2VlSXlNU1dIK3Uza2lKTTY2YWF1NVJrNlFXWWlKMTRhaWswNmsvK1pMRnNMazUvbVV3eVEKTWFUMXNPUGQ1Z3FSeUsrdGgyVXNkb1p1dE5PZFZYMWdRNjk4cXdVZk1oTmpkSzNLZUkzNWQvY2xuR2F1UGVPSgo2ZlgySy9WN1hTblQrcGRjRTExZjNFU0FZVEIybnJJSXgzK3NjYXdZalREd0Qrd2JQZ0p4ZG4wc1ppOTNtV2FKCkFPdTV4QjBOSStsYXhZT2tPZHhrYklVQ0F3RUFBUT09Ci0tLS0tRU5EIFBVQkxJQyBLRVktLS0tLQo="
+          "key": "LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUlJQ0lqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FnOEFNSUlDQ2dLQ0FnRUFpYUgwalBmWEVuU0NEbDRQS3llZwpFUDZ2dy8wSWwrSGdTbW45OHlGUW1FUG4rcis1aXFRSkhxcDM3V3FMWS9wWVpDOUJ3SWxkeDVNNzRnZEV0REdhCk5qM2FYUmV3dVZZUkRFUk1vYWFvVThDRTNUL2VmMFFOZTVCdW9YdjhyblB1UVRwUmxIUm9iNStOUy9hdUtUaysKaUNlL3V6dlQrdWJCUlp6enNQRk9oRStjdCtONEFQQTdVeVptZjlQYmhvUzlaRS9ncWJXV2YyVGcrZndyWjFragprNHhpZjRtUHpCc051TFBwMFdHRGM2WklJMXd4eWM3L28wakFucFRYWGNJakR6c0kwSmFwNGpxRDBUUkRUdmUxCnJaTUZIRW1IdS9MM2lEUkZJdVFkOWxjTUNOb1dSbXJSTjY3L052RDd6dWRZa3BHdG9wUjhsNzJuT1h0YURRSWgKMmV3dEFCRUZtb09naElTZkpyb0g2SkdOVzEzRXh0VWFhZVYvRk95QlRSQm5iRHVIQ29XWndnc2xxYk96TXdwcQpKY2RQQ28vZ2VEeXR3eFBWK3p6dE82RW1iUWJORThtbVA3b3BlNDBxanFaaHcxTGxsUHdRWDUzQzJ0SkFuWGQyCkJwaDY5VDlyZWFxMldLek9aSXl0dnJ5RTFRUW1SN3lqSWFCYVNlYVpRRGhlaUxIb3IzNjFOaUkvT2VDQndod2UKUkxvd2lHMElPbmh4NE4wNVNuRjdiY09Qdld3anEvc28xcG1zc2poZkIvRzN4K2FESjZzL25nOWRSTGYwY0JzeAo3aEJ1SjZGZ1hJVnI2cHJyaDJub201bDFwMi9sbWpZTjFTNDdzWkwya0F6dGRZMWx0bWhlTVlzNGhBZjRpOXNXCk5DZWd2ZmpTamxteGs5MlBSd1lmM0tzQ0F3RUFBUT09Ci0tLS0tRU5EIFBVQkxJQyBLRVktLS0tLQo="
         },
         "subjectDescription": {
-          "hexSerialNumber": "0123456789abcdef",
+          "hexSerialNumber": "002397f00afd4f0d4c26576595b935058f008ebe",
           "lifetime": "315569261s",
           "notAfterTime": "2024-04-01T12:34:56.123456Z",
           "notBeforeTime": "2024-04-01T12:34:56.123456Z",
@@ -264,8 +247,9 @@ X-Xss-Protection: 0
           "subjectAltName": {}
         },
         "subjectKeyId": {
-          "keyId": "58ff0120decc0d87caa30eb45fef39e38133e733"
+          "keyId": "9640ce7ac66a8aa49ba7ae02b2e2190c580ea0b4"
         },
+        "tbsCertificateDigest": "681e382f8281d51f5fdd63faf4308f6897c92e5b1df18bd97d5322f11941e625",
         "x509Description": {
           "caOptions": {
             "isCa": true
@@ -305,8 +289,9 @@ X-Xss-Protection: 0
     "lifetime": "315569261s",
     "name": "projects/${projectId}/locations/us-central1/caPools/test-pool-${uniqueId}/certificateAuthorities/test-ca-${uniqueId}",
     "pemCaCertificates": [
-      "-----BEGIN CERTIFICATE-----\n-----END CERTIFICATE-----\n"
+      "-----BEGIN CERTIFICATE-----\nMIIFNjCCAx6gAwIBAgITI5fwCv1PDUwmV2WVuTUFjwCOvjANBgkqhkiG9w0BAQsF\nADAjMSEwHwYDVQQDExh0ZXN0LWNhLTE4OWQ0NjRiODY3MzQwYTcwHhcNMjYwMzE2\nMDg1MjA5WhcNMzYwMzE1MTg1OTQ5WjAjMSEwHwYDVQQDExh0ZXN0LWNhLTE4OWQ0\nNjRiODY3MzQwYTcwggIiMA0GCSqGSIb3DQEBAQUAA4ICDwAwggIKAoICAQCJofSM\n99cSdIIOXg8rJ6AQ/q/D/QiX4eBKaf3zIVCYQ+f6v7mKpAkeqnftaotj+lhkL0HA\niV3HkzviB0S0MZo2PdpdF7C5VhEMREyhpqhTwITdP95/RA17kG6he/yuc+5BOlGU\ndGhvn41L9q4pOT6IJ7+7O9P65sFFnPOw8U6ET5y343gA8DtTJmZ/09uGhL1kT+Cp\ntZZ/ZOD5/CtnWSOTjGJ/iY/MGw24s+nRYYNzpkgjXDHJzv+jSMCelNddwiMPOwjQ\nlqniOoPRNENO97WtkwUcSYe78veINEUi5B32VwwI2hZGatE3rv828PvO51iSka2i\nlHyXvac5e1oNAiHZ7C0AEQWag6CEhJ8mugfokY1bXcTG1Rpp5X8U7IFNEGdsO4cK\nhZnCCyWps7MzCmolx08Kj+B4PK3DE9X7PO07oSZtBs0TyaY/uil7jSqOpmHDUuWU\n/BBfncLa0kCdd3YGmHr1P2t5qrZYrM5kjK2+vITVBCZHvKMhoFpJ5plAOF6Iseiv\nfrU2Ij854IHCHB5EujCIbQg6eHHg3TlKcXttw4+9bCOr+yjWmayyOF8H8bfH5oMn\nqz+eD11Et/RwGzHuEG4noWBchWvqmuuHaeibmXWnb+WaNg3VLjuxkvaQDO11jWW2\naF4xiziEB/iL2xY0J6C9+NKOWbGT3Y9HBh/cqwIDAQABo2MwYTAOBgNVHQ8BAf8E\nBAMCAQYwDwYDVR0TAQH/BAUwAwEB/zAdBgNVHQ4EFgQUlkDOesZqiqSbp64CsuIZ\nDFgOoLQwHwYDVR0jBBgwFoAUlkDOesZqiqSbp64CsuIZDFgOoLQwDQYJKoZIhvcN\nAQELBQADggIBAFtmDpymovlFLFFdEMkKlqtMssppsSMKfVo9wR4kJG6EhzG+GHwk\natwx4RpFqqrhMKz9yk1HeL+2beQLUtZXsRhjM5+vGztV5v1Yy0uN/QcRl9sx2cuD\nZ1Uzdd6Allq0yXzB/rcr0kSi1lTqEs45/8/QmFTB7glGQnQGlI3ohwD3N/SR2Nwe\nXhipXjYTb0tkswtUZrpy9yG/kLE+LqE7P3YS04CEkvhy8pDxlja8LrXbo3vKf7eT\nWvh7RA662rnubhnIpa73CNFCVoEGgFXtIZ5OUWot5klhinuoOo36P3uukulzxk3e\n5cj5m6I/A03u0DbLhRkja7Lc9a69RI1a2NnmM1L2/irBR1SIX181ABPw6o6cag9v\nlGpgG++5/m5H4Ev/y6ntuHcJwb4KyqPc+K+NyEChS9IvS9uaENGj+IuVRmtKGTM4\nJm8siCOBWvbYkXdBbbliyHIUC1SOndDM5iT54Yl4Cu0NCvfmSfbdzBhLXdPEslDn\nv7wgBJ+S1ArGOtaBRR5xkJ2EmWNADHE7skUZ2xYPppbbcpcIuDMm+DjDc7ujthom\nznYfhm3YKQt4smSphrkoLcHzTV5tLHcpq88kCiLgM/x24N2E+GGcMuke9/95JtAP\ntWoBUaH9d0eERI8GZl/U0ZvIQ4SkRPkfmrgM9lzh+hrAb1ioRjY14PUS\n-----END CERTIFICATE-----\n"
     ],
+    "satisfiesPzi": true,
     "state": "STAGED",
     "tier": "DEVOPS",
     "type": "SELF_SIGNED",
@@ -337,10 +322,12 @@ X-Frame-Options: SAMEORIGIN
 X-Xss-Protection: 0
 
 {
+  "done": true,
   "metadata": {
     "@type": "type.googleapis.com/google.cloud.security.privateca.v1.OperationMetadata",
     "apiVersion": "v1",
     "createTime": "2024-04-01T12:34:56.123456Z",
+    "requestedCancellation": false,
     "target": "projects/${projectId}/locations/us-central1/caPools/test-pool-${uniqueId}/certificateAuthorities/test-ca-${uniqueId}",
     "verb": "enable"
   },
@@ -371,26 +358,29 @@ X-Xss-Protection: 0
     "apiVersion": "v1",
     "createTime": "2024-04-01T12:34:56.123456Z",
     "endTime": "2024-04-01T12:34:56.123456Z",
+    "requestedCancellation": false,
     "target": "projects/${projectId}/locations/us-central1/caPools/test-pool-${uniqueId}/certificateAuthorities/test-ca-${uniqueId}",
     "verb": "enable"
   },
   "name": "projects/${projectId}/locations/us-central1/operations/${operationID}",
   "response": {
     "@type": "type.googleapis.com/google.cloud.security.privateca.v1.CertificateAuthority",
+    "accessUrls": {
+      "caCertificateAccessUrl": "http://privateca-content-69bc3d23-0000-2c75-9cf6-d4f547ec76dc.storage.googleapis.com/22c659be87c1421efb5e/ca.crt"
+    },
     "caCertificateDescriptions": [
       {
         "authorityKeyId": {
-          "keyId": "58ff0120decc0d87caa30eb45fef39e38133e733"
+          "keyId": "9640ce7ac66a8aa49ba7ae02b2e2190c580ea0b4"
         },
         "certFingerprint": {
-          "sha256Hash": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789test-ca-${uniqueId}"
+          "sha256Hash": "6bba3cfd9f02e6f38c1be95dedcb5faf331df2a9fa97854aaa4f704292354cbe"
         },
         "publicKey": {
-          "format": "PEM",
-          "key": "LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUlJQ0lqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FnOEFNSUlDQ2dLQ0FnRUFyeGt3dVBoREZTNlc1eEgvMW1MVApTYXhzMTNONnpGYlRXSUY4aG4vTlk1cXlJYmFpd0FYdEVOeU53NkhSSmd4R2c0WElkRXlMVGpCK1VNVVVLYU9OCnd0WFJTUW9CeGR2VitKeWRlL05jTUUzM3QyT3d1UDBRVzY2UnRLak52b2R5dzRLTHphVmp6T1hPY0YwV0NNYy8KRjV4cU5uUHpOalVncUlBanozSHkrejROWmNnT0lnM3dVdEJRRlNTUm16TmtzdjMwejhLQjdXUXJkaElWb3JuOQpuWVFPeW11eTZPT0dLM3FIUXRZYk1MYU9oREY1VnJ3amozblUxeStQMzdRR1kwdG5KS3VYbGNwR3hJN0tkWTI5CjRJM1F6K0JHemI0Wll0WE1uTzNOZFZVaTRteG14VTBMbVE3VlJkdHpkTGN6cTJDUEoyV2JjTTZkUldmVERoNisKYzdDQys3K1ZBdzlxeW1OSnFXN0wxb2JNSkNuTHpwcHBPVWg0RjNXU1V0SXVLcUZ2alo1eFMzUXBFSGJsRFoybgpUaTY1Tm4yR2JzeVYrc2FxTkpOdUdmVEpvUzRJOGFoakljY2hDaXUzRDMxNm5MczlENmMwckRLNmxsbUpHdFRLCmZsSVEyQkZmY2FtV2VlSXlNU1dIK3Uza2lKTTY2YWF1NVJrNlFXWWlKMTRhaWswNmsvK1pMRnNMazUvbVV3eVEKTWFUMXNPUGQ1Z3FSeUsrdGgyVXNkb1p1dE5PZFZYMWdRNjk4cXdVZk1oTmpkSzNLZUkzNWQvY2xuR2F1UGVPSgo2ZlgySy9WN1hTblQrcGRjRTExZjNFU0FZVEIybnJJSXgzK3NjYXdZalREd0Qrd2JQZ0p4ZG4wc1ppOTNtV2FKCkFPdTV4QjBOSStsYXhZT2tPZHhrYklVQ0F3RUFBUT09Ci0tLS0tRU5EIFBVQkxJQyBLRVktLS0tLQo="
+          "key": "LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUlJQ0lqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FnOEFNSUlDQ2dLQ0FnRUFpYUgwalBmWEVuU0NEbDRQS3llZwpFUDZ2dy8wSWwrSGdTbW45OHlGUW1FUG4rcis1aXFRSkhxcDM3V3FMWS9wWVpDOUJ3SWxkeDVNNzRnZEV0REdhCk5qM2FYUmV3dVZZUkRFUk1vYWFvVThDRTNUL2VmMFFOZTVCdW9YdjhyblB1UVRwUmxIUm9iNStOUy9hdUtUaysKaUNlL3V6dlQrdWJCUlp6enNQRk9oRStjdCtONEFQQTdVeVptZjlQYmhvUzlaRS9ncWJXV2YyVGcrZndyWjFragprNHhpZjRtUHpCc051TFBwMFdHRGM2WklJMXd4eWM3L28wakFucFRYWGNJakR6c0kwSmFwNGpxRDBUUkRUdmUxCnJaTUZIRW1IdS9MM2lEUkZJdVFkOWxjTUNOb1dSbXJSTjY3L052RDd6dWRZa3BHdG9wUjhsNzJuT1h0YURRSWgKMmV3dEFCRUZtb09naElTZkpyb0g2SkdOVzEzRXh0VWFhZVYvRk95QlRSQm5iRHVIQ29XWndnc2xxYk96TXdwcQpKY2RQQ28vZ2VEeXR3eFBWK3p6dE82RW1iUWJORThtbVA3b3BlNDBxanFaaHcxTGxsUHdRWDUzQzJ0SkFuWGQyCkJwaDY5VDlyZWFxMldLek9aSXl0dnJ5RTFRUW1SN3lqSWFCYVNlYVpRRGhlaUxIb3IzNjFOaUkvT2VDQndod2UKUkxvd2lHMElPbmh4NE4wNVNuRjdiY09Qdld3anEvc28xcG1zc2poZkIvRzN4K2FESjZzL25nOWRSTGYwY0JzeAo3aEJ1SjZGZ1hJVnI2cHJyaDJub201bDFwMi9sbWpZTjFTNDdzWkwya0F6dGRZMWx0bWhlTVlzNGhBZjRpOXNXCk5DZWd2ZmpTamxteGs5MlBSd1lmM0tzQ0F3RUFBUT09Ci0tLS0tRU5EIFBVQkxJQyBLRVktLS0tLQo="
         },
         "subjectDescription": {
-          "hexSerialNumber": "0123456789abcdef",
+          "hexSerialNumber": "002397f00afd4f0d4c26576595b935058f008ebe",
           "lifetime": "315569261s",
           "notAfterTime": "2024-04-01T12:34:56.123456Z",
           "notBeforeTime": "2024-04-01T12:34:56.123456Z",
@@ -400,8 +390,9 @@ X-Xss-Protection: 0
           "subjectAltName": {}
         },
         "subjectKeyId": {
-          "keyId": "58ff0120decc0d87caa30eb45fef39e38133e733"
+          "keyId": "9640ce7ac66a8aa49ba7ae02b2e2190c580ea0b4"
         },
+        "tbsCertificateDigest": "681e382f8281d51f5fdd63faf4308f6897c92e5b1df18bd97d5322f11941e625",
         "x509Description": {
           "caOptions": {
             "isCa": true
@@ -441,8 +432,9 @@ X-Xss-Protection: 0
     "lifetime": "315569261s",
     "name": "projects/${projectId}/locations/us-central1/caPools/test-pool-${uniqueId}/certificateAuthorities/test-ca-${uniqueId}",
     "pemCaCertificates": [
-      "-----BEGIN CERTIFICATE-----\n-----END CERTIFICATE-----\n"
+      "-----BEGIN CERTIFICATE-----\nMIIFNjCCAx6gAwIBAgITI5fwCv1PDUwmV2WVuTUFjwCOvjANBgkqhkiG9w0BAQsF\nADAjMSEwHwYDVQQDExh0ZXN0LWNhLTE4OWQ0NjRiODY3MzQwYTcwHhcNMjYwMzE2\nMDg1MjA5WhcNMzYwMzE1MTg1OTQ5WjAjMSEwHwYDVQQDExh0ZXN0LWNhLTE4OWQ0\nNjRiODY3MzQwYTcwggIiMA0GCSqGSIb3DQEBAQUAA4ICDwAwggIKAoICAQCJofSM\n99cSdIIOXg8rJ6AQ/q/D/QiX4eBKaf3zIVCYQ+f6v7mKpAkeqnftaotj+lhkL0HA\niV3HkzviB0S0MZo2PdpdF7C5VhEMREyhpqhTwITdP95/RA17kG6he/yuc+5BOlGU\ndGhvn41L9q4pOT6IJ7+7O9P65sFFnPOw8U6ET5y343gA8DtTJmZ/09uGhL1kT+Cp\ntZZ/ZOD5/CtnWSOTjGJ/iY/MGw24s+nRYYNzpkgjXDHJzv+jSMCelNddwiMPOwjQ\nlqniOoPRNENO97WtkwUcSYe78veINEUi5B32VwwI2hZGatE3rv828PvO51iSka2i\nlHyXvac5e1oNAiHZ7C0AEQWag6CEhJ8mugfokY1bXcTG1Rpp5X8U7IFNEGdsO4cK\nhZnCCyWps7MzCmolx08Kj+B4PK3DE9X7PO07oSZtBs0TyaY/uil7jSqOpmHDUuWU\n/BBfncLa0kCdd3YGmHr1P2t5qrZYrM5kjK2+vITVBCZHvKMhoFpJ5plAOF6Iseiv\nfrU2Ij854IHCHB5EujCIbQg6eHHg3TlKcXttw4+9bCOr+yjWmayyOF8H8bfH5oMn\nqz+eD11Et/RwGzHuEG4noWBchWvqmuuHaeibmXWnb+WaNg3VLjuxkvaQDO11jWW2\naF4xiziEB/iL2xY0J6C9+NKOWbGT3Y9HBh/cqwIDAQABo2MwYTAOBgNVHQ8BAf8E\nBAMCAQYwDwYDVR0TAQH/BAUwAwEB/zAdBgNVHQ4EFgQUlkDOesZqiqSbp64CsuIZ\nDFgOoLQwHwYDVR0jBBgwFoAUlkDOesZqiqSbp64CsuIZDFgOoLQwDQYJKoZIhvcN\nAQELBQADggIBAFtmDpymovlFLFFdEMkKlqtMssppsSMKfVo9wR4kJG6EhzG+GHwk\natwx4RpFqqrhMKz9yk1HeL+2beQLUtZXsRhjM5+vGztV5v1Yy0uN/QcRl9sx2cuD\nZ1Uzdd6Allq0yXzB/rcr0kSi1lTqEs45/8/QmFTB7glGQnQGlI3ohwD3N/SR2Nwe\nXhipXjYTb0tkswtUZrpy9yG/kLE+LqE7P3YS04CEkvhy8pDxlja8LrXbo3vKf7eT\nWvh7RA662rnubhnIpa73CNFCVoEGgFXtIZ5OUWot5klhinuoOo36P3uukulzxk3e\n5cj5m6I/A03u0DbLhRkja7Lc9a69RI1a2NnmM1L2/irBR1SIX181ABPw6o6cag9v\nlGpgG++5/m5H4Ev/y6ntuHcJwb4KyqPc+K+NyEChS9IvS9uaENGj+IuVRmtKGTM4\nJm8siCOBWvbYkXdBbbliyHIUC1SOndDM5iT54Yl4Cu0NCvfmSfbdzBhLXdPEslDn\nv7wgBJ+S1ArGOtaBRR5xkJ2EmWNADHE7skUZ2xYPppbbcpcIuDMm+DjDc7ujthom\nznYfhm3YKQt4smSphrkoLcHzTV5tLHcpq88kCiLgM/x24N2E+GGcMuke9/95JtAP\ntWoBUaH9d0eERI8GZl/U0ZvIQ4SkRPkfmrgM9lzh+hrAb1ioRjY14PUS\n-----END CERTIFICATE-----\n"
     ],
+    "satisfiesPzi": true,
     "state": "ENABLED",
     "tier": "DEVOPS",
     "type": "SELF_SIGNED",
@@ -484,10 +476,12 @@ X-Frame-Options: SAMEORIGIN
 X-Xss-Protection: 0
 
 {
+  "done": true,
   "metadata": {
     "@type": "type.googleapis.com/google.cloud.certificatemanager.v1.OperationMetadata",
     "apiVersion": "v1",
     "createTime": "2024-04-01T12:34:56.123456Z",
+    "requestedCancellation": false,
     "target": "projects/${projectId}/locations/us-central1/certificateIssuanceConfigs/test-${uniqueId}",
     "verb": "create"
   },
@@ -517,6 +511,38 @@ X-Xss-Protection: 0
     "@type": "type.googleapis.com/google.cloud.certificatemanager.v1.OperationMetadata",
     "apiVersion": "v1",
     "createTime": "2024-04-01T12:34:56.123456Z",
+    "requestedCancellation": false,
+    "target": "projects/${projectId}/locations/us-central1/certificateIssuanceConfigs/test-${uniqueId}",
+    "verb": "create"
+  },
+  "name": "projects/${projectId}/locations/us-central1/operations/${operationID}"
+}
+
+---
+
+GET https://certificatemanager.googleapis.com/v1/projects/${projectId}/locations/us-central1/operations/${operationID}?alt=json
+Accept: application/json
+Authorization: (removed)
+Connection: keep-alive
+
+200 OK
+Content-Type: application/json; charset=UTF-8
+Server: ESF
+Vary: Origin
+Vary: X-Origin
+Vary: Referer
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+X-Xss-Protection: 0
+
+{
+  "done": true,
+  "metadata": {
+    "@type": "type.googleapis.com/google.cloud.certificatemanager.v1.OperationMetadata",
+    "apiVersion": "v1",
+    "createTime": "2024-04-01T12:34:56.123456Z",
+    "endTime": "2024-04-01T12:34:56.123456Z",
+    "requestedCancellation": false,
     "target": "projects/${projectId}/locations/us-central1/certificateIssuanceConfigs/test-${uniqueId}",
     "verb": "create"
   },
@@ -633,10 +659,12 @@ X-Frame-Options: SAMEORIGIN
 X-Xss-Protection: 0
 
 {
+  "done": true,
   "metadata": {
     "@type": "type.googleapis.com/google.cloud.certificatemanager.v1.OperationMetadata",
     "apiVersion": "v1",
     "createTime": "2024-04-01T12:34:56.123456Z",
+    "requestedCancellation": false,
     "target": "projects/${projectId}/locations/us-central1/certificateIssuanceConfigs/test-${uniqueId}",
     "verb": "delete"
   },
@@ -666,6 +694,38 @@ X-Xss-Protection: 0
     "@type": "type.googleapis.com/google.cloud.certificatemanager.v1.OperationMetadata",
     "apiVersion": "v1",
     "createTime": "2024-04-01T12:34:56.123456Z",
+    "requestedCancellation": false,
+    "target": "projects/${projectId}/locations/us-central1/certificateIssuanceConfigs/test-${uniqueId}",
+    "verb": "delete"
+  },
+  "name": "projects/${projectId}/locations/us-central1/operations/${operationID}"
+}
+
+---
+
+GET https://certificatemanager.googleapis.com/v1/projects/${projectId}/locations/us-central1/operations/${operationID}?alt=json
+Accept: application/json
+Authorization: (removed)
+Connection: keep-alive
+
+200 OK
+Content-Type: application/json; charset=UTF-8
+Server: ESF
+Vary: Origin
+Vary: X-Origin
+Vary: Referer
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+X-Xss-Protection: 0
+
+{
+  "done": true,
+  "metadata": {
+    "@type": "type.googleapis.com/google.cloud.certificatemanager.v1.OperationMetadata",
+    "apiVersion": "v1",
+    "createTime": "2024-04-01T12:34:56.123456Z",
+    "endTime": "2024-04-01T12:34:56.123456Z",
+    "requestedCancellation": false,
     "target": "projects/${projectId}/locations/us-central1/certificateIssuanceConfigs/test-${uniqueId}",
     "verb": "delete"
   },
@@ -693,20 +753,22 @@ X-Frame-Options: SAMEORIGIN
 X-Xss-Protection: 0
 
 {
+  "accessUrls": {
+    "caCertificateAccessUrl": "http://privateca-content-69bc3d23-0000-2c75-9cf6-d4f547ec76dc.storage.googleapis.com/22c659be87c1421efb5e/ca.crt"
+  },
   "caCertificateDescriptions": [
     {
       "authorityKeyId": {
-        "keyId": "58ff0120decc0d87caa30eb45fef39e38133e733"
+        "keyId": "9640ce7ac66a8aa49ba7ae02b2e2190c580ea0b4"
       },
       "certFingerprint": {
-        "sha256Hash": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789test-ca-${uniqueId}"
+        "sha256Hash": "6bba3cfd9f02e6f38c1be95dedcb5faf331df2a9fa97854aaa4f704292354cbe"
       },
       "publicKey": {
-        "format": "PEM",
-        "key": "LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUlJQ0lqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FnOEFNSUlDQ2dLQ0FnRUFyeGt3dVBoREZTNlc1eEgvMW1MVApTYXhzMTNONnpGYlRXSUY4aG4vTlk1cXlJYmFpd0FYdEVOeU53NkhSSmd4R2c0WElkRXlMVGpCK1VNVVVLYU9OCnd0WFJTUW9CeGR2VitKeWRlL05jTUUzM3QyT3d1UDBRVzY2UnRLak52b2R5dzRLTHphVmp6T1hPY0YwV0NNYy8KRjV4cU5uUHpOalVncUlBanozSHkrejROWmNnT0lnM3dVdEJRRlNTUm16TmtzdjMwejhLQjdXUXJkaElWb3JuOQpuWVFPeW11eTZPT0dLM3FIUXRZYk1MYU9oREY1VnJ3amozblUxeStQMzdRR1kwdG5KS3VYbGNwR3hJN0tkWTI5CjRJM1F6K0JHemI0Wll0WE1uTzNOZFZVaTRteG14VTBMbVE3VlJkdHpkTGN6cTJDUEoyV2JjTTZkUldmVERoNisKYzdDQys3K1ZBdzlxeW1OSnFXN0wxb2JNSkNuTHpwcHBPVWg0RjNXU1V0SXVLcUZ2alo1eFMzUXBFSGJsRFoybgpUaTY1Tm4yR2JzeVYrc2FxTkpOdUdmVEpvUzRJOGFoakljY2hDaXUzRDMxNm5MczlENmMwckRLNmxsbUpHdFRLCmZsSVEyQkZmY2FtV2VlSXlNU1dIK3Uza2lKTTY2YWF1NVJrNlFXWWlKMTRhaWswNmsvK1pMRnNMazUvbVV3eVEKTWFUMXNPUGQ1Z3FSeUsrdGgyVXNkb1p1dE5PZFZYMWdRNjk4cXdVZk1oTmpkSzNLZUkzNWQvY2xuR2F1UGVPSgo2ZlgySy9WN1hTblQrcGRjRTExZjNFU0FZVEIybnJJSXgzK3NjYXdZalREd0Qrd2JQZ0p4ZG4wc1ppOTNtV2FKCkFPdTV4QjBOSStsYXhZT2tPZHhrYklVQ0F3RUFBUT09Ci0tLS0tRU5EIFBVQkxJQyBLRVktLS0tLQo="
+        "key": "LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUlJQ0lqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FnOEFNSUlDQ2dLQ0FnRUFpYUgwalBmWEVuU0NEbDRQS3llZwpFUDZ2dy8wSWwrSGdTbW45OHlGUW1FUG4rcis1aXFRSkhxcDM3V3FMWS9wWVpDOUJ3SWxkeDVNNzRnZEV0REdhCk5qM2FYUmV3dVZZUkRFUk1vYWFvVThDRTNUL2VmMFFOZTVCdW9YdjhyblB1UVRwUmxIUm9iNStOUy9hdUtUaysKaUNlL3V6dlQrdWJCUlp6enNQRk9oRStjdCtONEFQQTdVeVptZjlQYmhvUzlaRS9ncWJXV2YyVGcrZndyWjFragprNHhpZjRtUHpCc051TFBwMFdHRGM2WklJMXd4eWM3L28wakFucFRYWGNJakR6c0kwSmFwNGpxRDBUUkRUdmUxCnJaTUZIRW1IdS9MM2lEUkZJdVFkOWxjTUNOb1dSbXJSTjY3L052RDd6dWRZa3BHdG9wUjhsNzJuT1h0YURRSWgKMmV3dEFCRUZtb09naElTZkpyb0g2SkdOVzEzRXh0VWFhZVYvRk95QlRSQm5iRHVIQ29XWndnc2xxYk96TXdwcQpKY2RQQ28vZ2VEeXR3eFBWK3p6dE82RW1iUWJORThtbVA3b3BlNDBxanFaaHcxTGxsUHdRWDUzQzJ0SkFuWGQyCkJwaDY5VDlyZWFxMldLek9aSXl0dnJ5RTFRUW1SN3lqSWFCYVNlYVpRRGhlaUxIb3IzNjFOaUkvT2VDQndod2UKUkxvd2lHMElPbmh4NE4wNVNuRjdiY09Qdld3anEvc28xcG1zc2poZkIvRzN4K2FESjZzL25nOWRSTGYwY0JzeAo3aEJ1SjZGZ1hJVnI2cHJyaDJub201bDFwMi9sbWpZTjFTNDdzWkwya0F6dGRZMWx0bWhlTVlzNGhBZjRpOXNXCk5DZWd2ZmpTamxteGs5MlBSd1lmM0tzQ0F3RUFBUT09Ci0tLS0tRU5EIFBVQkxJQyBLRVktLS0tLQo="
       },
       "subjectDescription": {
-        "hexSerialNumber": "0123456789abcdef",
+        "hexSerialNumber": "002397f00afd4f0d4c26576595b935058f008ebe",
         "lifetime": "315569261s",
         "notAfterTime": "2024-04-01T12:34:56.123456Z",
         "notBeforeTime": "2024-04-01T12:34:56.123456Z",
@@ -716,8 +778,9 @@ X-Xss-Protection: 0
         "subjectAltName": {}
       },
       "subjectKeyId": {
-        "keyId": "58ff0120decc0d87caa30eb45fef39e38133e733"
+        "keyId": "9640ce7ac66a8aa49ba7ae02b2e2190c580ea0b4"
       },
+      "tbsCertificateDigest": "681e382f8281d51f5fdd63faf4308f6897c92e5b1df18bd97d5322f11941e625",
       "x509Description": {
         "caOptions": {
           "isCa": true
@@ -757,8 +820,9 @@ X-Xss-Protection: 0
   "lifetime": "315569261s",
   "name": "projects/${projectId}/locations/us-central1/caPools/test-pool-${uniqueId}/certificateAuthorities/test-ca-${uniqueId}",
   "pemCaCertificates": [
-    "-----BEGIN CERTIFICATE-----\n-----END CERTIFICATE-----\n"
+    "-----BEGIN CERTIFICATE-----\nMIIFNjCCAx6gAwIBAgITI5fwCv1PDUwmV2WVuTUFjwCOvjANBgkqhkiG9w0BAQsF\nADAjMSEwHwYDVQQDExh0ZXN0LWNhLTE4OWQ0NjRiODY3MzQwYTcwHhcNMjYwMzE2\nMDg1MjA5WhcNMzYwMzE1MTg1OTQ5WjAjMSEwHwYDVQQDExh0ZXN0LWNhLTE4OWQ0\nNjRiODY3MzQwYTcwggIiMA0GCSqGSIb3DQEBAQUAA4ICDwAwggIKAoICAQCJofSM\n99cSdIIOXg8rJ6AQ/q/D/QiX4eBKaf3zIVCYQ+f6v7mKpAkeqnftaotj+lhkL0HA\niV3HkzviB0S0MZo2PdpdF7C5VhEMREyhpqhTwITdP95/RA17kG6he/yuc+5BOlGU\ndGhvn41L9q4pOT6IJ7+7O9P65sFFnPOw8U6ET5y343gA8DtTJmZ/09uGhL1kT+Cp\ntZZ/ZOD5/CtnWSOTjGJ/iY/MGw24s+nRYYNzpkgjXDHJzv+jSMCelNddwiMPOwjQ\nlqniOoPRNENO97WtkwUcSYe78veINEUi5B32VwwI2hZGatE3rv828PvO51iSka2i\nlHyXvac5e1oNAiHZ7C0AEQWag6CEhJ8mugfokY1bXcTG1Rpp5X8U7IFNEGdsO4cK\nhZnCCyWps7MzCmolx08Kj+B4PK3DE9X7PO07oSZtBs0TyaY/uil7jSqOpmHDUuWU\n/BBfncLa0kCdd3YGmHr1P2t5qrZYrM5kjK2+vITVBCZHvKMhoFpJ5plAOF6Iseiv\nfrU2Ij854IHCHB5EujCIbQg6eHHg3TlKcXttw4+9bCOr+yjWmayyOF8H8bfH5oMn\nqz+eD11Et/RwGzHuEG4noWBchWvqmuuHaeibmXWnb+WaNg3VLjuxkvaQDO11jWW2\naF4xiziEB/iL2xY0J6C9+NKOWbGT3Y9HBh/cqwIDAQABo2MwYTAOBgNVHQ8BAf8E\nBAMCAQYwDwYDVR0TAQH/BAUwAwEB/zAdBgNVHQ4EFgQUlkDOesZqiqSbp64CsuIZ\nDFgOoLQwHwYDVR0jBBgwFoAUlkDOesZqiqSbp64CsuIZDFgOoLQwDQYJKoZIhvcN\nAQELBQADggIBAFtmDpymovlFLFFdEMkKlqtMssppsSMKfVo9wR4kJG6EhzG+GHwk\natwx4RpFqqrhMKz9yk1HeL+2beQLUtZXsRhjM5+vGztV5v1Yy0uN/QcRl9sx2cuD\nZ1Uzdd6Allq0yXzB/rcr0kSi1lTqEs45/8/QmFTB7glGQnQGlI3ohwD3N/SR2Nwe\nXhipXjYTb0tkswtUZrpy9yG/kLE+LqE7P3YS04CEkvhy8pDxlja8LrXbo3vKf7eT\nWvh7RA662rnubhnIpa73CNFCVoEGgFXtIZ5OUWot5klhinuoOo36P3uukulzxk3e\n5cj5m6I/A03u0DbLhRkja7Lc9a69RI1a2NnmM1L2/irBR1SIX181ABPw6o6cag9v\nlGpgG++5/m5H4Ev/y6ntuHcJwb4KyqPc+K+NyEChS9IvS9uaENGj+IuVRmtKGTM4\nJm8siCOBWvbYkXdBbbliyHIUC1SOndDM5iT54Yl4Cu0NCvfmSfbdzBhLXdPEslDn\nv7wgBJ+S1ArGOtaBRR5xkJ2EmWNADHE7skUZ2xYPppbbcpcIuDMm+DjDc7ujthom\nznYfhm3YKQt4smSphrkoLcHzTV5tLHcpq88kCiLgM/x24N2E+GGcMuke9/95JtAP\ntWoBUaH9d0eERI8GZl/U0ZvIQ4SkRPkfmrgM9lzh+hrAb1ioRjY14PUS\n-----END CERTIFICATE-----\n"
   ],
+  "satisfiesPzi": true,
   "state": "ENABLED",
   "tier": "DEVOPS",
   "type": "SELF_SIGNED",
@@ -789,10 +853,12 @@ X-Frame-Options: SAMEORIGIN
 X-Xss-Protection: 0
 
 {
+  "done": true,
   "metadata": {
     "@type": "type.googleapis.com/google.cloud.security.privateca.v1.OperationMetadata",
     "apiVersion": "v1",
     "createTime": "2024-04-01T12:34:56.123456Z",
+    "requestedCancellation": false,
     "target": "projects/${projectId}/locations/us-central1/caPools/test-pool-${uniqueId}/certificateAuthorities/test-ca-${uniqueId}",
     "verb": "disable"
   },
@@ -823,26 +889,29 @@ X-Xss-Protection: 0
     "apiVersion": "v1",
     "createTime": "2024-04-01T12:34:56.123456Z",
     "endTime": "2024-04-01T12:34:56.123456Z",
+    "requestedCancellation": false,
     "target": "projects/${projectId}/locations/us-central1/caPools/test-pool-${uniqueId}/certificateAuthorities/test-ca-${uniqueId}",
     "verb": "disable"
   },
   "name": "projects/${projectId}/locations/us-central1/operations/${operationID}",
   "response": {
     "@type": "type.googleapis.com/google.cloud.security.privateca.v1.CertificateAuthority",
+    "accessUrls": {
+      "caCertificateAccessUrl": "http://privateca-content-69bc3d23-0000-2c75-9cf6-d4f547ec76dc.storage.googleapis.com/22c659be87c1421efb5e/ca.crt"
+    },
     "caCertificateDescriptions": [
       {
         "authorityKeyId": {
-          "keyId": "58ff0120decc0d87caa30eb45fef39e38133e733"
+          "keyId": "9640ce7ac66a8aa49ba7ae02b2e2190c580ea0b4"
         },
         "certFingerprint": {
-          "sha256Hash": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789test-ca-${uniqueId}"
+          "sha256Hash": "6bba3cfd9f02e6f38c1be95dedcb5faf331df2a9fa97854aaa4f704292354cbe"
         },
         "publicKey": {
-          "format": "PEM",
-          "key": "LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUlJQ0lqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FnOEFNSUlDQ2dLQ0FnRUFyeGt3dVBoREZTNlc1eEgvMW1MVApTYXhzMTNONnpGYlRXSUY4aG4vTlk1cXlJYmFpd0FYdEVOeU53NkhSSmd4R2c0WElkRXlMVGpCK1VNVVVLYU9OCnd0WFJTUW9CeGR2VitKeWRlL05jTUUzM3QyT3d1UDBRVzY2UnRLak52b2R5dzRLTHphVmp6T1hPY0YwV0NNYy8KRjV4cU5uUHpOalVncUlBanozSHkrejROWmNnT0lnM3dVdEJRRlNTUm16TmtzdjMwejhLQjdXUXJkaElWb3JuOQpuWVFPeW11eTZPT0dLM3FIUXRZYk1MYU9oREY1VnJ3amozblUxeStQMzdRR1kwdG5KS3VYbGNwR3hJN0tkWTI5CjRJM1F6K0JHemI0Wll0WE1uTzNOZFZVaTRteG14VTBMbVE3VlJkdHpkTGN6cTJDUEoyV2JjTTZkUldmVERoNisKYzdDQys3K1ZBdzlxeW1OSnFXN0wxb2JNSkNuTHpwcHBPVWg0RjNXU1V0SXVLcUZ2alo1eFMzUXBFSGJsRFoybgpUaTY1Tm4yR2JzeVYrc2FxTkpOdUdmVEpvUzRJOGFoakljY2hDaXUzRDMxNm5MczlENmMwckRLNmxsbUpHdFRLCmZsSVEyQkZmY2FtV2VlSXlNU1dIK3Uza2lKTTY2YWF1NVJrNlFXWWlKMTRhaWswNmsvK1pMRnNMazUvbVV3eVEKTWFUMXNPUGQ1Z3FSeUsrdGgyVXNkb1p1dE5PZFZYMWdRNjk4cXdVZk1oTmpkSzNLZUkzNWQvY2xuR2F1UGVPSgo2ZlgySy9WN1hTblQrcGRjRTExZjNFU0FZVEIybnJJSXgzK3NjYXdZalREd0Qrd2JQZ0p4ZG4wc1ppOTNtV2FKCkFPdTV4QjBOSStsYXhZT2tPZHhrYklVQ0F3RUFBUT09Ci0tLS0tRU5EIFBVQkxJQyBLRVktLS0tLQo="
+          "key": "LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUlJQ0lqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FnOEFNSUlDQ2dLQ0FnRUFpYUgwalBmWEVuU0NEbDRQS3llZwpFUDZ2dy8wSWwrSGdTbW45OHlGUW1FUG4rcis1aXFRSkhxcDM3V3FMWS9wWVpDOUJ3SWxkeDVNNzRnZEV0REdhCk5qM2FYUmV3dVZZUkRFUk1vYWFvVThDRTNUL2VmMFFOZTVCdW9YdjhyblB1UVRwUmxIUm9iNStOUy9hdUtUaysKaUNlL3V6dlQrdWJCUlp6enNQRk9oRStjdCtONEFQQTdVeVptZjlQYmhvUzlaRS9ncWJXV2YyVGcrZndyWjFragprNHhpZjRtUHpCc051TFBwMFdHRGM2WklJMXd4eWM3L28wakFucFRYWGNJakR6c0kwSmFwNGpxRDBUUkRUdmUxCnJaTUZIRW1IdS9MM2lEUkZJdVFkOWxjTUNOb1dSbXJSTjY3L052RDd6dWRZa3BHdG9wUjhsNzJuT1h0YURRSWgKMmV3dEFCRUZtb09naElTZkpyb0g2SkdOVzEzRXh0VWFhZVYvRk95QlRSQm5iRHVIQ29XWndnc2xxYk96TXdwcQpKY2RQQ28vZ2VEeXR3eFBWK3p6dE82RW1iUWJORThtbVA3b3BlNDBxanFaaHcxTGxsUHdRWDUzQzJ0SkFuWGQyCkJwaDY5VDlyZWFxMldLek9aSXl0dnJ5RTFRUW1SN3lqSWFCYVNlYVpRRGhlaUxIb3IzNjFOaUkvT2VDQndod2UKUkxvd2lHMElPbmh4NE4wNVNuRjdiY09Qdld3anEvc28xcG1zc2poZkIvRzN4K2FESjZzL25nOWRSTGYwY0JzeAo3aEJ1SjZGZ1hJVnI2cHJyaDJub201bDFwMi9sbWpZTjFTNDdzWkwya0F6dGRZMWx0bWhlTVlzNGhBZjRpOXNXCk5DZWd2ZmpTamxteGs5MlBSd1lmM0tzQ0F3RUFBUT09Ci0tLS0tRU5EIFBVQkxJQyBLRVktLS0tLQo="
         },
         "subjectDescription": {
-          "hexSerialNumber": "0123456789abcdef",
+          "hexSerialNumber": "002397f00afd4f0d4c26576595b935058f008ebe",
           "lifetime": "315569261s",
           "notAfterTime": "2024-04-01T12:34:56.123456Z",
           "notBeforeTime": "2024-04-01T12:34:56.123456Z",
@@ -852,8 +921,9 @@ X-Xss-Protection: 0
           "subjectAltName": {}
         },
         "subjectKeyId": {
-          "keyId": "58ff0120decc0d87caa30eb45fef39e38133e733"
+          "keyId": "9640ce7ac66a8aa49ba7ae02b2e2190c580ea0b4"
         },
+        "tbsCertificateDigest": "681e382f8281d51f5fdd63faf4308f6897c92e5b1df18bd97d5322f11941e625",
         "x509Description": {
           "caOptions": {
             "isCa": true
@@ -893,8 +963,9 @@ X-Xss-Protection: 0
     "lifetime": "315569261s",
     "name": "projects/${projectId}/locations/us-central1/caPools/test-pool-${uniqueId}/certificateAuthorities/test-ca-${uniqueId}",
     "pemCaCertificates": [
-      "-----BEGIN CERTIFICATE-----\n-----END CERTIFICATE-----\n"
+      "-----BEGIN CERTIFICATE-----\nMIIFNjCCAx6gAwIBAgITI5fwCv1PDUwmV2WVuTUFjwCOvjANBgkqhkiG9w0BAQsF\nADAjMSEwHwYDVQQDExh0ZXN0LWNhLTE4OWQ0NjRiODY3MzQwYTcwHhcNMjYwMzE2\nMDg1MjA5WhcNMzYwMzE1MTg1OTQ5WjAjMSEwHwYDVQQDExh0ZXN0LWNhLTE4OWQ0\nNjRiODY3MzQwYTcwggIiMA0GCSqGSIb3DQEBAQUAA4ICDwAwggIKAoICAQCJofSM\n99cSdIIOXg8rJ6AQ/q/D/QiX4eBKaf3zIVCYQ+f6v7mKpAkeqnftaotj+lhkL0HA\niV3HkzviB0S0MZo2PdpdF7C5VhEMREyhpqhTwITdP95/RA17kG6he/yuc+5BOlGU\ndGhvn41L9q4pOT6IJ7+7O9P65sFFnPOw8U6ET5y343gA8DtTJmZ/09uGhL1kT+Cp\ntZZ/ZOD5/CtnWSOTjGJ/iY/MGw24s+nRYYNzpkgjXDHJzv+jSMCelNddwiMPOwjQ\nlqniOoPRNENO97WtkwUcSYe78veINEUi5B32VwwI2hZGatE3rv828PvO51iSka2i\nlHyXvac5e1oNAiHZ7C0AEQWag6CEhJ8mugfokY1bXcTG1Rpp5X8U7IFNEGdsO4cK\nhZnCCyWps7MzCmolx08Kj+B4PK3DE9X7PO07oSZtBs0TyaY/uil7jSqOpmHDUuWU\n/BBfncLa0kCdd3YGmHr1P2t5qrZYrM5kjK2+vITVBCZHvKMhoFpJ5plAOF6Iseiv\nfrU2Ij854IHCHB5EujCIbQg6eHHg3TlKcXttw4+9bCOr+yjWmayyOF8H8bfH5oMn\nqz+eD11Et/RwGzHuEG4noWBchWvqmuuHaeibmXWnb+WaNg3VLjuxkvaQDO11jWW2\naF4xiziEB/iL2xY0J6C9+NKOWbGT3Y9HBh/cqwIDAQABo2MwYTAOBgNVHQ8BAf8E\nBAMCAQYwDwYDVR0TAQH/BAUwAwEB/zAdBgNVHQ4EFgQUlkDOesZqiqSbp64CsuIZ\nDFgOoLQwHwYDVR0jBBgwFoAUlkDOesZqiqSbp64CsuIZDFgOoLQwDQYJKoZIhvcN\nAQELBQADggIBAFtmDpymovlFLFFdEMkKlqtMssppsSMKfVo9wR4kJG6EhzG+GHwk\natwx4RpFqqrhMKz9yk1HeL+2beQLUtZXsRhjM5+vGztV5v1Yy0uN/QcRl9sx2cuD\nZ1Uzdd6Allq0yXzB/rcr0kSi1lTqEs45/8/QmFTB7glGQnQGlI3ohwD3N/SR2Nwe\nXhipXjYTb0tkswtUZrpy9yG/kLE+LqE7P3YS04CEkvhy8pDxlja8LrXbo3vKf7eT\nWvh7RA662rnubhnIpa73CNFCVoEGgFXtIZ5OUWot5klhinuoOo36P3uukulzxk3e\n5cj5m6I/A03u0DbLhRkja7Lc9a69RI1a2NnmM1L2/irBR1SIX181ABPw6o6cag9v\nlGpgG++5/m5H4Ev/y6ntuHcJwb4KyqPc+K+NyEChS9IvS9uaENGj+IuVRmtKGTM4\nJm8siCOBWvbYkXdBbbliyHIUC1SOndDM5iT54Yl4Cu0NCvfmSfbdzBhLXdPEslDn\nv7wgBJ+S1ArGOtaBRR5xkJ2EmWNADHE7skUZ2xYPppbbcpcIuDMm+DjDc7ujthom\nznYfhm3YKQt4smSphrkoLcHzTV5tLHcpq88kCiLgM/x24N2E+GGcMuke9/95JtAP\ntWoBUaH9d0eERI8GZl/U0ZvIQ4SkRPkfmrgM9lzh+hrAb1ioRjY14PUS\n-----END CERTIFICATE-----\n"
     ],
+    "satisfiesPzi": true,
     "state": "DISABLED",
     "tier": "DEVOPS",
     "type": "SELF_SIGNED",
@@ -920,20 +991,22 @@ X-Frame-Options: SAMEORIGIN
 X-Xss-Protection: 0
 
 {
+  "accessUrls": {
+    "caCertificateAccessUrl": "http://privateca-content-69bc3d23-0000-2c75-9cf6-d4f547ec76dc.storage.googleapis.com/22c659be87c1421efb5e/ca.crt"
+  },
   "caCertificateDescriptions": [
     {
       "authorityKeyId": {
-        "keyId": "58ff0120decc0d87caa30eb45fef39e38133e733"
+        "keyId": "9640ce7ac66a8aa49ba7ae02b2e2190c580ea0b4"
       },
       "certFingerprint": {
-        "sha256Hash": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789test-ca-${uniqueId}"
+        "sha256Hash": "6bba3cfd9f02e6f38c1be95dedcb5faf331df2a9fa97854aaa4f704292354cbe"
       },
       "publicKey": {
-        "format": "PEM",
-        "key": "LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUlJQ0lqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FnOEFNSUlDQ2dLQ0FnRUFyeGt3dVBoREZTNlc1eEgvMW1MVApTYXhzMTNONnpGYlRXSUY4aG4vTlk1cXlJYmFpd0FYdEVOeU53NkhSSmd4R2c0WElkRXlMVGpCK1VNVVVLYU9OCnd0WFJTUW9CeGR2VitKeWRlL05jTUUzM3QyT3d1UDBRVzY2UnRLak52b2R5dzRLTHphVmp6T1hPY0YwV0NNYy8KRjV4cU5uUHpOalVncUlBanozSHkrejROWmNnT0lnM3dVdEJRRlNTUm16TmtzdjMwejhLQjdXUXJkaElWb3JuOQpuWVFPeW11eTZPT0dLM3FIUXRZYk1MYU9oREY1VnJ3amozblUxeStQMzdRR1kwdG5KS3VYbGNwR3hJN0tkWTI5CjRJM1F6K0JHemI0Wll0WE1uTzNOZFZVaTRteG14VTBMbVE3VlJkdHpkTGN6cTJDUEoyV2JjTTZkUldmVERoNisKYzdDQys3K1ZBdzlxeW1OSnFXN0wxb2JNSkNuTHpwcHBPVWg0RjNXU1V0SXVLcUZ2alo1eFMzUXBFSGJsRFoybgpUaTY1Tm4yR2JzeVYrc2FxTkpOdUdmVEpvUzRJOGFoakljY2hDaXUzRDMxNm5MczlENmMwckRLNmxsbUpHdFRLCmZsSVEyQkZmY2FtV2VlSXlNU1dIK3Uza2lKTTY2YWF1NVJrNlFXWWlKMTRhaWswNmsvK1pMRnNMazUvbVV3eVEKTWFUMXNPUGQ1Z3FSeUsrdGgyVXNkb1p1dE5PZFZYMWdRNjk4cXdVZk1oTmpkSzNLZUkzNWQvY2xuR2F1UGVPSgo2ZlgySy9WN1hTblQrcGRjRTExZjNFU0FZVEIybnJJSXgzK3NjYXdZalREd0Qrd2JQZ0p4ZG4wc1ppOTNtV2FKCkFPdTV4QjBOSStsYXhZT2tPZHhrYklVQ0F3RUFBUT09Ci0tLS0tRU5EIFBVQkxJQyBLRVktLS0tLQo="
+        "key": "LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUlJQ0lqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FnOEFNSUlDQ2dLQ0FnRUFpYUgwalBmWEVuU0NEbDRQS3llZwpFUDZ2dy8wSWwrSGdTbW45OHlGUW1FUG4rcis1aXFRSkhxcDM3V3FMWS9wWVpDOUJ3SWxkeDVNNzRnZEV0REdhCk5qM2FYUmV3dVZZUkRFUk1vYWFvVThDRTNUL2VmMFFOZTVCdW9YdjhyblB1UVRwUmxIUm9iNStOUy9hdUtUaysKaUNlL3V6dlQrdWJCUlp6enNQRk9oRStjdCtONEFQQTdVeVptZjlQYmhvUzlaRS9ncWJXV2YyVGcrZndyWjFragprNHhpZjRtUHpCc051TFBwMFdHRGM2WklJMXd4eWM3L28wakFucFRYWGNJakR6c0kwSmFwNGpxRDBUUkRUdmUxCnJaTUZIRW1IdS9MM2lEUkZJdVFkOWxjTUNOb1dSbXJSTjY3L052RDd6dWRZa3BHdG9wUjhsNzJuT1h0YURRSWgKMmV3dEFCRUZtb09naElTZkpyb0g2SkdOVzEzRXh0VWFhZVYvRk95QlRSQm5iRHVIQ29XWndnc2xxYk96TXdwcQpKY2RQQ28vZ2VEeXR3eFBWK3p6dE82RW1iUWJORThtbVA3b3BlNDBxanFaaHcxTGxsUHdRWDUzQzJ0SkFuWGQyCkJwaDY5VDlyZWFxMldLek9aSXl0dnJ5RTFRUW1SN3lqSWFCYVNlYVpRRGhlaUxIb3IzNjFOaUkvT2VDQndod2UKUkxvd2lHMElPbmh4NE4wNVNuRjdiY09Qdld3anEvc28xcG1zc2poZkIvRzN4K2FESjZzL25nOWRSTGYwY0JzeAo3aEJ1SjZGZ1hJVnI2cHJyaDJub201bDFwMi9sbWpZTjFTNDdzWkwya0F6dGRZMWx0bWhlTVlzNGhBZjRpOXNXCk5DZWd2ZmpTamxteGs5MlBSd1lmM0tzQ0F3RUFBUT09Ci0tLS0tRU5EIFBVQkxJQyBLRVktLS0tLQo="
       },
       "subjectDescription": {
-        "hexSerialNumber": "0123456789abcdef",
+        "hexSerialNumber": "002397f00afd4f0d4c26576595b935058f008ebe",
         "lifetime": "315569261s",
         "notAfterTime": "2024-04-01T12:34:56.123456Z",
         "notBeforeTime": "2024-04-01T12:34:56.123456Z",
@@ -943,8 +1016,9 @@ X-Xss-Protection: 0
         "subjectAltName": {}
       },
       "subjectKeyId": {
-        "keyId": "58ff0120decc0d87caa30eb45fef39e38133e733"
+        "keyId": "9640ce7ac66a8aa49ba7ae02b2e2190c580ea0b4"
       },
+      "tbsCertificateDigest": "681e382f8281d51f5fdd63faf4308f6897c92e5b1df18bd97d5322f11941e625",
       "x509Description": {
         "caOptions": {
           "isCa": true
@@ -984,8 +1058,9 @@ X-Xss-Protection: 0
   "lifetime": "315569261s",
   "name": "projects/${projectId}/locations/us-central1/caPools/test-pool-${uniqueId}/certificateAuthorities/test-ca-${uniqueId}",
   "pemCaCertificates": [
-    "-----BEGIN CERTIFICATE-----\n-----END CERTIFICATE-----\n"
+    "-----BEGIN CERTIFICATE-----\nMIIFNjCCAx6gAwIBAgITI5fwCv1PDUwmV2WVuTUFjwCOvjANBgkqhkiG9w0BAQsF\nADAjMSEwHwYDVQQDExh0ZXN0LWNhLTE4OWQ0NjRiODY3MzQwYTcwHhcNMjYwMzE2\nMDg1MjA5WhcNMzYwMzE1MTg1OTQ5WjAjMSEwHwYDVQQDExh0ZXN0LWNhLTE4OWQ0\nNjRiODY3MzQwYTcwggIiMA0GCSqGSIb3DQEBAQUAA4ICDwAwggIKAoICAQCJofSM\n99cSdIIOXg8rJ6AQ/q/D/QiX4eBKaf3zIVCYQ+f6v7mKpAkeqnftaotj+lhkL0HA\niV3HkzviB0S0MZo2PdpdF7C5VhEMREyhpqhTwITdP95/RA17kG6he/yuc+5BOlGU\ndGhvn41L9q4pOT6IJ7+7O9P65sFFnPOw8U6ET5y343gA8DtTJmZ/09uGhL1kT+Cp\ntZZ/ZOD5/CtnWSOTjGJ/iY/MGw24s+nRYYNzpkgjXDHJzv+jSMCelNddwiMPOwjQ\nlqniOoPRNENO97WtkwUcSYe78veINEUi5B32VwwI2hZGatE3rv828PvO51iSka2i\nlHyXvac5e1oNAiHZ7C0AEQWag6CEhJ8mugfokY1bXcTG1Rpp5X8U7IFNEGdsO4cK\nhZnCCyWps7MzCmolx08Kj+B4PK3DE9X7PO07oSZtBs0TyaY/uil7jSqOpmHDUuWU\n/BBfncLa0kCdd3YGmHr1P2t5qrZYrM5kjK2+vITVBCZHvKMhoFpJ5plAOF6Iseiv\nfrU2Ij854IHCHB5EujCIbQg6eHHg3TlKcXttw4+9bCOr+yjWmayyOF8H8bfH5oMn\nqz+eD11Et/RwGzHuEG4noWBchWvqmuuHaeibmXWnb+WaNg3VLjuxkvaQDO11jWW2\naF4xiziEB/iL2xY0J6C9+NKOWbGT3Y9HBh/cqwIDAQABo2MwYTAOBgNVHQ8BAf8E\nBAMCAQYwDwYDVR0TAQH/BAUwAwEB/zAdBgNVHQ4EFgQUlkDOesZqiqSbp64CsuIZ\nDFgOoLQwHwYDVR0jBBgwFoAUlkDOesZqiqSbp64CsuIZDFgOoLQwDQYJKoZIhvcN\nAQELBQADggIBAFtmDpymovlFLFFdEMkKlqtMssppsSMKfVo9wR4kJG6EhzG+GHwk\natwx4RpFqqrhMKz9yk1HeL+2beQLUtZXsRhjM5+vGztV5v1Yy0uN/QcRl9sx2cuD\nZ1Uzdd6Allq0yXzB/rcr0kSi1lTqEs45/8/QmFTB7glGQnQGlI3ohwD3N/SR2Nwe\nXhipXjYTb0tkswtUZrpy9yG/kLE+LqE7P3YS04CEkvhy8pDxlja8LrXbo3vKf7eT\nWvh7RA662rnubhnIpa73CNFCVoEGgFXtIZ5OUWot5klhinuoOo36P3uukulzxk3e\n5cj5m6I/A03u0DbLhRkja7Lc9a69RI1a2NnmM1L2/irBR1SIX181ABPw6o6cag9v\nlGpgG++5/m5H4Ev/y6ntuHcJwb4KyqPc+K+NyEChS9IvS9uaENGj+IuVRmtKGTM4\nJm8siCOBWvbYkXdBbbliyHIUC1SOndDM5iT54Yl4Cu0NCvfmSfbdzBhLXdPEslDn\nv7wgBJ+S1ArGOtaBRR5xkJ2EmWNADHE7skUZ2xYPppbbcpcIuDMm+DjDc7ujthom\nznYfhm3YKQt4smSphrkoLcHzTV5tLHcpq88kCiLgM/x24N2E+GGcMuke9/95JtAP\ntWoBUaH9d0eERI8GZl/U0ZvIQ4SkRPkfmrgM9lzh+hrAb1ioRjY14PUS\n-----END CERTIFICATE-----\n"
   ],
+  "satisfiesPzi": true,
   "state": "DISABLED",
   "tier": "DEVOPS",
   "type": "SELF_SIGNED",
@@ -1010,10 +1085,12 @@ X-Frame-Options: SAMEORIGIN
 X-Xss-Protection: 0
 
 {
+  "done": true,
   "metadata": {
     "@type": "type.googleapis.com/google.cloud.security.privateca.v1.OperationMetadata",
     "apiVersion": "v1",
     "createTime": "2024-04-01T12:34:56.123456Z",
+    "requestedCancellation": false,
     "target": "projects/${projectId}/locations/us-central1/caPools/test-pool-${uniqueId}/certificateAuthorities/test-ca-${uniqueId}",
     "verb": "delete"
   },
@@ -1044,26 +1121,29 @@ X-Xss-Protection: 0
     "apiVersion": "v1",
     "createTime": "2024-04-01T12:34:56.123456Z",
     "endTime": "2024-04-01T12:34:56.123456Z",
+    "requestedCancellation": false,
     "target": "projects/${projectId}/locations/us-central1/caPools/test-pool-${uniqueId}/certificateAuthorities/test-ca-${uniqueId}",
     "verb": "delete"
   },
   "name": "projects/${projectId}/locations/us-central1/operations/${operationID}",
   "response": {
     "@type": "type.googleapis.com/google.cloud.security.privateca.v1.CertificateAuthority",
+    "accessUrls": {
+      "caCertificateAccessUrl": "http://privateca-content-69bc3d23-0000-2c75-9cf6-d4f547ec76dc.storage.googleapis.com/22c659be87c1421efb5e/ca.crt"
+    },
     "caCertificateDescriptions": [
       {
         "authorityKeyId": {
-          "keyId": "58ff0120decc0d87caa30eb45fef39e38133e733"
+          "keyId": "9640ce7ac66a8aa49ba7ae02b2e2190c580ea0b4"
         },
         "certFingerprint": {
-          "sha256Hash": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789test-ca-${uniqueId}"
+          "sha256Hash": "6bba3cfd9f02e6f38c1be95dedcb5faf331df2a9fa97854aaa4f704292354cbe"
         },
         "publicKey": {
-          "format": "PEM",
-          "key": "LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUlJQ0lqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FnOEFNSUlDQ2dLQ0FnRUFyeGt3dVBoREZTNlc1eEgvMW1MVApTYXhzMTNONnpGYlRXSUY4aG4vTlk1cXlJYmFpd0FYdEVOeU53NkhSSmd4R2c0WElkRXlMVGpCK1VNVVVLYU9OCnd0WFJTUW9CeGR2VitKeWRlL05jTUUzM3QyT3d1UDBRVzY2UnRLak52b2R5dzRLTHphVmp6T1hPY0YwV0NNYy8KRjV4cU5uUHpOalVncUlBanozSHkrejROWmNnT0lnM3dVdEJRRlNTUm16TmtzdjMwejhLQjdXUXJkaElWb3JuOQpuWVFPeW11eTZPT0dLM3FIUXRZYk1MYU9oREY1VnJ3amozblUxeStQMzdRR1kwdG5KS3VYbGNwR3hJN0tkWTI5CjRJM1F6K0JHemI0Wll0WE1uTzNOZFZVaTRteG14VTBMbVE3VlJkdHpkTGN6cTJDUEoyV2JjTTZkUldmVERoNisKYzdDQys3K1ZBdzlxeW1OSnFXN0wxb2JNSkNuTHpwcHBPVWg0RjNXU1V0SXVLcUZ2alo1eFMzUXBFSGJsRFoybgpUaTY1Tm4yR2JzeVYrc2FxTkpOdUdmVEpvUzRJOGFoakljY2hDaXUzRDMxNm5MczlENmMwckRLNmxsbUpHdFRLCmZsSVEyQkZmY2FtV2VlSXlNU1dIK3Uza2lKTTY2YWF1NVJrNlFXWWlKMTRhaWswNmsvK1pMRnNMazUvbVV3eVEKTWFUMXNPUGQ1Z3FSeUsrdGgyVXNkb1p1dE5PZFZYMWdRNjk4cXdVZk1oTmpkSzNLZUkzNWQvY2xuR2F1UGVPSgo2ZlgySy9WN1hTblQrcGRjRTExZjNFU0FZVEIybnJJSXgzK3NjYXdZalREd0Qrd2JQZ0p4ZG4wc1ppOTNtV2FKCkFPdTV4QjBOSStsYXhZT2tPZHhrYklVQ0F3RUFBUT09Ci0tLS0tRU5EIFBVQkxJQyBLRVktLS0tLQo="
+          "key": "LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUlJQ0lqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FnOEFNSUlDQ2dLQ0FnRUFpYUgwalBmWEVuU0NEbDRQS3llZwpFUDZ2dy8wSWwrSGdTbW45OHlGUW1FUG4rcis1aXFRSkhxcDM3V3FMWS9wWVpDOUJ3SWxkeDVNNzRnZEV0REdhCk5qM2FYUmV3dVZZUkRFUk1vYWFvVThDRTNUL2VmMFFOZTVCdW9YdjhyblB1UVRwUmxIUm9iNStOUy9hdUtUaysKaUNlL3V6dlQrdWJCUlp6enNQRk9oRStjdCtONEFQQTdVeVptZjlQYmhvUzlaRS9ncWJXV2YyVGcrZndyWjFragprNHhpZjRtUHpCc051TFBwMFdHRGM2WklJMXd4eWM3L28wakFucFRYWGNJakR6c0kwSmFwNGpxRDBUUkRUdmUxCnJaTUZIRW1IdS9MM2lEUkZJdVFkOWxjTUNOb1dSbXJSTjY3L052RDd6dWRZa3BHdG9wUjhsNzJuT1h0YURRSWgKMmV3dEFCRUZtb09naElTZkpyb0g2SkdOVzEzRXh0VWFhZVYvRk95QlRSQm5iRHVIQ29XWndnc2xxYk96TXdwcQpKY2RQQ28vZ2VEeXR3eFBWK3p6dE82RW1iUWJORThtbVA3b3BlNDBxanFaaHcxTGxsUHdRWDUzQzJ0SkFuWGQyCkJwaDY5VDlyZWFxMldLek9aSXl0dnJ5RTFRUW1SN3lqSWFCYVNlYVpRRGhlaUxIb3IzNjFOaUkvT2VDQndod2UKUkxvd2lHMElPbmh4NE4wNVNuRjdiY09Qdld3anEvc28xcG1zc2poZkIvRzN4K2FESjZzL25nOWRSTGYwY0JzeAo3aEJ1SjZGZ1hJVnI2cHJyaDJub201bDFwMi9sbWpZTjFTNDdzWkwya0F6dGRZMWx0bWhlTVlzNGhBZjRpOXNXCk5DZWd2ZmpTamxteGs5MlBSd1lmM0tzQ0F3RUFBUT09Ci0tLS0tRU5EIFBVQkxJQyBLRVktLS0tLQo="
         },
         "subjectDescription": {
-          "hexSerialNumber": "0123456789abcdef",
+          "hexSerialNumber": "002397f00afd4f0d4c26576595b935058f008ebe",
           "lifetime": "315569261s",
           "notAfterTime": "2024-04-01T12:34:56.123456Z",
           "notBeforeTime": "2024-04-01T12:34:56.123456Z",
@@ -1073,8 +1153,9 @@ X-Xss-Protection: 0
           "subjectAltName": {}
         },
         "subjectKeyId": {
-          "keyId": "58ff0120decc0d87caa30eb45fef39e38133e733"
+          "keyId": "9640ce7ac66a8aa49ba7ae02b2e2190c580ea0b4"
         },
+        "tbsCertificateDigest": "681e382f8281d51f5fdd63faf4308f6897c92e5b1df18bd97d5322f11941e625",
         "x509Description": {
           "caOptions": {
             "isCa": true
@@ -1116,8 +1197,9 @@ X-Xss-Protection: 0
     "lifetime": "315569261s",
     "name": "projects/${projectId}/locations/us-central1/caPools/test-pool-${uniqueId}/certificateAuthorities/test-ca-${uniqueId}",
     "pemCaCertificates": [
-      "-----BEGIN CERTIFICATE-----\n-----END CERTIFICATE-----\n"
+      "-----BEGIN CERTIFICATE-----\nMIIFNjCCAx6gAwIBAgITI5fwCv1PDUwmV2WVuTUFjwCOvjANBgkqhkiG9w0BAQsF\nADAjMSEwHwYDVQQDExh0ZXN0LWNhLTE4OWQ0NjRiODY3MzQwYTcwHhcNMjYwMzE2\nMDg1MjA5WhcNMzYwMzE1MTg1OTQ5WjAjMSEwHwYDVQQDExh0ZXN0LWNhLTE4OWQ0\nNjRiODY3MzQwYTcwggIiMA0GCSqGSIb3DQEBAQUAA4ICDwAwggIKAoICAQCJofSM\n99cSdIIOXg8rJ6AQ/q/D/QiX4eBKaf3zIVCYQ+f6v7mKpAkeqnftaotj+lhkL0HA\niV3HkzviB0S0MZo2PdpdF7C5VhEMREyhpqhTwITdP95/RA17kG6he/yuc+5BOlGU\ndGhvn41L9q4pOT6IJ7+7O9P65sFFnPOw8U6ET5y343gA8DtTJmZ/09uGhL1kT+Cp\ntZZ/ZOD5/CtnWSOTjGJ/iY/MGw24s+nRYYNzpkgjXDHJzv+jSMCelNddwiMPOwjQ\nlqniOoPRNENO97WtkwUcSYe78veINEUi5B32VwwI2hZGatE3rv828PvO51iSka2i\nlHyXvac5e1oNAiHZ7C0AEQWag6CEhJ8mugfokY1bXcTG1Rpp5X8U7IFNEGdsO4cK\nhZnCCyWps7MzCmolx08Kj+B4PK3DE9X7PO07oSZtBs0TyaY/uil7jSqOpmHDUuWU\n/BBfncLa0kCdd3YGmHr1P2t5qrZYrM5kjK2+vITVBCZHvKMhoFpJ5plAOF6Iseiv\nfrU2Ij854IHCHB5EujCIbQg6eHHg3TlKcXttw4+9bCOr+yjWmayyOF8H8bfH5oMn\nqz+eD11Et/RwGzHuEG4noWBchWvqmuuHaeibmXWnb+WaNg3VLjuxkvaQDO11jWW2\naF4xiziEB/iL2xY0J6C9+NKOWbGT3Y9HBh/cqwIDAQABo2MwYTAOBgNVHQ8BAf8E\nBAMCAQYwDwYDVR0TAQH/BAUwAwEB/zAdBgNVHQ4EFgQUlkDOesZqiqSbp64CsuIZ\nDFgOoLQwHwYDVR0jBBgwFoAUlkDOesZqiqSbp64CsuIZDFgOoLQwDQYJKoZIhvcN\nAQELBQADggIBAFtmDpymovlFLFFdEMkKlqtMssppsSMKfVo9wR4kJG6EhzG+GHwk\natwx4RpFqqrhMKz9yk1HeL+2beQLUtZXsRhjM5+vGztV5v1Yy0uN/QcRl9sx2cuD\nZ1Uzdd6Allq0yXzB/rcr0kSi1lTqEs45/8/QmFTB7glGQnQGlI3ohwD3N/SR2Nwe\nXhipXjYTb0tkswtUZrpy9yG/kLE+LqE7P3YS04CEkvhy8pDxlja8LrXbo3vKf7eT\nWvh7RA662rnubhnIpa73CNFCVoEGgFXtIZ5OUWot5klhinuoOo36P3uukulzxk3e\n5cj5m6I/A03u0DbLhRkja7Lc9a69RI1a2NnmM1L2/irBR1SIX181ABPw6o6cag9v\nlGpgG++5/m5H4Ev/y6ntuHcJwb4KyqPc+K+NyEChS9IvS9uaENGj+IuVRmtKGTM4\nJm8siCOBWvbYkXdBbbliyHIUC1SOndDM5iT54Yl4Cu0NCvfmSfbdzBhLXdPEslDn\nv7wgBJ+S1ArGOtaBRR5xkJ2EmWNADHE7skUZ2xYPppbbcpcIuDMm+DjDc7ujthom\nznYfhm3YKQt4smSphrkoLcHzTV5tLHcpq88kCiLgM/x24N2E+GGcMuke9/95JtAP\ntWoBUaH9d0eERI8GZl/U0ZvIQ4SkRPkfmrgM9lzh+hrAb1ioRjY14PUS\n-----END CERTIFICATE-----\n"
     ],
+    "satisfiesPzi": true,
     "state": "DELETED",
     "tier": "DEVOPS",
     "type": "SELF_SIGNED",
@@ -1143,10 +1225,12 @@ X-Frame-Options: SAMEORIGIN
 X-Xss-Protection: 0
 
 {
+  "done": true,
   "metadata": {
     "@type": "type.googleapis.com/google.cloud.security.privateca.v1.OperationMetadata",
     "apiVersion": "v1",
     "createTime": "2024-04-01T12:34:56.123456Z",
+    "requestedCancellation": false,
     "target": "projects/${projectId}/locations/us-central1/caPools/test-pool-${uniqueId}",
     "verb": "delete"
   },
@@ -1177,6 +1261,7 @@ X-Xss-Protection: 0
     "apiVersion": "v1",
     "createTime": "2024-04-01T12:34:56.123456Z",
     "endTime": "2024-04-01T12:34:56.123456Z",
+    "requestedCancellation": false,
     "target": "projects/${projectId}/locations/us-central1/caPools/test-pool-${uniqueId}",
     "verb": "delete"
   },
