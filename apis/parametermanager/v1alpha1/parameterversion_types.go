@@ -15,7 +15,6 @@
 package v1alpha1
 
 import (
-	refs "github.com/GoogleCloudPlatform/k8s-config-connector/apis/refs/v1beta1"
 	"github.com/GoogleCloudPlatform/k8s-config-connector/pkg/apis/k8s/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -26,6 +25,7 @@ var ParameterManagerParameterVersionGVK = GroupVersion.WithKind("ParameterManage
 // +kcc:spec:proto=google.cloud.parametermanager.v1.ParameterVersion
 type ParameterManagerParameterVersionSpec struct {
 	// The resource name of the [Parameter][google.cloud.parametermanager.v1.Parameter] to create a [ParameterVersion][google.cloud.parametermanager.v1.ParameterVersion] for.
+	// +required
 	ParameterRef *ParameterRef `json:"parameterRef,omitempty"`
 
 	// The ParameterManagerParameterVersion name. If not given, the metadata.name will be used.
@@ -43,6 +43,7 @@ type ParameterManagerParameterVersionSpec struct {
 	//  is only returned when the request provides the View value of FULL (default
 	//  for GET request).
 	// +kcc:proto:field=google.cloud.parametermanager.v1.ParameterVersion.payload
+	// +required
 	Payload *ParameterVersionPayload `json:"payload,omitempty"`
 }
 
@@ -83,7 +84,7 @@ type ParameterManagerParameterVersionObservedState struct {
 	//  populated only if the Parameter resource has customer managed encryption
 	//  key (CMEK) configured.
 	// +kcc:proto:field=google.cloud.parametermanager.v1.ParameterVersion.kms_key_version
-	KMSKeyVersion *refs.KMSCryptoKeyRef `json:"kmsKeyVersion,omitempty"`
+	KMSKeyVersion *string `json:"kmsKeyVersion,omitempty"`
 }
 
 // +genclient

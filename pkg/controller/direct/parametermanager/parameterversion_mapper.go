@@ -22,7 +22,6 @@ package parametermanager
 import (
 	pb "cloud.google.com/go/parametermanager/apiv1/parametermanagerpb"
 	krm "github.com/GoogleCloudPlatform/k8s-config-connector/apis/parametermanager/v1alpha1"
-	refsv1beta1 "github.com/GoogleCloudPlatform/k8s-config-connector/apis/refs/v1beta1"
 	"github.com/GoogleCloudPlatform/k8s-config-connector/pkg/controller/direct"
 )
 
@@ -41,34 +40,6 @@ func ParameterVersionPayload_ToProto(mapCtx *direct.MapContext, in *krm.Paramete
 	out := &pb.ParameterVersionPayload{}
 	if len(in.Data) > 0 {
 		out.Data = in.Data
-	}
-	return out
-}
-
-func ParameterManagerParameterVersionObservedState_FromProto(mapCtx *direct.MapContext, in *pb.ParameterVersion) *krm.ParameterManagerParameterVersionObservedState {
-	if in == nil {
-		return nil
-	}
-	out := &krm.ParameterManagerParameterVersionObservedState{}
-	out.Name = direct.LazyPtr(in.GetName())
-	out.CreateTime = direct.StringTimestamp_FromProto(mapCtx, in.GetCreateTime())
-	out.UpdateTime = direct.StringTimestamp_FromProto(mapCtx, in.GetUpdateTime())
-	if in.GetKmsKeyVersion() != "" {
-		out.KMSKeyVersion = &refsv1beta1.KMSCryptoKeyRef{External: in.GetKmsKeyVersion()}
-	}
-	return out
-}
-
-func ParameterManagerParameterVersionObservedState_ToProto(mapCtx *direct.MapContext, in *krm.ParameterManagerParameterVersionObservedState) *pb.ParameterVersion {
-	if in == nil {
-		return nil
-	}
-	out := &pb.ParameterVersion{}
-	out.Name = direct.ValueOf(in.Name)
-	out.CreateTime = direct.StringTimestamp_ToProto(mapCtx, in.CreateTime)
-	out.UpdateTime = direct.StringTimestamp_ToProto(mapCtx, in.UpdateTime)
-	if in.KMSKeyVersion != nil {
-		out.KmsKeyVersion = &in.KMSKeyVersion.External
 	}
 	return out
 }

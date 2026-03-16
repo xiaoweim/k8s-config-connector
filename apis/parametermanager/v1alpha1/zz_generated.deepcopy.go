@@ -288,7 +288,7 @@ func (in *ParameterManagerParameterVersionObservedState) DeepCopyInto(out *Param
 	}
 	if in.KMSKeyVersion != nil {
 		in, out := &in.KMSKeyVersion, &out.KMSKeyVersion
-		*out = new(v1beta1.KMSCryptoKeyRef)
+		*out = new(string)
 		**out = **in
 	}
 }

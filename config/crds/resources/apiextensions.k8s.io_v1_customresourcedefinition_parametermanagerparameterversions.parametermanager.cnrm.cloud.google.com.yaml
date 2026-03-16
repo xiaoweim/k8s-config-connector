@@ -115,6 +115,9 @@ spec:
                 description: The ParameterManagerParameterVersion name. If not given,
                   the metadata.name will be used.
                 type: string
+            required:
+            - parameterRef
+            - payload
             type: object
           status:
             description: ParameterManagerParameterVersionStatus defines the config
@@ -170,32 +173,7 @@ spec:
                       name of the KMS key version used to encrypt the ParameterVersion
                       payload. This field is populated only if the Parameter resource
                       has customer managed encryption key (CMEK) configured.
-                    oneOf:
-                    - not:
-                        required:
-                        - external
-                      required:
-                      - name
-                    - not:
-                        anyOf:
-                        - required:
-                          - name
-                        - required:
-                          - namespace
-                      required:
-                      - external
-                    properties:
-                      external:
-                        description: A reference to an externally managed KMSCryptoKey.
-                          Should be in the format `projects/[kms_project_id]/locations/[region]/keyRings/[key_ring_id]/cryptoKeys/[key]`.
-                        type: string
-                      name:
-                        description: The `name` of a `KMSCryptoKey` resource.
-                        type: string
-                      namespace:
-                        description: The `namespace` of a `KMSCryptoKey` resource.
-                        type: string
-                    type: object
+                    type: string
                   name:
                     description: Identifier. [Output only] The resource name of the
                       ParameterVersion in the format `projects/*/locations/*/parameters/*/versions/*`.
