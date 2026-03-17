@@ -73,7 +73,7 @@ func main() {
 	flag.Float32Var(&rateLimitQps, "qps", 20.0, "The client-side token bucket rate limit qps.")
 	flag.IntVar(&rateLimitBurst, "burst", 30, "The client-side token bucket rate limit burst.")
 	flag.StringVar(&leaderElectionMode, "leader-election-type", "disabled", "Leader election mode. One of: default, multicluster.")
-	flag.BoolVar(&skipNameValidation, "skip-name-validation", false, "option to bypass the duplicate controller name check during registration; false by default")
+	flag.BoolVar(&skipNameValidation, "skip-name-validation", false, "option to bypass the global controller name registry in controller-runtime; false by default")
 	profiler.AddFlag(flag.CommandLine)
 	flag.CommandLine.AddGoFlagSet(goflag.CommandLine)
 	flag.Parse()

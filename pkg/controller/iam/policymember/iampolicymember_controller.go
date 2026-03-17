@@ -51,6 +51,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/util/workqueue"
+	"k8s.io/utils/ptr"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
@@ -84,7 +85,7 @@ func Add(mgr manager.Manager, deps *kontroller.Deps) error {
 		return err
 	}
 	opt := controller.Options{
-		SkipNameValidation: &deps.SkipNameValidation,
+		SkipNameValidation: ptr.To(deps.SkipNameValidation),
 	}
 	return add(mgr, reconciler, opt)
 }

@@ -49,6 +49,7 @@ import (
 	apiextensions "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/utils/ptr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	crcontroller "sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/event"
@@ -106,7 +107,7 @@ func AddUnmanagedDetector(mgr manager.Manager, rd *controller.Deps) error {
 			return nil, nil
 		}
 		opt := crcontroller.Options{
-			SkipNameValidation: &r.SkipNameValidation,
+			SkipNameValidation: ptr.To(r.SkipNameValidation),
 		}
 		if err := unmanageddetector.Add(ctx, r.mgr, gvk, opt); err != nil {
 			return nil, fmt.Errorf("error registering unmanaged detector controller for '%v': %w", gvk.Kind, err)
@@ -152,7 +153,7 @@ func add(mgr manager.Manager, rd *controller.Deps, regFunc registrationFunc, opt
 		crcontroller.Options{
 			Reconciler:              r,
 			MaxConcurrentReconciles: k8s.ControllerMaxConcurrentReconciles,
-			SkipNameValidation:      &r.SkipNameValidation,
+			SkipNameValidation:      ptr.To(r.SkipNameValidation),
 		})
 	if err != nil {
 		return err
@@ -363,7 +364,7 @@ func registerDefaultController(ctx context.Context, r *ReconcileRegistration, co
 			}
 			r.reconcilers[gvk] = reconcilers
 			opt := crcontroller.Options{
-				SkipNameValidation: &r.SkipNameValidation,
+				SkipNameValidation: ptr.To(r.SkipNameValidation),
 			}
 			if err := parent.Add(r.mgr, gvk, reconcilers, opt); err != nil {
 				return nil, fmt.Errorf("error adding parent controller for %v to a manager: %w", crd.Spec.Names.Kind, err)
@@ -378,7 +379,7 @@ func registerDeletionDefenderController(r *ReconcileRegistration, crd *apiextens
 		return nil, nil
 	}
 	opt := crcontroller.Options{
-		SkipNameValidation: &r.SkipNameValidation,
+		SkipNameValidation: ptr.To(r.SkipNameValidation),
 	}
 	if err := deletiondefender.Add(r.mgr, crd, opt); err != nil {
 		return nil, fmt.Errorf("error registering deletion defender controller for '%v': %w", crd.GetName(), err)
