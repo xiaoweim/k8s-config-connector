@@ -93,6 +93,8 @@ func TestSkipNameValidation(t *testing.T) {
 		SkipNameValidation: false,
 	}
 
+	// Note: Because controller-runtime uses a global map to register controller names, this map retains state across the entire lifetime of the test process.
+	// If this test is executed multiple times in the same process (e.g., using go test -count=2), the first manager creation will fail on the second run because the map was dirtied by the first run.
 	_, err := kccmanager.New(ctx, clusterModeManager.GetConfig(), controllersCfg)
 	if err != nil {
 		t.Fatalf("error creating manager 1: %v", err)
