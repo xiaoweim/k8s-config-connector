@@ -36,10 +36,11 @@ func parameterVersionFuzzer() fuzztesting.KRMFuzzer {
 	f.SpecFields.Insert(".disabled")
 	f.SpecFields.Insert(".payload")
 
-	f.StatusFields.Insert(".name")            // Output Only
 	f.StatusFields.Insert(".create_time")     // Output Only
 	f.StatusFields.Insert(".update_time")     // Output Only
 	f.StatusFields.Insert(".kms_key_version") // Output Only
+
+	f.Unimplemented_NotYetTriaged(".name") // Not required as it same as status.externalRef
 
 	return f
 }

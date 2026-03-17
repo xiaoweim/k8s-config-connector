@@ -174,10 +174,6 @@ spec:
                       payload. This field is populated only if the Parameter resource
                       has customer managed encryption key (CMEK) configured.
                     type: string
-                  name:
-                    description: Identifier. [Output only] The resource name of the
-                      ParameterVersion in the format `projects/*/locations/*/parameters/*/versions/*`.
-                    type: string
                   updateTime:
                     description: Output only. [Output only] Update time stamp
                     type: string

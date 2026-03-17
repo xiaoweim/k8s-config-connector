@@ -68,7 +68,7 @@ func ParameterManagerParameterVersionObservedState_FromProto(mapCtx *direct.MapC
 		return nil
 	}
 	out := &krm.ParameterManagerParameterVersionObservedState{}
-	out.Name = direct.LazyPtr(in.GetName())
+	// MISSING: Name
 	out.CreateTime = direct.StringTimestamp_FromProto(mapCtx, in.GetCreateTime())
 	out.UpdateTime = direct.StringTimestamp_FromProto(mapCtx, in.GetUpdateTime())
 	out.KMSKeyVersion = in.KmsKeyVersion
@@ -79,7 +79,7 @@ func ParameterManagerParameterVersionObservedState_ToProto(mapCtx *direct.MapCon
 		return nil
 	}
 	out := &pb.ParameterVersion{}
-	out.Name = direct.ValueOf(in.Name)
+	// MISSING: Name
 	out.CreateTime = direct.StringTimestamp_ToProto(mapCtx, in.CreateTime)
 	out.UpdateTime = direct.StringTimestamp_ToProto(mapCtx, in.UpdateTime)
 	out.KmsKeyVersion = in.KMSKeyVersion
@@ -90,6 +90,7 @@ func ParameterManagerParameterVersionSpec_FromProto(mapCtx *direct.MapContext, i
 		return nil
 	}
 	out := &krm.ParameterManagerParameterVersionSpec{}
+	// MISSING: Name
 	out.Disabled = direct.LazyPtr(in.GetDisabled())
 	out.Payload = ParameterVersionPayload_FromProto(mapCtx, in.GetPayload())
 	return out
@@ -99,6 +100,7 @@ func ParameterManagerParameterVersionSpec_ToProto(mapCtx *direct.MapContext, in 
 		return nil
 	}
 	out := &pb.ParameterVersion{}
+	// MISSING: Name
 	out.Disabled = direct.ValueOf(in.Disabled)
 	out.Payload = ParameterVersionPayload_ToProto(mapCtx, in.Payload)
 	return out

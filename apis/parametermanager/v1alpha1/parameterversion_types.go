@@ -66,11 +66,6 @@ type ParameterManagerParameterVersionStatus struct {
 // ParameterManagerParameterVersionObservedState is the state of the ParameterManagerParameterVersion resource as most recently observed in GCP.
 // +kcc:observedstate:proto=google.cloud.parametermanager.v1.ParameterVersion
 type ParameterManagerParameterVersionObservedState struct {
-	// Identifier. [Output only] The resource name of the ParameterVersion in the
-	//  format `projects/*/locations/*/parameters/*/versions/*`.
-	// +kcc:proto:field=google.cloud.parametermanager.v1.ParameterVersion.name
-	Name *string `json:"name,omitempty"`
-
 	// Output only. [Output only] Create time stamp
 	// +kcc:proto:field=google.cloud.parametermanager.v1.ParameterVersion.create_time
 	CreateTime *string `json:"createTime,omitempty"`
