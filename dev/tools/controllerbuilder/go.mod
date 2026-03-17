@@ -1,8 +1,8 @@
 module github.com/GoogleCloudPlatform/k8s-config-connector/dev/tools/controllerbuilder
 
-go 1.24.0
+go 1.26
 
-toolchain go1.24.6
+toolchain go1.26.1
 
 require (
 	github.com/GoogleCloudPlatform/kubectl-ai/gollm v0.0.0-20250423144723-a651944aad2d
@@ -36,7 +36,7 @@ require (
 	github.com/AzureAD/microsoft-authentication-library-for-go v1.4.2 // indirect
 	github.com/Microsoft/go-winio v0.6.2 // indirect
 	github.com/ProtonMail/go-crypto v1.1.5 // indirect
-	github.com/cloudflare/circl v1.6.1 // indirect
+	github.com/cloudflare/circl v1.6.3 // indirect
 	github.com/cyphar/filepath-securejoin v0.3.6 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/emirpasic/gods v1.18.1 // indirect
