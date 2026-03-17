@@ -21,7 +21,8 @@ if [[ -z "${STALE_VERSION:-}" ]]; then
     STALE_VERSION=$(cat version/VERSION | cut -d. -f1,2)
     echo "Auto-detected STALE_VERSION: ${STALE_VERSION}"
   else
-    read -p "Enter the stale version: " STALE_VERSION
+    echo "Error: STALE_VERSION cannot be empty and version/VERSION does not exist."
+    exit 1
   fi
 fi
 
@@ -29,8 +30,6 @@ if [[ -z "${NEW_VERSION:-}" ]]; then
   if [[ -n "${VERSION:-}" ]]; then
     NEW_VERSION="${VERSION}"
     echo "Using NEW_VERSION from VERSION env var: ${NEW_VERSION}"
-  else
-    read -p "Enter the new version (stale is ${STALE_VERSION}): " NEW_VERSION
   fi
 fi
 
