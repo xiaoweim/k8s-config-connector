@@ -161,7 +161,7 @@ func runKCCManagerPreview(ctx context.Context, recorder *corepreview.Recorder, i
 
 	instance, err := corepreview.NewPreviewInstance(recorder, instanceOptions)
 	if err != nil {
-		return nil, fmt.Errorf("building preview instance: %v", err)
+		return nil, fmt.Errorf("building preview instance: %w", err)
 	}
 	ctx, cancel := context.WithTimeout(ctx, time.Duration(timeout)*time.Minute)
 	defer cancel()
