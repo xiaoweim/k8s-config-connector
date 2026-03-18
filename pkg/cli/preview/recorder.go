@@ -67,6 +67,12 @@ func NewRecorder() *Recorder {
 	}
 }
 
+func (r *Recorder) GetRemainResourcesCount() int {
+	r.reconcileTrackerMutex.Lock()
+	defer r.reconcileTrackerMutex.Unlock()
+	return r.RemainResourcesCount
+}
+
 // objectInfo holds the activity from reconciling the objects
 type objectInfo struct {
 	events []event
@@ -344,6 +350,9 @@ func (r *Recorder) DoneReconciling() bool {
 
 // TODO: Implement concurrent worker by GVRs.
 func (r *Recorder) PreloadGKNN(ctx context.Context, config *rest.Config, namespace string) error {
+	r.reconcileTrackerMutex.Lock()
+	defer r.reconcileTrackerMutex.Unlock()
+
 	log := klog.FromContext(ctx)
 	log.V(0).Info("Preloading the list of resources to reconcile")
 	// Make a copy of config to increase QPS and burst.

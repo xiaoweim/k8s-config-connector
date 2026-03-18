@@ -22,6 +22,7 @@ import (
 	"time"
 
 	corepreview "github.com/GoogleCloudPlatform/k8s-config-connector/pkg/cli/preview"
+	"github.com/GoogleCloudPlatform/k8s-config-connector/pkg/controller/resourceconfig"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 	"k8s.io/client-go/rest"
@@ -76,6 +77,10 @@ func Execute(ctx context.Context, opts *Options) error {
 		UpstreamGCPBurst:         opts.GCPBurst,
 		Namespace:                opts.Namespace,
 	}
+	if opts.Timeout == 0 {
+		opts.Timeout = defaultTimeout
+	}
+
 	// First run: execute the KCC Manager configuring resources strictly under their default controller type
 	// This generates baseline preview results reflecting standard reconciliation behavior.
 	defaultRunRecorder, err := runKCCManagerPreview(ctx, recorder, instanceOptions, opts.Timeout)
@@ -83,7 +88,7 @@ func Execute(ctx context.Context, opts *Options) error {
 		var timeoutErr *TimeoutError
 		if errors.As(err, &timeoutErr) {
 			// Log out the timeout error and the number of resources not fully reconciled, then continue the run.
-			klog.Errorf("Timeout reached during default controller preview run. Number of resources not fully reconciled: %d. Error: %v", defaultRunRecorder.RemainResourcesCount, err)
+			klog.Errorf("Timeout reached during default controller preview run. Number of resources not fully reconciled: %d. Error: %v", defaultRunRecorder.GetRemainResourcesCount(), err)
 		} else {
 			return fmt.Errorf("error running KCC manager preview with default controller type: %w", err)
 		}
@@ -99,7 +104,7 @@ func Execute(ctx context.Context, opts *Options) error {
 		var timeoutErr *TimeoutError
 		if errors.As(err, &timeoutErr) {
 			// Log out the timeout error and the number of resources not fully reconciled, then continue the run.
-			klog.Errorf("Timeout reached during alternative controller preview run. Number of resources not fully reconciled: %d. Error: %v", alternativeRunRecorder.RemainResourcesCount, err)
+			klog.Errorf("Timeout reached during alternative controller preview run. Number of resources not fully reconciled: %d. Error: %v", alternativeRunRecorder.GetRemainResourcesCount(), err)
 		} else {
 			return fmt.Errorf("error running KCC manager preview with alternative controller type: %w", err)
 		}
@@ -139,7 +144,8 @@ func printCapturedObjects(defaultRunRecorder, alternativeRunRecorder *coreprevie
 	now := time.Now()
 	timestamp := now.Format("20060102-150405.000")
 	summaryFile := fmt.Sprintf("%s-%s", opts.ReportNamePrefix, timestamp)
-	if err := defaultRunResult.CombinedSummaryReport(summaryFile, alternativeRunResult); err != nil {
+	altExpectedMap := corepreview.GetAlternativeControllerExpectedMap(resourceconfig.ControllerConfigStatic)
+	if err := defaultRunResult.CombinedSummaryReport(summaryFile, alternativeRunResult, altExpectedMap); err != nil {
 		return fmt.Errorf("error writing summary: %w", err)
 	}
 
@@ -168,6 +174,7 @@ func runKCCManagerPreview(ctx context.Context, recorder *corepreview.Recorder, i
 
 	errChan := make(chan error, 1)
 	go func() {
+		// The manager runs in a background goroutine and continuously mutates the recorder.
 		errChan <- instance.Start(ctx)
 	}()
 
@@ -177,6 +184,12 @@ func runKCCManagerPreview(ctx context.Context, recorder *corepreview.Recorder, i
 			return nil, fmt.Errorf("error starting preview: %w", err)
 		}
 	case <-ctx.Done():
+		// When a timeout occurs, the context is cancelled, signaling the manager to stop.
+		// However, we must explicitly wait for the manager's goroutine to finish its graceful
+		// shutdown before returning. This prevents a data race where the main thread reads
+		// from the recorder (e.g., to generate reports) while the background manager is
+		// still performing its final mutations.
+		<-errChan
 		return recorder, &TimeoutError{Err: ctx.Err()}
 	}
 	return recorder, nil

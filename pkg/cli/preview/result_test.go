@@ -15,7 +15,9 @@
 package preview
 
 import (
+	"os"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/GoogleCloudPlatform/k8s-config-connector/pkg/controller/resourceconfig"
@@ -93,10 +95,81 @@ func TestGetAlternativeControllerExpectedMap(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			actual := getAlternativeControllerExpectedMap(tc.configMap)
+			actual := GetAlternativeControllerExpectedMap(tc.configMap)
 			if !reflect.DeepEqual(actual, tc.expected) {
 				t.Fatalf("expected \n%v\n, got \n%v", tc.expected, actual)
 			}
 		})
+	}
+}
+
+func TestCombinedSummaryReport(t *testing.T) {
+	r := &RecorderReconciledResults{
+		results: map[GKNN]*GKNNReconciledResult{
+			{Group: "g1", Kind: "K1", Namespace: "n1", Name: "name1"}: {
+				GKNN:            GKNN{Group: "g1", Kind: "K1", Namespace: "n1", Name: "name1"},
+				ControllerType:  k8s.ReconcilerType("tf"),
+				ReconcileStatus: ReconcileStatusHealthy,
+			},
+		},
+	}
+	alt := &RecorderReconciledResults{
+		results: map[GKNN]*GKNNReconciledResult{
+			{Group: "g1", Kind: "K1", Namespace: "n1", Name: "name1"}: {
+				GKNN:            GKNN{Group: "g1", Kind: "K1", Namespace: "n1", Name: "name1"},
+				ControllerType:  k8s.ReconcilerType("direct"),
+				ReconcileStatus: ReconcileStatusUnhealthy,
+			},
+			{Group: "g2", Kind: "K2", Namespace: "n2", Name: "name2"}: {
+				GKNN:            GKNN{Group: "g2", Kind: "K2", Namespace: "n2", Name: "name2"},
+				ControllerType:  k8s.ReconcilerType("direct"),
+				ReconcileStatus: ReconcileStatusHealthy,
+			},
+		},
+	}
+
+	tmpFile, err := os.CreateTemp("", "summary-*.txt")
+	if err != nil {
+		t.Fatalf("failed to create temp file: %v", err)
+	}
+	defer os.Remove(tmpFile.Name())
+	tmpFile.Close()
+
+	altExpectedMap := map[schema.GroupKind]k8s.ReconcilerType{
+		{Group: "g1", Kind: "K1"}: k8s.ReconcilerType("direct"),
+		{Group: "g2", Kind: "K2"}: k8s.ReconcilerType("direct"),
+	}
+
+	if err := r.CombinedSummaryReport(tmpFile.Name(), alt, altExpectedMap); err != nil {
+		t.Fatalf("CombinedSummaryReport failed: %v", err)
+	}
+
+	content, err := os.ReadFile(tmpFile.Name())
+	if err != nil {
+		t.Fatalf("failed to read summary file: %v", err)
+	}
+
+	// Verify the content contains the expected headers and rows
+	expectedRows := []string{
+		"GROUP   KIND   NAME    DEFAULT-CONTROLLER   DEFAULT-RESULT   DEFAULT-DIFFS   ALTERNATIVE-CONTROLLER   ALTERNATIVE-RESULT   ALTERNATIVE-DIFFS",
+		"g1      K1     name1   tf                   HEALTHY          N/A             direct                   UNHEALTHY            N/A",
+		"g2      K2     name2   N/A                  N/A              N/A             direct                   HEALTHY              N/A",
+	}
+
+	for _, row := range expectedRows {
+		if !strings.Contains(string(content), row) {
+			// tabwriter might use different spacing, let's just check for the key parts
+			parts := strings.Fields(row)
+			allFound := true
+			for _, part := range parts {
+				if !strings.Contains(string(content), part) {
+					allFound = false
+					break
+				}
+			}
+			if !allFound {
+				t.Errorf("expected row %q not found in content:\n%s", row, string(content))
+			}
+		}
 	}
 }
