@@ -16,6 +16,7 @@ package preview
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"fmt"
 	"time"
@@ -67,44 +68,45 @@ func Execute(ctx context.Context, opts *Options) error {
 	if err != nil {
 		return fmt.Errorf("error building GCP authorization: %w", err)
 	}
-	previewInstance, err := corepreview.NewPreviewInstance(recorder, corepreview.PreviewInstanceOptions{
+	instanceOptions := corepreview.PreviewInstanceOptions{
 		UpstreamRESTConfig:       upstreamRESTConfig,
 		UpstreamGCPAuthorization: authorization,
 		UpstreamGCPHTTPClient:    nil,
 		UpstreamGCPQPS:           opts.GCPQPS,
 		UpstreamGCPBurst:         opts.GCPBurst,
 		Namespace:                opts.Namespace,
-	})
+	}
+	// First run: execute the KCC Manager configuring resources strictly under their default controller type
+	// This generates baseline preview results reflecting standard reconciliation behavior.
+	defaultRunRecorder, err := runKCCManagerPreview(ctx, recorder, instanceOptions, opts.Timeout)
 	if err != nil {
-		return fmt.Errorf("building preview instance: %w", err)
-	}
-	// TODO: Consider if 0 means no timeout.
-	if opts.Timeout == 0 {
-		opts.Timeout = defaultTimeout
-	}
-	ctx, cancel := context.WithTimeout(ctx, time.Duration(opts.Timeout)*time.Minute)
-	defer cancel()
-	defer func() {
-		if err := printCapturedObjects(recorder, opts); err != nil {
-			klog.Error(err, "error printing captured objects")
+		var timeoutErr *TimeoutError
+		if errors.As(err, &timeoutErr) {
+			// Log out the timeout error and the number of resources not fully reconciled, then continue the run.
+			klog.Errorf("Timeout reached during default controller preview run. Number of resources not fully reconciled: %d. Error: %v", defaultRunRecorder.RemainResourcesCount, err)
+		} else {
+			return fmt.Errorf("error running KCC manager preview with default controller type: %w", err)
 		}
-	}()
-
-	errChan := make(chan error, 1)
-	go func() {
-		errChan <- previewInstance.Start(ctx)
-	}()
-
-	select {
-	case err := <-errChan:
-		if err != nil {
-			return fmt.Errorf("error starting preview: %w", err)
-		}
-	case <-ctx.Done():
-		return fmt.Errorf("timeout reached: %w", ctx.Err())
 	}
-	klog.V(0).Info("Preview finished successfully")
-	return nil
+	defaultRunResult := defaultRunRecorder.GetOrCreateReconciledResults()
+
+	// Second run: inject an ObjectTransformer into the instance options that explicitly overrides the
+	// target controller execution flag for the collected resources, then launch the manager again.
+	// This captures and isolates the results from alternative controller reconciliation pathways.
+	instanceOptions.ObjectTransformers = []corepreview.ObjectTransformer{corepreview.NewSetAlternativeOverrideTransformer(opts.Namespace)}
+	alternativeRunRecorder, err := runKCCManagerPreview(ctx, recorder, instanceOptions, opts.Timeout)
+	if err != nil {
+		var timeoutErr *TimeoutError
+		if errors.As(err, &timeoutErr) {
+			// Log out the timeout error and the number of resources not fully reconciled, then continue the run.
+			klog.Errorf("Timeout reached during alternative controller preview run. Number of resources not fully reconciled: %d. Error: %v", alternativeRunRecorder.RemainResourcesCount, err)
+		} else {
+			return fmt.Errorf("error running KCC manager preview with alternative controller type: %w", err)
+		}
+	}
+	alternativeRunResult := alternativeRunRecorder.GetOrCreateReconciledResults()
+
+	return printCapturedObjects(defaultRunRecorder, alternativeRunRecorder, defaultRunResult, alternativeRunResult, opts)
 }
 
 func getRESTConfig(ctx context.Context, opts *Options) (*rest.Config, error) {
@@ -133,20 +135,61 @@ func getGCPAuthorization(ctx context.Context, opts *Options) (oauth2.TokenSource
 	return ts, nil
 }
 
-func printCapturedObjects(recorder *corepreview.Recorder, opts *Options) error {
+func printCapturedObjects(defaultRunRecorder, alternativeRunRecorder *corepreview.Recorder, defaultRunResult, alternativeRunResult *corepreview.RecorderReconciledResults, opts *Options) error {
 	now := time.Now()
 	timestamp := now.Format("20060102-150405.000")
 	summaryFile := fmt.Sprintf("%s-%s", opts.ReportNamePrefix, timestamp)
-	if err := recorder.SummaryReport(summaryFile); err != nil {
+	if err := defaultRunResult.CombinedSummaryReport(summaryFile, alternativeRunResult); err != nil {
 		return fmt.Errorf("error writing summary: %w", err)
 	}
 
 	if opts.FullReport {
 		outputFile := fmt.Sprintf("%s-%s-full", opts.ReportNamePrefix, timestamp)
-		if err := recorder.ExportDetailObjectsEvent(outputFile); err != nil {
+		if err := defaultRunRecorder.ExportDetailObjectsEvent(outputFile + "-default"); err != nil {
 			return fmt.Errorf("error writing events: %w", err)
 		}
-
+		if err := alternativeRunRecorder.ExportDetailObjectsEvent(outputFile + "-alternative"); err != nil {
+			return fmt.Errorf("error writing events: %w", err)
+		}
 	}
 	return nil
+}
+
+func runKCCManagerPreview(ctx context.Context, recorder *corepreview.Recorder, instanceOptions corepreview.PreviewInstanceOptions, timeout int) (*corepreview.Recorder, error) {
+	// Make a copy of the recorder to avoid modifying the original recorder.
+	recorder = recorder.DeepCopy()
+
+	instance, err := corepreview.NewPreviewInstance(recorder, instanceOptions)
+	if err != nil {
+		return nil, fmt.Errorf("building preview instance: %v", err)
+	}
+	ctx, cancel := context.WithTimeout(ctx, time.Duration(timeout)*time.Minute)
+	defer cancel()
+
+	errChan := make(chan error, 1)
+	go func() {
+		errChan <- instance.Start(ctx)
+	}()
+
+	select {
+	case err := <-errChan:
+		if err != nil {
+			return nil, fmt.Errorf("error starting preview: %w", err)
+		}
+	case <-ctx.Done():
+		return recorder, &TimeoutError{Err: ctx.Err()}
+	}
+	return recorder, nil
+}
+
+type TimeoutError struct {
+	Err error
+}
+
+func (e *TimeoutError) Error() string {
+	return fmt.Sprintf("timeout reached: %v", e.Err)
+}
+
+func (e *TimeoutError) Unwrap() error {
+	return e.Err
 }
