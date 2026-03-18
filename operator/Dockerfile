@@ -13,7 +13,7 @@
 # limitations under the License.
 
 # This Dockefile builds a thin image containing the manager binary
-ARG GKE_DISTROLESS_IMG
+ARG GKE_DISTROLESS_IMG=gcr.io/gke-release/gke-distroless/static:gke_distroless_20260207.00_p0
 
 # Build the manager binary
 FROM golang:1.26.1 AS builder
@@ -64,7 +64,6 @@ COPY --from=builder /go/src/github.com/GoogleCloudPlatform/k8s-config-connector/
 RUN chown 1000 -R /configconnector-operator
 
 # Copy the directory into a thin, distroless image (go/gke-distroless)
-ARG GKE_DISTROLESS_IMG=gcr.io/gke-release/gke-distroless/static:gke_distroless_20260207.00_p0
 FROM ${GKE_DISTROLESS_IMG} AS final
 WORKDIR /configconnector-operator/
 COPY --from=packager /configconnector-operator /configconnector-operator
