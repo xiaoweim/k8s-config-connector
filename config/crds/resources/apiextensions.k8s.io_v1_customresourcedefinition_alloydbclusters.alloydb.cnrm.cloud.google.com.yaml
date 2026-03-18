@@ -319,6 +319,17 @@ spec:
                 properties:
                   password:
                     description: The initial password for the user.
+                    oneOf:
+                    - not:
+                        required:
+                        - valueFrom
+                      required:
+                      - value
+                    - not:
+                        required:
+                        - value
+                      required:
+                      - valueFrom
                     properties:
                       value:
                         description: Value of the field. Cannot be used if 'valueFrom'
@@ -1091,6 +1102,17 @@ spec:
                 properties:
                   password:
                     description: The initial password for the user.
+                    oneOf:
+                    - not:
+                        required:
+                        - valueFrom
+                      required:
+                      - value
+                    - not:
+                        required:
+                        - value
+                      required:
+                      - valueFrom
                     properties:
                       value:
                         description: Value of the field. Cannot be used if 'valueFrom'

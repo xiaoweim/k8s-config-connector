@@ -233,6 +233,17 @@ spec:
                     type: integer
                   password:
                     description: Immutable. Password for the replication connection.
+                    oneOf:
+                    - not:
+                        required:
+                        - valueFrom
+                      required:
+                      - value
+                    - not:
+                        required:
+                        - value
+                      required:
+                      - valueFrom
                     properties:
                       value:
                         description: Value of the field. Cannot be used if 'valueFrom'
@@ -315,6 +326,17 @@ spec:
                 type: string
               rootPassword:
                 description: Initial root password. Required for MS SQL Server.
+                oneOf:
+                - not:
+                    required:
+                    - valueFrom
+                  required:
+                  - value
+                - not:
+                    required:
+                    - value
+                  required:
+                  - valueFrom
                 properties:
                   value:
                     description: Value of the field. Cannot be used if 'valueFrom'

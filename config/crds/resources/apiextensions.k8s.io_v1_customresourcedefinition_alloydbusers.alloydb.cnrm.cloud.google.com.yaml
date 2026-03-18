@@ -98,6 +98,17 @@ spec:
                 type: array
               password:
                 description: Password for this database user.
+                oneOf:
+                - not:
+                    required:
+                    - valueFrom
+                  required:
+                  - value
+                - not:
+                    required:
+                    - value
+                  required:
+                  - valueFrom
                 properties:
                   value:
                     description: Value of the field. Cannot be used if 'valueFrom'
