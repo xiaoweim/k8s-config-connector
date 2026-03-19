@@ -27,36 +27,6 @@ import (
 	"github.com/GoogleCloudPlatform/k8s-config-connector/pkg/controller/direct"
 )
 
-func ComputeResourcePolicyObservedState_v1beta1_FromProto(mapCtx *direct.MapContext, in *pb.ResourcePolicy) *krm.ComputeResourcePolicyObservedState {
-	if in == nil {
-		return nil
-	}
-	out := &krm.ComputeResourcePolicyObservedState{}
-	// MISSING: CreationTimestamp
-	// MISSING: ID
-	// MISSING: Kind
-	// MISSING: Name
-	// MISSING: ResourceStatus
-	// MISSING: SelfLink
-	// MISSING: Status
-	// MISSING: WorkloadPolicy
-	return out
-}
-func ComputeResourcePolicyObservedState_v1beta1_ToProto(mapCtx *direct.MapContext, in *krm.ComputeResourcePolicyObservedState) *pb.ResourcePolicy {
-	if in == nil {
-		return nil
-	}
-	out := &pb.ResourcePolicy{}
-	// MISSING: CreationTimestamp
-	// MISSING: ID
-	// MISSING: Kind
-	// MISSING: Name
-	// MISSING: ResourceStatus
-	// MISSING: SelfLink
-	// MISSING: Status
-	// MISSING: WorkloadPolicy
-	return out
-}
 func ComputeSecurityPolicyObservedState_v1beta1_FromProto(mapCtx *direct.MapContext, in *pb.SecurityPolicy) *krm.ComputeSecurityPolicyObservedState {
 	if in == nil {
 		return nil

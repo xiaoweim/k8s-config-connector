@@ -313,10 +313,24 @@ spec:
                   If this is equal to metadata.generation, then that means that the
                   current reported status reflects the most recent desired state of
                   the resource.
+                format: int64
                 type: integer
               observedState:
                 description: ObservedState is the state of the resource as most recently
                   observed in GCP.
+                properties:
+                  creationTimestamp:
+                    description: '[Output Only] Creation timestamp in RFC3339 text
+                      format.'
+                    type: string
+                  id:
+                    description: '[Output Only] The unique identifier for the resource.
+                      This identifier is defined by the server.'
+                    format: int64
+                    type: integer
+                  status:
+                    description: '[Output Only] The status of resource policy creation.'
+                    type: string
                 type: object
               selfLink:
                 description: The server-defined URL of this resource.

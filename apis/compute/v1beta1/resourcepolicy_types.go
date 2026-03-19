@@ -240,7 +240,7 @@ type ComputeResourcePolicyStatus struct {
 	Conditions []v1alpha1.Condition `json:"conditions,omitempty"`
 
 	// ObservedGeneration is the generation of the resource that was most recently observed by the Config Connector controller. If this is equal to metadata.generation, then that means that the current reported status reflects the most recent desired state of the resource.
-	ObservedGeneration *int `json:"observedGeneration,omitempty"`
+	ObservedGeneration *int64 `json:"observedGeneration,omitempty"`
 
 	// A unique specifier for the ComputeResourcePolicy resource in GCP.
 	ExternalRef *string `json:"externalRef,omitempty"`
@@ -255,6 +255,14 @@ type ComputeResourcePolicyStatus struct {
 // ComputeResourcePolicyObservedState is the state of the ComputeResourcePolicy resource as most recently observed in GCP.
 // +kcc:observedstate:proto=google.cloud.compute.v1.ResourcePolicy
 type ComputeResourcePolicyObservedState struct {
+	// [Output Only] Creation timestamp in RFC3339 text format.
+	CreationTimestamp *string `json:"creationTimestamp,omitempty"`
+
+	// [Output Only] The unique identifier for the resource. This identifier is defined by the server.
+	ID *uint64 `json:"id,omitempty"`
+
+	// [Output Only] The status of resource policy creation.
+	Status *string `json:"status,omitempty"`
 }
 
 // +genclient

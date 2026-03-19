@@ -55,12 +55,15 @@ func ResourcePolicyDiskConsistencyGroupPolicy_v1beta1_FromProto(mapCtx *direct.M
 		return nil
 	}
 	out := &krm.ResourcePolicyDiskConsistencyGroupPolicy{}
-	// Original CRD had 'enabled' but proto seems to have nothing or I missed it.
+	out.Enabled = direct.LazyPtr(true)
 	return out
 }
 
 func ResourcePolicyDiskConsistencyGroupPolicy_v1beta1_ToProto(mapCtx *direct.MapContext, in *krm.ResourcePolicyDiskConsistencyGroupPolicy) *pb.ResourcePolicyDiskConsistencyGroupPolicy {
 	if in == nil {
+		return nil
+	}
+	if in.Enabled != nil && !*in.Enabled {
 		return nil
 	}
 	out := &pb.ResourcePolicyDiskConsistencyGroupPolicy{}
@@ -297,6 +300,28 @@ func ResourcePolicySnapshotSchedulePolicySnapshotProperties_v1beta1_ToProto(mapC
 	out.GuestFlush = in.GuestFlush
 	out.Labels = in.Labels
 	out.StorageLocations = in.StorageLocations
+	return out
+}
+
+func ComputeResourcePolicyObservedState_v1beta1_FromProto(mapCtx *direct.MapContext, in *pb.ResourcePolicy) *krm.ComputeResourcePolicyObservedState {
+	if in == nil {
+		return nil
+	}
+	out := &krm.ComputeResourcePolicyObservedState{}
+	out.CreationTimestamp = direct.LazyPtr(in.GetCreationTimestamp())
+	out.ID = in.Id
+	out.Status = direct.LazyPtr(in.GetStatus())
+	return out
+}
+
+func ComputeResourcePolicyObservedState_v1beta1_ToProto(mapCtx *direct.MapContext, in *krm.ComputeResourcePolicyObservedState) *pb.ResourcePolicy {
+	if in == nil {
+		return nil
+	}
+	out := &pb.ResourcePolicy{}
+	out.CreationTimestamp = in.CreationTimestamp
+	out.Id = in.ID
+	out.Status = in.Status
 	return out
 }
 
