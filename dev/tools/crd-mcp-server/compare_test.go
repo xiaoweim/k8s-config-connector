@@ -682,6 +682,8 @@ spec:
                 type: integer
               proxyId:
                 type: integer
+              nodePort:
+                type: integer
 `
 
 	newCRDStr := `
@@ -721,6 +723,9 @@ spec:
               proxyId:
                 type: integer
                 format: int64
+              nodePort:
+                type: integer
+                format: int32
 `
 
 	old, err := parseCRD([]byte(oldCRDStr))
@@ -739,6 +744,7 @@ spec:
 	// spec.count: integer -> int64 (should be BLOCKED)
 	// status.observedGeneration: integer -> int64 (should be ALLOWED)
 	// status.proxyId: integer -> int64 (should be ALLOWED)
+	// status.nodePort: integer -> int32 (should be ALLOWED)
 
 	expectedBlocked := []string{
 		"[v1beta1] field type changed: spec.count (integer -> int64)",
@@ -759,6 +765,7 @@ spec:
 		"[v1beta1] field type changed: spec.httpKeepAliveTimeoutSec (integer -> int32) (allowed)",
 		"[v1beta1] field type changed: status.observedGeneration (integer -> int64) (allowed)",
 		"[v1beta1] field type changed: status.proxyId (integer -> int64) (allowed)",
+		"[v1beta1] field type changed: status.nodePort (integer -> int32) (allowed)",
 	}
 
 	if len(result.Notes) != len(expectedNotes) {
@@ -800,6 +807,8 @@ spec:
                 type: integer
               proxyId:
                 type: integer
+              nodePort:
+                type: integer
 `
 
 	newCRDStr := `
@@ -839,6 +848,9 @@ spec:
               proxyId:
                 type: integer
                 format: int64
+              nodePort:
+                type: integer
+                format: int32
 `
 
 	old, err := parseCRD([]byte(oldCRDStr))
@@ -857,6 +869,7 @@ spec:
 	// spec.count: integer -> int64 (should be BLOCKED)
 	// status.observedGeneration: integer -> int64 (should be ALLOWED)
 	// status.proxyId: integer -> int64 (should be ALLOWED)
+	// status.nodePort: integer -> int32 (should be ALLOWED)
 
 	expectedBlocked := []string{
 		"[v1beta1] field type changed: spec.count (integer -> int64)",
@@ -877,6 +890,7 @@ spec:
 		"[v1beta1] field type changed: spec.httpKeepAliveTimeoutSec (integer -> int32) (allowed)",
 		"[v1beta1] field type changed: status.observedGeneration (integer -> int64) (allowed)",
 		"[v1beta1] field type changed: status.proxyId (integer -> int64) (allowed)",
+		"[v1beta1] field type changed: status.nodePort (integer -> int32) (allowed)",
 	}
 
 	if len(result.Notes) != len(expectedNotes) {
