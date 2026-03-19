@@ -111,17 +111,6 @@ spec:
                   authToken:
                     description: 'An authorization token for a notification channel.
                       Channel types that support this field include: slack.'
-                    oneOf:
-                    - not:
-                        required:
-                        - valueFrom
-                      required:
-                      - value
-                    - not:
-                        required:
-                        - value
-                      required:
-                      - valueFrom
                     properties:
                       value:
                         description: Value of the field. Cannot be used if 'valueFrom'
@@ -151,17 +140,6 @@ spec:
                   password:
                     description: 'An password for a notification channel. Channel
                       types that support this field include: webhook_basicauth.'
-                    oneOf:
-                    - not:
-                        required:
-                        - valueFrom
-                      required:
-                      - value
-                    - not:
-                        required:
-                        - value
-                      required:
-                      - valueFrom
                     properties:
                       value:
                         description: Value of the field. Cannot be used if 'valueFrom'
@@ -191,17 +169,6 @@ spec:
                   serviceKey:
                     description: 'An servicekey token for a notification channel.
                       Channel types that support this field include: pagerduty.'
-                    oneOf:
-                    - not:
-                        required:
-                        - valueFrom
-                      required:
-                      - value
-                    - not:
-                        required:
-                        - value
-                      required:
-                      - valueFrom
                     properties:
                       value:
                         description: Value of the field. Cannot be used if 'valueFrom'
