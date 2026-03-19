@@ -22,7 +22,7 @@ cd ${REPO_ROOT}/dev/tools/controllerbuilder
 
 go run . generate-types \
   --service google.cloud.bigquery.v2 \
-  --api-version bigquery.cnrm.cloud.google.com/v1beta1 \
+  --api-version bigquery.cnrm.cloud.google.com/v1alpha1 \
   --resource BigQueryDatasetAccess:Access \
   --skip-scaffold-files \
   --include-skipped-output

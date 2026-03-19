@@ -106,20 +106,6 @@
 [missing_field] crd=bigqueryconnectionconnections.bigqueryconnection.cnrm.cloud.google.com version=v1beta1: field ".spec.cloudSpanner.useServerlessAnalytics" is not set in unstructured objects
 [missing_field] crd=bigqueryconnectionconnections.bigqueryconnection.cnrm.cloud.google.com version=v1beta1: field ".spec.spark.metastoreService.metastoreServiceRef" is not set; neither 'external' nor 'name' are set
 [missing_field] crd=bigqueryconnectionconnections.bigqueryconnection.cnrm.cloud.google.com version=v1beta1: field ".spec.spark.sparkHistoryServer.dataprocClusterRef" is not set; neither 'external' nor 'name' are set
-[missing_field] crd=bigquerydatasetaccesses.bigquery.cnrm.cloud.google.com version=v1beta1: field ".spec.dataset.dataset.datasetId" is not set in unstructured objects
-[missing_field] crd=bigquerydatasetaccesses.bigquery.cnrm.cloud.google.com version=v1beta1: field ".spec.dataset.dataset.projectId" is not set in unstructured objects
-[missing_field] crd=bigquerydatasetaccesses.bigquery.cnrm.cloud.google.com version=v1beta1: field ".spec.dataset.targetTypes[]" is not set in unstructured objects
-[missing_field] crd=bigquerydatasetaccesses.bigquery.cnrm.cloud.google.com version=v1beta1: field ".spec.datasetId" is not set in unstructured objects
-[missing_field] crd=bigquerydatasetaccesses.bigquery.cnrm.cloud.google.com version=v1beta1: field ".spec.domain" is not set in unstructured objects
-[missing_field] crd=bigquerydatasetaccesses.bigquery.cnrm.cloud.google.com version=v1beta1: field ".spec.groupByEmail" is not set in unstructured objects
-[missing_field] crd=bigquerydatasetaccesses.bigquery.cnrm.cloud.google.com version=v1beta1: field ".spec.iamMember" is not set in unstructured objects
-[missing_field] crd=bigquerydatasetaccesses.bigquery.cnrm.cloud.google.com version=v1beta1: field ".spec.projectRef" is not set; neither 'external' nor 'name' are set
-[missing_field] crd=bigquerydatasetaccesses.bigquery.cnrm.cloud.google.com version=v1beta1: field ".spec.role" is not set in unstructured objects
-[missing_field] crd=bigquerydatasetaccesses.bigquery.cnrm.cloud.google.com version=v1beta1: field ".spec.specialGroup" is not set in unstructured objects
-[missing_field] crd=bigquerydatasetaccesses.bigquery.cnrm.cloud.google.com version=v1beta1: field ".spec.userByEmail" is not set in unstructured objects
-[missing_field] crd=bigquerydatasetaccesses.bigquery.cnrm.cloud.google.com version=v1beta1: field ".spec.view.datasetId" is not set in unstructured objects
-[missing_field] crd=bigquerydatasetaccesses.bigquery.cnrm.cloud.google.com version=v1beta1: field ".spec.view.projectId" is not set in unstructured objects
-[missing_field] crd=bigquerydatasetaccesses.bigquery.cnrm.cloud.google.com version=v1beta1: field ".spec.view.tableId" is not set in unstructured objects
 [missing_field] crd=bigquerydatatransferconfigs.bigquerydatatransfer.cnrm.cloud.google.com version=v1beta1: field ".spec.dataRefreshWindowDays" is not set in unstructured objects
 [missing_field] crd=bigquerydatatransferconfigs.bigquerydatatransfer.cnrm.cloud.google.com version=v1beta1: field ".spec.emailPreferences.enableFailureEmail" is not set in unstructured objects
 [missing_field] crd=bigquerydatatransferconfigs.bigquerydatatransfer.cnrm.cloud.google.com version=v1beta1: field ".spec.scheduleOptions.disableAutoScheduling" is not set in unstructured objects
