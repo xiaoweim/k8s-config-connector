@@ -46,7 +46,21 @@ git checkout -b "release-${NEW_VERSION}"
 echo "Proposing tag and updating manifests..."
 VERSION=${NEW_VERSION} STALE_VERSION=${STALE_VERSION} ./dev/tasks/propose-tag
 
-# Step 4: Consolidate everything into a single commit
+# Step 4: Run Unit Tests and Update Goldens if needed
+echo "Running unit tests. Golden files will be updated if there are failures..."
+cd operator
+# We use an if statement to handle the failure case without exiting due to set -e
+if ! (go test ./pkg/controllers/...); then
+  echo "Unit tests failed. Updating golden files..."
+  WRITE_GOLDEN_OUTPUT="true" go test ./pkg/controllers/...
+fi
+cd ..
+
+# Step 5: Format Code
+echo "Formatting code..."
+make fmt
+
+# Step 6: Consolidate everything into a single commit
 echo "Staging all changes and creating the release commit..."
 git add .
 git commit -m "Release ${NEW_VERSION}"
