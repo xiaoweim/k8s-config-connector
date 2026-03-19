@@ -26,11 +26,10 @@ if [[ -z "${STALE_VERSION:-}" ]]; then
   fi
 fi
 
-if [[ -z "${NEW_VERSION:-}" ]]; then
-  if [[ -n "${VERSION:-}" ]]; then
-    NEW_VERSION="${VERSION}"
-    echo "Using NEW_VERSION from VERSION env var: ${NEW_VERSION}"
-  fi
+NEW_VERSION=${1:-${VERSION:-}}
+if [[ -z "${NEW_VERSION}" ]]; then
+  echo "Error: NEW_VERSION not provided as first argument and VERSION env var is not set."
+  exit 1
 fi
 
 if [ -z "$NEW_VERSION" ]; then
@@ -40,7 +39,7 @@ fi
 
 # Step 2: Create Release Branch
 echo "Creating release branch release-${NEW_VERSION}..."
-git checkout -b "release-${NEW_VERSION}"
+git checkout -B "release-${NEW_VERSION}"
 
 # Step 3: Propose Tag and Update Manifests
 echo "Proposing tag and updating manifests..."
