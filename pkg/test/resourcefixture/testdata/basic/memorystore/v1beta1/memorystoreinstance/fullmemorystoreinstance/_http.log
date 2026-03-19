@@ -586,13 +586,16 @@ X-Xss-Protection: 0
     "verb": "create"
   },
   "name": "projects/${projectId}/locations/us-central1/operations/${operationID}"
+  "name": "projects/${projectId}/locations/us-central1/operations/${operationID}"
 }
 
 ---
 
 GET https://memorystore.googleapis.com/v1/projects/${projectId}/locations/us-central1/operations/${operationID}
+GET https://memorystore.googleapis.com/v1/projects/${projectId}/locations/us-central1/operations/${operationID}
 Content-Type: application/json
 User-Agent: kcc/${kccVersion} (+https://github.com/GoogleCloudPlatform/k8s-config-connector) kcc/controller-manager/${kccVersion}
+X-Goog-Request-Params: name=projects%2F${projectId}%2Flocations%2Fus-central1%2Foperations%2F${operationID}
 X-Goog-Request-Params: name=projects%2F${projectId}%2Flocations%2Fus-central1%2Foperations%2F${operationID}
 
 200 OK
@@ -616,9 +619,13 @@ X-Xss-Protection: 0
     "verb": "create"
   },
   "name": "projects/${projectId}/locations/us-central1/operations/${operationID}",
+  "name": "projects/${projectId}/locations/us-central1/operations/${operationID}",
   "response": {
     "@type": "type.googleapis.com/google.cloud.memorystore.v1.Instance",
     "authorizationMode": "IAM_AUTH",
+    "automatedBackupConfig": {
+      "automatedBackupMode": "DISABLED"
+    },
     "automatedBackupConfig": {
       "automatedBackupMode": "DISABLED"
     },
@@ -629,6 +636,9 @@ X-Xss-Protection: 0
         "connections": [
           {
             "pscAutoConnection": {
+              "connectionType": "CONNECTION_TYPE_DISCOVERY",
+              "forwardingRule": "https://www.googleapis.com/compute/v1/projects/${projectId}/regions/us-central1/forwardingRules/sca-auto-fr-112210f47de98115",
+              "ipAddress": "10.128.0.21",
               "connectionType": "CONNECTION_TYPE_DISCOVERY",
               "forwardingRule": "https://www.googleapis.com/compute/v1/projects/${projectId}/regions/us-central1/forwardingRules/sca-auto-fr-112210f47de98115",
               "ipAddress": "10.128.0.21",
@@ -644,6 +654,7 @@ X-Xss-Protection: 0
               "forwardingRule": "https://www.googleapis.com/compute/v1/projects/${projectId}/regions/us-central1/forwardingRules/sca-auto-fr-112210f47de98116",
               "ipAddress": "10.128.0.22",
               "network": "projects/${projectId}/global/networks/${networkID}",
+              "port": 6379,
               "projectId": "${projectId}",
               "pscConnectionId": "1234567890123456790",
               "serviceAttachment": "projects/tp-memorystore-${uniqueId}/regions/us-central1/serviceAttachments/sa-memorystore-${uniqueId}-2"
@@ -681,11 +692,21 @@ X-Xss-Protection: 0
         "serviceAttachment": "projects/tp-memorystore-${uniqueId}/regions/us-central1/serviceAttachments/sa-memorystore-${uniqueId}-2"
       }
     ],
+    "pscAttachmentDetails": [
+      {
+        "connectionType": "CONNECTION_TYPE_DISCOVERY",
+        "serviceAttachment": "projects/tp-memorystore-${uniqueId}/regions/us-central1/serviceAttachments/sa-memorystore-${uniqueId}"
+      },
+      {
+        "serviceAttachment": "projects/tp-memorystore-${uniqueId}/regions/us-central1/serviceAttachments/sa-memorystore-${uniqueId}-2"
+      }
+    ],
     "replicaCount": 2,
     "shardCount": 6,
     "state": "ACTIVE",
     "transitEncryptionMode": "SERVER_AUTHENTICATION",
     "uid": "111111111111111111111",
+    "updateTime": "2024-04-01T12:34:56.123456Z",
     "updateTime": "2024-04-01T12:34:56.123456Z",
     "zoneDistributionConfig": {
       "mode": "SINGLE_ZONE",
@@ -716,6 +737,9 @@ X-Xss-Protection: 0
   "automatedBackupConfig": {
     "automatedBackupMode": 1
   },
+  "automatedBackupConfig": {
+    "automatedBackupMode": 1
+  },
   "createTime": "2024-04-01T12:34:56.123456Z",
   "deletionProtectionEnabled": true,
   "endpoints": [
@@ -723,6 +747,9 @@ X-Xss-Protection: 0
       "connections": [
         {
           "pscAutoConnection": {
+            "connectionType": 1,
+            "forwardingRule": "https://www.googleapis.com/compute/v1/projects/${projectId}/regions/us-central1/forwardingRules/sca-auto-fr-112210f47de98115",
+            "ipAddress": "10.128.0.21",
             "connectionType": 1,
             "forwardingRule": "https://www.googleapis.com/compute/v1/projects/${projectId}/regions/us-central1/forwardingRules/sca-auto-fr-112210f47de98115",
             "ipAddress": "10.128.0.21",
@@ -738,6 +765,7 @@ X-Xss-Protection: 0
             "forwardingRule": "https://www.googleapis.com/compute/v1/projects/${projectId}/regions/us-central1/forwardingRules/sca-auto-fr-112210f47de98116",
             "ipAddress": "10.128.0.22",
             "network": "projects/${projectId}/global/networks/${networkID}",
+            "port": 6379,
             "projectId": "${projectId}",
             "pscConnectionId": "1234567890123456790",
             "serviceAttachment": "projects/tp-memorystore-${uniqueId}/regions/us-central1/serviceAttachments/sa-memorystore-${uniqueId}-2"
@@ -775,11 +803,22 @@ X-Xss-Protection: 0
       "serviceAttachment": "projects/tp-memorystore-${uniqueId}/regions/us-central1/serviceAttachments/sa-memorystore-${uniqueId}-2"
     }
   ],
+  "pscAttachmentDetails": [
+    {
+      "connectionType": 1,
+      "serviceAttachment": "projects/tp-memorystore-${uniqueId}/regions/us-central1/serviceAttachments/sa-memorystore-${uniqueId}"
+    },
+    {
+      "serviceAttachment": "projects/tp-memorystore-${uniqueId}/regions/us-central1/serviceAttachments/sa-memorystore-${uniqueId}-2"
+    }
+  ],
   "replicaCount": 2,
   "shardCount": 6,
   "state": 2,
+  "state": 2,
   "transitEncryptionMode": 2,
   "uid": "111111111111111111111",
+  "updateTime": "2024-04-01T12:34:56.123456Z",
   "updateTime": "2024-04-01T12:34:56.123456Z",
   "zoneDistributionConfig": {
     "mode": 2,
@@ -893,6 +932,9 @@ X-Xss-Protection: 0
     "automatedBackupConfig": {
       "automatedBackupMode": "DISABLED"
     },
+    "automatedBackupConfig": {
+      "automatedBackupMode": "DISABLED"
+    },
     "createTime": "2024-04-01T12:34:56.123456Z",
     "deletionProtectionEnabled": true,
     "endpoints": [
@@ -900,6 +942,9 @@ X-Xss-Protection: 0
         "connections": [
           {
             "pscAutoConnection": {
+              "connectionType": "CONNECTION_TYPE_DISCOVERY",
+              "forwardingRule": "https://www.googleapis.com/compute/v1/projects/${projectId}/regions/us-central1/forwardingRules/sca-auto-fr-112210f47de98115",
+              "ipAddress": "10.128.0.21",
               "connectionType": "CONNECTION_TYPE_DISCOVERY",
               "forwardingRule": "https://www.googleapis.com/compute/v1/projects/${projectId}/regions/us-central1/forwardingRules/sca-auto-fr-112210f47de98115",
               "ipAddress": "10.128.0.21",
@@ -915,6 +960,7 @@ X-Xss-Protection: 0
               "forwardingRule": "https://www.googleapis.com/compute/v1/projects/${projectId}/regions/us-central1/forwardingRules/sca-auto-fr-112210f47de98116",
               "ipAddress": "10.128.0.22",
               "network": "projects/${projectId}/global/networks/${networkID}",
+              "port": 6379,
               "projectId": "${projectId}",
               "pscConnectionId": "1234567890123456790",
               "serviceAttachment": "projects/tp-memorystore-${uniqueId}/regions/us-central1/serviceAttachments/sa-memorystore-${uniqueId}-2"
@@ -943,6 +989,15 @@ X-Xss-Protection: 0
       },
       "mode": "AOF"
     },
+    "pscAttachmentDetails": [
+      {
+        "connectionType": "CONNECTION_TYPE_DISCOVERY",
+        "serviceAttachment": "projects/tp-memorystore-${uniqueId}/regions/us-central1/serviceAttachments/sa-memorystore-${uniqueId}"
+      },
+      {
+        "serviceAttachment": "projects/tp-memorystore-${uniqueId}/regions/us-central1/serviceAttachments/sa-memorystore-${uniqueId}-2"
+      }
+    ],
     "pscAttachmentDetails": [
       {
         "connectionType": "CONNECTION_TYPE_DISCOVERY",
@@ -1071,6 +1126,9 @@ X-Xss-Protection: 0
     "automatedBackupConfig": {
       "automatedBackupMode": "DISABLED"
     },
+    "automatedBackupConfig": {
+      "automatedBackupMode": "DISABLED"
+    },
     "createTime": "2024-04-01T12:34:56.123456Z",
     "deletionProtectionEnabled": true,
     "endpoints": [
@@ -1078,6 +1136,9 @@ X-Xss-Protection: 0
         "connections": [
           {
             "pscAutoConnection": {
+              "connectionType": "CONNECTION_TYPE_DISCOVERY",
+              "forwardingRule": "https://www.googleapis.com/compute/v1/projects/${projectId}/regions/us-central1/forwardingRules/sca-auto-fr-112210f47de98115",
+              "ipAddress": "10.128.0.21",
               "connectionType": "CONNECTION_TYPE_DISCOVERY",
               "forwardingRule": "https://www.googleapis.com/compute/v1/projects/${projectId}/regions/us-central1/forwardingRules/sca-auto-fr-112210f47de98115",
               "ipAddress": "10.128.0.21",
@@ -1093,6 +1154,7 @@ X-Xss-Protection: 0
               "forwardingRule": "https://www.googleapis.com/compute/v1/projects/${projectId}/regions/us-central1/forwardingRules/sca-auto-fr-112210f47de98116",
               "ipAddress": "10.128.0.22",
               "network": "projects/${projectId}/global/networks/${networkID}",
+              "port": 6379,
               "projectId": "${projectId}",
               "pscConnectionId": "1234567890123456790",
               "serviceAttachment": "projects/tp-memorystore-${uniqueId}/regions/us-central1/serviceAttachments/sa-memorystore-${uniqueId}-2"
@@ -1121,6 +1183,15 @@ X-Xss-Protection: 0
       },
       "mode": "AOF"
     },
+    "pscAttachmentDetails": [
+      {
+        "connectionType": "CONNECTION_TYPE_DISCOVERY",
+        "serviceAttachment": "projects/tp-memorystore-${uniqueId}/regions/us-central1/serviceAttachments/sa-memorystore-${uniqueId}"
+      },
+      {
+        "serviceAttachment": "projects/tp-memorystore-${uniqueId}/regions/us-central1/serviceAttachments/sa-memorystore-${uniqueId}-2"
+      }
+    ],
     "pscAttachmentDetails": [
       {
         "connectionType": "CONNECTION_TYPE_DISCOVERY",
@@ -1249,6 +1320,9 @@ X-Xss-Protection: 0
     "automatedBackupConfig": {
       "automatedBackupMode": "DISABLED"
     },
+    "automatedBackupConfig": {
+      "automatedBackupMode": "DISABLED"
+    },
     "createTime": "2024-04-01T12:34:56.123456Z",
     "deletionProtectionEnabled": false,
     "endpoints": [
@@ -1256,6 +1330,9 @@ X-Xss-Protection: 0
         "connections": [
           {
             "pscAutoConnection": {
+              "connectionType": "CONNECTION_TYPE_DISCOVERY",
+              "forwardingRule": "https://www.googleapis.com/compute/v1/projects/${projectId}/regions/us-central1/forwardingRules/sca-auto-fr-112210f47de98115",
+              "ipAddress": "10.128.0.21",
               "connectionType": "CONNECTION_TYPE_DISCOVERY",
               "forwardingRule": "https://www.googleapis.com/compute/v1/projects/${projectId}/regions/us-central1/forwardingRules/sca-auto-fr-112210f47de98115",
               "ipAddress": "10.128.0.21",
@@ -1271,6 +1348,7 @@ X-Xss-Protection: 0
               "forwardingRule": "https://www.googleapis.com/compute/v1/projects/${projectId}/regions/us-central1/forwardingRules/sca-auto-fr-112210f47de98116",
               "ipAddress": "10.128.0.22",
               "network": "projects/${projectId}/global/networks/${networkID}",
+              "port": 6379,
               "projectId": "${projectId}",
               "pscConnectionId": "1234567890123456790",
               "serviceAttachment": "projects/tp-memorystore-${uniqueId}/regions/us-central1/serviceAttachments/sa-memorystore-${uniqueId}-2"
@@ -1299,6 +1377,15 @@ X-Xss-Protection: 0
       },
       "mode": "AOF"
     },
+    "pscAttachmentDetails": [
+      {
+        "connectionType": "CONNECTION_TYPE_DISCOVERY",
+        "serviceAttachment": "projects/tp-memorystore-${uniqueId}/regions/us-central1/serviceAttachments/sa-memorystore-${uniqueId}"
+      },
+      {
+        "serviceAttachment": "projects/tp-memorystore-${uniqueId}/regions/us-central1/serviceAttachments/sa-memorystore-${uniqueId}-2"
+      }
+    ],
     "pscAttachmentDetails": [
       {
         "connectionType": "CONNECTION_TYPE_DISCOVERY",
@@ -1427,6 +1514,9 @@ X-Xss-Protection: 0
     "automatedBackupConfig": {
       "automatedBackupMode": "DISABLED"
     },
+    "automatedBackupConfig": {
+      "automatedBackupMode": "DISABLED"
+    },
     "createTime": "2024-04-01T12:34:56.123456Z",
     "deletionProtectionEnabled": false,
     "endpoints": [
@@ -1434,6 +1524,9 @@ X-Xss-Protection: 0
         "connections": [
           {
             "pscAutoConnection": {
+              "connectionType": "CONNECTION_TYPE_DISCOVERY",
+              "forwardingRule": "https://www.googleapis.com/compute/v1/projects/${projectId}/regions/us-central1/forwardingRules/sca-auto-fr-112210f47de98115",
+              "ipAddress": "10.128.0.21",
               "connectionType": "CONNECTION_TYPE_DISCOVERY",
               "forwardingRule": "https://www.googleapis.com/compute/v1/projects/${projectId}/regions/us-central1/forwardingRules/sca-auto-fr-112210f47de98115",
               "ipAddress": "10.128.0.21",
@@ -1449,6 +1542,7 @@ X-Xss-Protection: 0
               "forwardingRule": "https://www.googleapis.com/compute/v1/projects/${projectId}/regions/us-central1/forwardingRules/sca-auto-fr-112210f47de98116",
               "ipAddress": "10.128.0.22",
               "network": "projects/${projectId}/global/networks/${networkID}",
+              "port": 6379,
               "projectId": "${projectId}",
               "pscConnectionId": "1234567890123456790",
               "serviceAttachment": "projects/tp-memorystore-${uniqueId}/regions/us-central1/serviceAttachments/sa-memorystore-${uniqueId}-2"
@@ -1478,6 +1572,15 @@ X-Xss-Protection: 0
         "rdbSnapshotStartTime": "2029-10-02T15:01:23Z"
       }
     },
+    "pscAttachmentDetails": [
+      {
+        "connectionType": "CONNECTION_TYPE_DISCOVERY",
+        "serviceAttachment": "projects/tp-memorystore-${uniqueId}/regions/us-central1/serviceAttachments/sa-memorystore-${uniqueId}"
+      },
+      {
+        "serviceAttachment": "projects/tp-memorystore-${uniqueId}/regions/us-central1/serviceAttachments/sa-memorystore-${uniqueId}-2"
+      }
+    ],
     "pscAttachmentDetails": [
       {
         "connectionType": "CONNECTION_TYPE_DISCOVERY",
@@ -1606,6 +1709,9 @@ X-Xss-Protection: 0
     "automatedBackupConfig": {
       "automatedBackupMode": "DISABLED"
     },
+    "automatedBackupConfig": {
+      "automatedBackupMode": "DISABLED"
+    },
     "createTime": "2024-04-01T12:34:56.123456Z",
     "deletionProtectionEnabled": false,
     "endpoints": [
@@ -1613,6 +1719,9 @@ X-Xss-Protection: 0
         "connections": [
           {
             "pscAutoConnection": {
+              "connectionType": "CONNECTION_TYPE_DISCOVERY",
+              "forwardingRule": "https://www.googleapis.com/compute/v1/projects/${projectId}/regions/us-central1/forwardingRules/sca-auto-fr-112210f47de98115",
+              "ipAddress": "10.128.0.21",
               "connectionType": "CONNECTION_TYPE_DISCOVERY",
               "forwardingRule": "https://www.googleapis.com/compute/v1/projects/${projectId}/regions/us-central1/forwardingRules/sca-auto-fr-112210f47de98115",
               "ipAddress": "10.128.0.21",
@@ -1628,6 +1737,7 @@ X-Xss-Protection: 0
               "forwardingRule": "https://www.googleapis.com/compute/v1/projects/${projectId}/regions/us-central1/forwardingRules/sca-auto-fr-112210f47de98116",
               "ipAddress": "10.128.0.22",
               "network": "projects/${projectId}/global/networks/${networkID}",
+              "port": 6379,
               "projectId": "${projectId}",
               "pscConnectionId": "1234567890123456790",
               "serviceAttachment": "projects/tp-memorystore-${uniqueId}/regions/us-central1/serviceAttachments/sa-memorystore-${uniqueId}-2"
@@ -1658,6 +1768,15 @@ X-Xss-Protection: 0
         "rdbSnapshotStartTime": "2029-10-02T15:01:23Z"
       }
     },
+    "pscAttachmentDetails": [
+      {
+        "connectionType": "CONNECTION_TYPE_DISCOVERY",
+        "serviceAttachment": "projects/tp-memorystore-${uniqueId}/regions/us-central1/serviceAttachments/sa-memorystore-${uniqueId}"
+      },
+      {
+        "serviceAttachment": "projects/tp-memorystore-${uniqueId}/regions/us-central1/serviceAttachments/sa-memorystore-${uniqueId}-2"
+      }
+    ],
     "pscAttachmentDetails": [
       {
         "connectionType": "CONNECTION_TYPE_DISCOVERY",
@@ -1786,6 +1905,9 @@ X-Xss-Protection: 0
     "automatedBackupConfig": {
       "automatedBackupMode": "DISABLED"
     },
+    "automatedBackupConfig": {
+      "automatedBackupMode": "DISABLED"
+    },
     "createTime": "2024-04-01T12:34:56.123456Z",
     "deletionProtectionEnabled": false,
     "endpoints": [
@@ -1793,6 +1915,9 @@ X-Xss-Protection: 0
         "connections": [
           {
             "pscAutoConnection": {
+              "connectionType": "CONNECTION_TYPE_DISCOVERY",
+              "forwardingRule": "https://www.googleapis.com/compute/v1/projects/${projectId}/regions/us-central1/forwardingRules/sca-auto-fr-112210f47de98115",
+              "ipAddress": "10.128.0.21",
               "connectionType": "CONNECTION_TYPE_DISCOVERY",
               "forwardingRule": "https://www.googleapis.com/compute/v1/projects/${projectId}/regions/us-central1/forwardingRules/sca-auto-fr-112210f47de98115",
               "ipAddress": "10.128.0.21",
@@ -1808,6 +1933,7 @@ X-Xss-Protection: 0
               "forwardingRule": "https://www.googleapis.com/compute/v1/projects/${projectId}/regions/us-central1/forwardingRules/sca-auto-fr-112210f47de98116",
               "ipAddress": "10.128.0.22",
               "network": "projects/${projectId}/global/networks/${networkID}",
+              "port": 6379,
               "projectId": "${projectId}",
               "pscConnectionId": "1234567890123456790",
               "serviceAttachment": "projects/tp-memorystore-${uniqueId}/regions/us-central1/serviceAttachments/sa-memorystore-${uniqueId}-2"
@@ -1838,6 +1964,15 @@ X-Xss-Protection: 0
         "rdbSnapshotStartTime": "2029-10-02T15:01:23Z"
       }
     },
+    "pscAttachmentDetails": [
+      {
+        "connectionType": "CONNECTION_TYPE_DISCOVERY",
+        "serviceAttachment": "projects/tp-memorystore-${uniqueId}/regions/us-central1/serviceAttachments/sa-memorystore-${uniqueId}"
+      },
+      {
+        "serviceAttachment": "projects/tp-memorystore-${uniqueId}/regions/us-central1/serviceAttachments/sa-memorystore-${uniqueId}-2"
+      }
+    ],
     "pscAttachmentDetails": [
       {
         "connectionType": "CONNECTION_TYPE_DISCOVERY",
@@ -1966,6 +2101,9 @@ X-Xss-Protection: 0
     "automatedBackupConfig": {
       "automatedBackupMode": "DISABLED"
     },
+    "automatedBackupConfig": {
+      "automatedBackupMode": "DISABLED"
+    },
     "createTime": "2024-04-01T12:34:56.123456Z",
     "deletionProtectionEnabled": false,
     "endpoints": [
@@ -1973,6 +2111,9 @@ X-Xss-Protection: 0
         "connections": [
           {
             "pscAutoConnection": {
+              "connectionType": "CONNECTION_TYPE_DISCOVERY",
+              "forwardingRule": "https://www.googleapis.com/compute/v1/projects/${projectId}/regions/us-central1/forwardingRules/sca-auto-fr-112210f47de98115",
+              "ipAddress": "10.128.0.21",
               "connectionType": "CONNECTION_TYPE_DISCOVERY",
               "forwardingRule": "https://www.googleapis.com/compute/v1/projects/${projectId}/regions/us-central1/forwardingRules/sca-auto-fr-112210f47de98115",
               "ipAddress": "10.128.0.21",
@@ -1988,6 +2129,7 @@ X-Xss-Protection: 0
               "forwardingRule": "https://www.googleapis.com/compute/v1/projects/${projectId}/regions/us-central1/forwardingRules/sca-auto-fr-112210f47de98116",
               "ipAddress": "10.128.0.22",
               "network": "projects/${projectId}/global/networks/${networkID}",
+              "port": 6379,
               "projectId": "${projectId}",
               "pscConnectionId": "1234567890123456790",
               "serviceAttachment": "projects/tp-memorystore-${uniqueId}/regions/us-central1/serviceAttachments/sa-memorystore-${uniqueId}-2"
@@ -2019,6 +2161,15 @@ X-Xss-Protection: 0
         "rdbSnapshotStartTime": "2029-10-02T15:01:23Z"
       }
     },
+    "pscAttachmentDetails": [
+      {
+        "connectionType": "CONNECTION_TYPE_DISCOVERY",
+        "serviceAttachment": "projects/tp-memorystore-${uniqueId}/regions/us-central1/serviceAttachments/sa-memorystore-${uniqueId}"
+      },
+      {
+        "serviceAttachment": "projects/tp-memorystore-${uniqueId}/regions/us-central1/serviceAttachments/sa-memorystore-${uniqueId}-2"
+      }
+    ],
     "pscAttachmentDetails": [
       {
         "connectionType": "CONNECTION_TYPE_DISCOVERY",
@@ -2063,6 +2214,9 @@ X-Xss-Protection: 0
   "automatedBackupConfig": {
     "automatedBackupMode": 1
   },
+  "automatedBackupConfig": {
+    "automatedBackupMode": 1
+  },
   "createTime": "2024-04-01T12:34:56.123456Z",
   "deletionProtectionEnabled": false,
   "endpoints": [
@@ -2070,6 +2224,9 @@ X-Xss-Protection: 0
       "connections": [
         {
           "pscAutoConnection": {
+            "connectionType": 1,
+            "forwardingRule": "https://www.googleapis.com/compute/v1/projects/${projectId}/regions/us-central1/forwardingRules/sca-auto-fr-112210f47de98115",
+            "ipAddress": "10.128.0.21",
             "connectionType": 1,
             "forwardingRule": "https://www.googleapis.com/compute/v1/projects/${projectId}/regions/us-central1/forwardingRules/sca-auto-fr-112210f47de98115",
             "ipAddress": "10.128.0.21",
@@ -2085,6 +2242,7 @@ X-Xss-Protection: 0
             "forwardingRule": "https://www.googleapis.com/compute/v1/projects/${projectId}/regions/us-central1/forwardingRules/sca-auto-fr-112210f47de98116",
             "ipAddress": "10.128.0.22",
             "network": "projects/${projectId}/global/networks/${networkID}",
+            "port": 6379,
             "projectId": "${projectId}",
             "pscConnectionId": "1234567890123456790",
             "serviceAttachment": "projects/tp-memorystore-${uniqueId}/regions/us-central1/serviceAttachments/sa-memorystore-${uniqueId}-2"
@@ -2125,11 +2283,22 @@ X-Xss-Protection: 0
       "serviceAttachment": "projects/tp-memorystore-${uniqueId}/regions/us-central1/serviceAttachments/sa-memorystore-${uniqueId}-2"
     }
   ],
+  "pscAttachmentDetails": [
+    {
+      "connectionType": 1,
+      "serviceAttachment": "projects/tp-memorystore-${uniqueId}/regions/us-central1/serviceAttachments/sa-memorystore-${uniqueId}"
+    },
+    {
+      "serviceAttachment": "projects/tp-memorystore-${uniqueId}/regions/us-central1/serviceAttachments/sa-memorystore-${uniqueId}-2"
+    }
+  ],
   "replicaCount": 1,
   "shardCount": 12,
   "state": 2,
+  "state": 2,
   "transitEncryptionMode": 2,
   "uid": "111111111111111111111",
+  "updateTime": "2024-04-01T12:34:56.123456Z",
   "updateTime": "2024-04-01T12:34:56.123456Z",
   "zoneDistributionConfig": {
     "mode": 2,

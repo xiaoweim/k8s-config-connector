@@ -73,7 +73,7 @@ func (r *instanceServer) CreateInstance(ctx context.Context, req *pb.CreateInsta
 	obj.Name = fqn
 	obj.CreateTime = timestamppb.New(now)
 	obj.UpdateTime = timestamppb.New(now)
-	obj.State = pb.Instance_CREATING
+	obj.State = pb.Instance_ACTIVE
 
 	if err := r.populateDefaultsForInstance(name, obj); err != nil {
 		return nil, err
@@ -82,6 +82,10 @@ func (r *instanceServer) CreateInstance(ctx context.Context, req *pb.CreateInsta
 	if err := r.storage.Create(ctx, fqn, obj); err != nil {
 		return nil, err
 	}
+
+	updatedObj := proto.Clone(obj).(*pb.Instance)
+	updatedObj.CreateTime = nil
+	prefix := fmt.Sprintf("projects/%s/locations/%s", name.Project.ID, name.Location)
 
 	metadata := &pb.OperationMetadata{
 		ApiVersion: "v1",
@@ -116,7 +120,7 @@ func (s *instanceServer) populateDefaultsForInstance(name *instanceName, obj *pb
 	if obj.Mode == pb.Instance_MODE_UNSPECIFIED {
 		obj.Mode = pb.Instance_CLUSTER
 	}
-	if len(obj.PscAttachmentDetails) == 0 {
+	if obj.PscAttachmentDetails == nil {
 		var types []pb.ConnectionType
 		switch obj.GetMode() {
 		case pb.Instance_CLUSTER:
@@ -138,14 +142,18 @@ func (s *instanceServer) populateDefaultsForInstance(name *instanceName, obj *pb
 		}
 	}
 	if len(obj.Endpoints) > 0 {
-		if obj.Endpoints[0] != nil && len(obj.Endpoints[0].Connections) > 0 {
+		if len(obj.Endpoints[0].Connections) > 0 {
 			connections := obj.Endpoints[0].Connections
 			if len(connections) == 1 {
 				autoConnection := connections[0].GetPscAutoConnection()
 				if autoConnection != nil {
 					obj.Endpoints[0].Connections = append(obj.Endpoints[0].Connections, &pb.Instance_ConnectionDetail{
 						Connection: &pb.Instance_ConnectionDetail_PscAutoConnection{
-							PscAutoConnection: proto.Clone(autoConnection).(*pb.PscAutoConnection),
+							PscAutoConnection: &pb.PscAutoConnection{
+								Ports:     autoConnection.Ports,
+								Network:   autoConnection.Network,
+								ProjectId: autoConnection.ProjectId,
+							},
 						},
 					})
 				}
@@ -153,6 +161,8 @@ func (s *instanceServer) populateDefaultsForInstance(name *instanceName, obj *pb
 		}
 		pscConnectionID := int64(1234567890123456789)
 		for _, endpoint := range obj.Endpoints {
+			for i, connections := range endpoint.Connections {
+				attachmentDetails := obj.PscAttachmentDetails[i%2]
 			for i, connections := range endpoint.Connections {
 				attachmentDetails := obj.PscAttachmentDetails[i%2]
 				if connections.GetPscAutoConnection() != nil {
@@ -163,10 +173,12 @@ func (s *instanceServer) populateDefaultsForInstance(name *instanceName, obj *pb
 					}
 					autoConnection.IpAddress = fmt.Sprintf("10.128.0.%d", pscConnectionID%256)
 					autoConnection.ForwardingRule = fmt.Sprintf("https://www.googleapis.com/compute/v1/projects/%s/regions/%s/forwardingRules/sca-auto-fr-%x", network.Project.ID, name.Location, pscConnectionID)
+					autoConnection.IpAddress = fmt.Sprintf("10.128.0.%d", pscConnectionID%256)
+					autoConnection.ForwardingRule = fmt.Sprintf("https://www.googleapis.com/compute/v1/projects/%s/regions/%s/forwardingRules/sca-auto-fr-%x", network.Project.ID, name.Location, pscConnectionID)
 					autoConnection.PscConnectionId = fmt.Sprintf("%d", pscConnectionID)
 					autoConnection.ConnectionType = attachmentDetails.ConnectionType
 					autoConnection.ServiceAttachment = attachmentDetails.ServiceAttachment
-					if autoConnection.Ports == nil && autoConnection.ConnectionType != pb.ConnectionType_CONNECTION_TYPE_UNSPECIFIED {
+					if autoConnection.Ports == nil {
 						autoConnection.Ports = &pb.PscAutoConnection_Port{
 							Port: 6379,
 						}
@@ -182,11 +194,6 @@ func (s *instanceServer) populateDefaultsForInstance(name *instanceName, obj *pb
 					userConnection.ProjectId = network.Project.ID
 					userConnection.PscConnectionStatus = pb.PscConnectionStatus_ACTIVE
 					userConnection.ConnectionType = attachmentDetails.ConnectionType
-					if userConnection.Ports == nil && userConnection.ConnectionType != pb.ConnectionType_CONNECTION_TYPE_UNSPECIFIED {
-						userConnection.Ports = &pb.PscConnection_Port{
-							Port: 6379,
-						}
-					}
 				}
 			}
 		}
@@ -204,6 +211,8 @@ func (s *instanceServer) populateDefaultsForInstance(name *instanceName, obj *pb
 	}
 	if obj.NodeConfig == nil {
 		obj.NodeConfig = &pb.NodeConfig{}
+	if obj.NodeConfig == nil {
+		obj.NodeConfig = &pb.NodeConfig{}
 	}
 	nodeCapacity := float64(1)
 	switch obj.GetNodeType() {
@@ -219,11 +228,13 @@ func (s *instanceServer) populateDefaultsForInstance(name *instanceName, obj *pb
 		return fmt.Errorf("unknown node type %v", obj.GetNodeType())
 	}
 	obj.NodeConfig.SizeGb = *mocks.PtrTo(float64(nodeCapacity))
+	obj.NodeConfig.SizeGb = *mocks.PtrTo(float64(nodeCapacity))
 
 	if obj.TransitEncryptionMode == pb.Instance_TRANSIT_ENCRYPTION_MODE_UNSPECIFIED {
 		obj.TransitEncryptionMode = pb.Instance_TRANSIT_ENCRYPTION_DISABLED
 	}
 	if obj.Uid == "" {
+		obj.Uid = fmt.Sprintf("instance-%s", name.Name)
 		obj.Uid = fmt.Sprintf("instance-%s", name.Name)
 	}
 	if obj.ZoneDistributionConfig == nil {
@@ -241,16 +252,10 @@ func (s *instanceServer) populateDefaultsForInstance(name *instanceName, obj *pb
 	if obj.AutomatedBackupConfig.AutomatedBackupMode == pb.AutomatedBackupConfig_AUTOMATED_BACKUP_MODE_UNSPECIFIED {
 		obj.AutomatedBackupConfig.AutomatedBackupMode = pb.AutomatedBackupConfig_DISABLED
 	}
-	if obj.MaintenancePolicy != nil && obj.MaintenancePolicy.CreateTime == nil {
-		obj.MaintenancePolicy.CreateTime = timestamppb.New(time.Now())
-		obj.MaintenancePolicy.UpdateTime = obj.MaintenancePolicy.CreateTime
-	}
 	if crr := obj.CrossInstanceReplicationConfig; crr != nil {
+		crr.UpdateTime = timestamppb.New(time.Now())
 		switch crr.InstanceRole {
 		case pb.CrossInstanceReplicationConfig_PRIMARY:
-			if len(crr.SecondaryInstances) == 0 {
-				return status.Errorf(codes.InvalidArgument, "no secondary instances specified")
-			}
 			crr.PrimaryInstance = nil
 			crr.Membership = &pb.CrossInstanceReplicationConfig_Membership{
 				PrimaryInstance: &pb.CrossInstanceReplicationConfig_RemoteInstance{
@@ -271,9 +276,6 @@ func (s *instanceServer) populateDefaultsForInstance(name *instanceName, obj *pb
 				})
 			}
 		case pb.CrossInstanceReplicationConfig_SECONDARY:
-			if crr.PrimaryInstance == nil {
-				return status.Errorf(codes.InvalidArgument, "no primary instance specified")
-			}
 			primaryName, err := s.parseInstanceName(crr.PrimaryInstance.Instance)
 			if err != nil {
 				return err
@@ -285,7 +287,7 @@ func (s *instanceServer) populateDefaultsForInstance(name *instanceName, obj *pb
 					Uid:      crr.PrimaryInstance.Uid,
 				},
 				SecondaryInstances: []*pb.CrossInstanceReplicationConfig_RemoteInstance{
-					{
+					&pb.CrossInstanceReplicationConfig_RemoteInstance{
 						Instance: name.String(),
 						Uid:      obj.Uid,
 					},
@@ -297,8 +299,6 @@ func (s *instanceServer) populateDefaultsForInstance(name *instanceName, obj *pb
 			return fmt.Errorf("unknown instance role %v", crr.InstanceRole)
 		}
 	}
-	// PscAutoConnections is not included in the response
-	obj.PscAutoConnections = nil
 	return nil
 }
 
@@ -342,42 +342,41 @@ func (r *instanceServer) UpdateInstance(ctx context.Context, req *pb.UpdateInsta
 		switch path {
 		case "labels":
 			obj.Labels = req.Instance.Labels
+		case "labels":
+			obj.Labels = req.Instance.Labels
 		case "replicaCount":
 			obj.ReplicaCount = req.Instance.ReplicaCount
 		case "shardCount":
 			obj.ShardCount = req.Instance.ShardCount
 		case "nodeType":
 			obj.NodeType = req.Instance.NodeType
+		case "nodeType":
+			obj.NodeType = req.Instance.NodeType
 		case "persistenceConfig":
 			obj.PersistenceConfig = req.Instance.PersistenceConfig
+		case "engineVersion":
+			obj.EngineVersion = req.Instance.EngineVersion
 		case "engineVersion":
 			obj.EngineVersion = req.Instance.EngineVersion
 		case "engineConfigs":
 			obj.EngineConfigs = req.Instance.EngineConfigs
 		case "deletionProtectionEnabled":
 			obj.DeletionProtectionEnabled = req.Instance.DeletionProtectionEnabled
+		case "deletionProtectionEnabled":
+			obj.DeletionProtectionEnabled = req.Instance.DeletionProtectionEnabled
 		case "endpoints":
 			obj.Endpoints = req.Instance.Endpoints
 		case "maintenancePolicy":
-			if req.Instance.MaintenancePolicy != nil {
-				obj.MaintenancePolicy = req.Instance.MaintenancePolicy
-				obj.MaintenancePolicy.UpdateTime = timestamppb.New(now)
-			}
+			obj.MaintenancePolicy = req.Instance.MaintenancePolicy
 		case "automatedBackupConfig":
 			obj.AutomatedBackupConfig = req.Instance.AutomatedBackupConfig
 		case "crossInstanceReplicationConfig":
-			if req.Instance.CrossInstanceReplicationConfig != nil {
-				obj.CrossInstanceReplicationConfig = req.Instance.CrossInstanceReplicationConfig
-				obj.CrossInstanceReplicationConfig.UpdateTime = timestamppb.New(now)
-			}
-		case "gcsSource":
-			if gcsSource := req.Instance.GetGcsSource(); gcsSource != nil {
-				obj.ImportSources = &pb.Instance_GcsSource{GcsSource: gcsSource}
-			}
+			obj.CrossInstanceReplicationConfig = req.Instance.CrossInstanceReplicationConfig
+		case "gcsBucket":
+			obj.ImportSources = &pb.Instance_GcsSource{GcsSource: req.Instance.GetGcsSource()}
 		case "managedBackupSource":
-			if managedBackupSource := req.Instance.GetManagedBackupSource(); managedBackupSource != nil {
-				obj.ImportSources = &pb.Instance_ManagedBackupSource_{ManagedBackupSource: managedBackupSource}
-			}
+			obj.ImportSources = &pb.Instance_ManagedBackupSource_{ManagedBackupSource: req.Instance.GetManagedBackupSource()}
+
 		default:
 			return nil, status.Errorf(codes.InvalidArgument, "update_mask path %q not supported by mockgcp", path)
 		}
@@ -387,7 +386,7 @@ func (r *instanceServer) UpdateInstance(ctx context.Context, req *pb.UpdateInsta
 		return nil, err
 	}
 
-	obj.State = pb.Instance_UPDATING
+	obj.State = pb.Instance_ACTIVE
 	obj.UpdateTime = timestamppb.New(time.Now())
 	if err := r.storage.Update(ctx, fqn, obj); err != nil {
 		return nil, err
