@@ -58,5 +58,17 @@ sed -i -e "s@cnrm.cloud.google.com/version:.*@cnrm.cloud.google.com/version: \"$
   config/installbundle/releases/scopes/namespaced/autopilot-shared-components/kustomization.yaml \
   config/installbundle/releases/scopes/namespaced/per-namespace-components/kustomization.yaml
 
+# Update the default version in the "default" operator channel
+cat <<EOF > operator/channels/stable
+manifests:
+ - version: ${VERSION}
+EOF
+
+# Update the default version in the "autopilot" operator channel
+cat <<EOF > operator/autopilot-channels/stable
+manifests:
+ - version: ${VERSION}
+EOF
+
 # Format the modified files
 cd ${REPO_ROOT}; make fmt
