@@ -46,37 +46,17 @@ cat <<EOF > version/VERSION
 ${VERSION}
 EOF
 
-# Update the version label in our kustomization files
+# Update the version label in the specified kustomization files
+# Only update the files described as the "namespaced component yaml" and core operator configs.
+# We no longer generate or check in standard/autopilot manifests or CRD bundles here.
 sed -i -e "s@cnrm.cloud.google.com/operator-version:.*@cnrm.cloud.google.com/operator-version: \"${VERSION}\"@g" \
   operator/config/autopilot/kustomization.yaml \
-  operator/config/default/kustomization.yaml \
-  config/installbundle/release-manifests/standard/kustomization.yaml \
-  config/installbundle/release-manifests/autopilot/kustomization.yaml
+  operator/config/default/kustomization.yaml
 
-# Update the default version in the "default" operator channel
-cat <<EOF > operator/channels/stable
-manifests:
- - version: ${VERSION}
-EOF
+sed -i -e "s@cnrm.cloud.google.com/version:.*@cnrm.cloud.google.com/version: \"${VERSION}\"@g" \
+  config/installbundle/releases/scopes/namespaced/shared-components/kustomization.yaml \
+  config/installbundle/releases/scopes/namespaced/autopilot-shared-components/kustomization.yaml \
+  config/installbundle/releases/scopes/namespaced/per-namespace-components/kustomization.yaml
 
-# Update the default version in the "autopilot" operator channel
-cat <<EOF > operator/autopilot-channels/stable
-manifests:
- - version: ${VERSION}
-EOF
-
-
-# Build the release bundle and generate manifests
-dev/tasks/generate-channels
-
-# Update operator RBAC.  
-cp ${REPO_ROOT}/config/installbundle/components/clusterroles/cnrm_viewer.yaml ${REPO_ROOT}/operator/config/rbac/cnrm_viewer_patch.yaml
-
-
-# Generate operator/config/gke-addon/image_configmap.yaml
-make -C ${REPO_ROOT}/operator manifests
-
-# Format
-GOFLAGS= go run github.com/google/addlicense@04bfe4ee9ca5764577b029acc6a1957fd1997153 -c "Google LLC" -l apache ${REPO_ROOT}/operator/autopilot-channels/packages/configconnector
-GOFLAGS= go run github.com/google/addlicense@04bfe4ee9ca5764577b029acc6a1957fd1997153 -c "Google LLC" -l apache ${REPO_ROOT}/operator/channels/packages/configconnector
+# Format the modified files
 cd ${REPO_ROOT}; make fmt
