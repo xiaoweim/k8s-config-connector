@@ -660,7 +660,7 @@ func (in *ComputeResourcePolicyStatus) DeepCopyInto(out *ComputeResourcePolicySt
 	}
 	if in.ObservedGeneration != nil {
 		in, out := &in.ObservedGeneration, &out.ObservedGeneration
-		*out = new(int64)
+		*out = new(int)
 		**out = **in
 	}
 	if in.ExternalRef != nil {
