@@ -64,6 +64,25 @@ spec:
           spec:
             description: ComputeNodeTemplateSpec defines the desired state of ComputeNodeTemplate
             properties:
+              accelerators:
+                description: Immutable. List of accelerator configs to expose on this
+                  node template.
+                items:
+                  properties:
+                    acceleratorCount:
+                      description: The number of the guest accelerator cards exposed
+                        to this instance.
+                      format: int32
+                      type: integer
+                    acceleratorType:
+                      description: 'Full or partial URL of the accelerator type resource
+                        to attach to this instance. For example: projects/my-project/zones/us-central1-c/acceleratorTypes/nvidia-tesla-p100
+                        If you are creating an instance template, specify only the
+                        accelerator name. See GPUs on Compute Engine for a full list
+                        of accelerator types.'
+                      type: string
+                  type: object
+                type: array
               cpuOvercommitType:
                 description: 'Immutable. CPU overcommit. Default value: "NONE" Possible
                   values: ["ENABLED", "NONE"].'
@@ -71,6 +90,33 @@ spec:
               description:
                 description: Immutable. An optional textual description of the resource.
                 type: string
+              disks:
+                description: Immutable. List of local disks to be exposed on this
+                  node template.
+                items:
+                  properties:
+                    diskCount:
+                      description: Specifies the number of such disks.
+                      format: int32
+                      type: integer
+                    diskSizeGB:
+                      description: Specifies the size of the disk in base-2 GB.
+                      format: int32
+                      type: integer
+                    diskType:
+                      description: 'Specifies the desired disk type on the node. This
+                        disk type must be a local storage type (e.g.: local-ssd).
+                        Note that for nodeTemplates, this should be the name of the
+                        disk type and not its URL.'
+                      type: string
+                  type: object
+                type: array
+              nodeAffinityLabels:
+                additionalProperties:
+                  type: string
+                description: Immutable. Labels to use for node affinity, which will
+                  be used in instance group as node affinity labels.
+                type: object
               nodeType:
                 description: Immutable. Node type to use for nodes group that are
                   created from this template. Only one of nodeTypeFlexibility and
@@ -161,6 +207,10 @@ spec:
               creationTimestamp:
                 description: Creation timestamp in RFC3339 text format.
                 type: string
+              kind:
+                description: '[Output Only] The type of the resource. Always compute#nodeTemplate
+                  for node templates.'
+                type: string
               observedGeneration:
                 description: ObservedGeneration is the generation of the resource
                   that was most recently observed by the Config Connector controller.
@@ -170,6 +220,14 @@ spec:
                 type: integer
               selfLink:
                 description: Server-defined URL for the resource.
+                type: string
+              status:
+                description: '[Output Only] The status of the node template. One of
+                  the following values: CREATING, READY, DELETING, or INVALID.'
+                type: string
+              statusMessage:
+                description: '[Output Only] An optional, human-readable explanation
+                  of the status.'
                 type: string
             type: object
         required:

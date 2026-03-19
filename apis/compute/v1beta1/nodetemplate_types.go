@@ -58,14 +58,26 @@ type NodeTemplateServerBinding struct {
 // ComputeNodeTemplateSpec defines the desired state of ComputeNodeTemplate
 // +kcc:spec:proto=google.cloud.compute.v1.NodeTemplate
 type ComputeNodeTemplateSpec struct {
+	/* Immutable. List of accelerator configs to expose on this node template. */
+	// +kcc:proto:field=google.cloud.compute.v1.NodeTemplate.accelerators
+	Accelerators []AcceleratorConfig `json:"accelerators,omitempty"`
+
 	/* Immutable. CPU overcommit. Default value: "NONE" Possible
 	values: ["ENABLED", "NONE"]. */
 	// +kcc:proto:field=google.cloud.compute.v1.NodeTemplate.cpu_overcommit_type
-	CpuOvercommitType *string `json:"cpuOvercommitType,omitempty"`
+	CPUOvercommitType *string `json:"cpuOvercommitType,omitempty"`
 
 	/* Immutable. An optional textual description of the resource. */
 	// +kcc:proto:field=google.cloud.compute.v1.NodeTemplate.description
 	Description *string `json:"description,omitempty"`
+
+	/* Immutable. List of local disks to be exposed on this node template. */
+	// +kcc:proto:field=google.cloud.compute.v1.NodeTemplate.disks
+	Disks []LocalDisk `json:"disks,omitempty"`
+
+	/* Immutable. Labels to use for node affinity, which will be used in instance group as node affinity labels. */
+	// +kcc:proto:field=google.cloud.compute.v1.NodeTemplate.node_affinity_labels
+	NodeAffinityLabels map[string]string `json:"nodeAffinityLabels,omitempty"`
 
 	/* Immutable. Node type to use for nodes group that are created from this template.
 	Only one of nodeTypeFlexibility and nodeType can be specified. */
@@ -111,9 +123,21 @@ type ComputeNodeTemplateStatus struct {
 	// +kcc:proto:field=google.cloud.compute.v1.NodeTemplate.creation_timestamp
 	CreationTimestamp *string `json:"creationTimestamp,omitempty"`
 
+	/* [Output Only] The type of the resource. Always compute#nodeTemplate for node templates. */
+	// +kcc:proto:field=google.cloud.compute.v1.NodeTemplate.kind
+	Kind *string `json:"kind,omitempty"`
+
 	// Server-defined URL for the resource.
 	// +kcc:proto:field=google.cloud.compute.v1.NodeTemplate.self_link
 	SelfLink *string `json:"selfLink,omitempty"`
+
+	/* [Output Only] The status of the node template. One of the following values: CREATING, READY, DELETING, or INVALID. */
+	// +kcc:proto:field=google.cloud.compute.v1.NodeTemplate.status
+	Status *string `json:"status,omitempty"`
+
+	/* [Output Only] An optional, human-readable explanation of the status. */
+	// +kcc:proto:field=google.cloud.compute.v1.NodeTemplate.status_message
+	StatusMessage *string `json:"statusMessage,omitempty"`
 }
 
 // +genclient

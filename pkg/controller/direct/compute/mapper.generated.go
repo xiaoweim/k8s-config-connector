@@ -50,16 +50,15 @@ func ComputeNodeTemplateSpec_v1beta1_FromProto(mapCtx *direct.MapContext, in *pb
 		return nil
 	}
 	out := &krm.ComputeNodeTemplateSpec{}
-	// MISSING: Accelerators
-	// MISSING: CPUOvercommitType
-	// (near miss): "CPUOvercommitType" vs "CpuOvercommitType"
+	out.Accelerators = direct.Slice_FromProto(mapCtx, in.Accelerators, AcceleratorConfig_v1beta1_FromProto)
+	out.CPUOvercommitType = in.CpuOvercommitType
 	// MISSING: CreationTimestamp
 	out.Description = in.Description
-	// MISSING: Disks
+	out.Disks = direct.Slice_FromProto(mapCtx, in.Disks, LocalDisk_v1beta1_FromProto)
 	// MISSING: ID
 	// MISSING: Kind
 	// MISSING: Name
-	// MISSING: NodeAffinityLabels
+	out.NodeAffinityLabels = in.NodeAffinityLabels
 	out.NodeType = in.NodeType
 	out.NodeTypeFlexibility = NodeTemplateNodeTypeFlexibility_v1beta1_FromProto(mapCtx, in.GetNodeTypeFlexibility())
 	out.Region = in.Region
@@ -74,16 +73,15 @@ func ComputeNodeTemplateSpec_v1beta1_ToProto(mapCtx *direct.MapContext, in *krm.
 		return nil
 	}
 	out := &pb.NodeTemplate{}
-	// MISSING: Accelerators
-	// MISSING: CPUOvercommitType
-	// (near miss): "CPUOvercommitType" vs "CpuOvercommitType"
+	out.Accelerators = direct.Slice_ToProto(mapCtx, in.Accelerators, AcceleratorConfig_v1beta1_ToProto)
+	out.CpuOvercommitType = in.CPUOvercommitType
 	// MISSING: CreationTimestamp
 	out.Description = in.Description
-	// MISSING: Disks
+	out.Disks = direct.Slice_ToProto(mapCtx, in.Disks, LocalDisk_v1beta1_ToProto)
 	// MISSING: ID
 	// MISSING: Kind
 	// MISSING: Name
-	// MISSING: NodeAffinityLabels
+	out.NodeAffinityLabels = in.NodeAffinityLabels
 	out.NodeType = in.NodeType
 	out.NodeTypeFlexibility = NodeTemplateNodeTypeFlexibility_v1beta1_ToProto(mapCtx, in.NodeTypeFlexibility)
 	out.Region = in.Region
@@ -104,7 +102,7 @@ func ComputeNodeTemplateStatus_v1beta1_FromProto(mapCtx *direct.MapContext, in *
 	// MISSING: Description
 	// MISSING: Disks
 	// MISSING: ID
-	// MISSING: Kind
+	out.Kind = in.Kind
 	// MISSING: Name
 	// MISSING: NodeAffinityLabels
 	// MISSING: NodeType
@@ -112,8 +110,8 @@ func ComputeNodeTemplateStatus_v1beta1_FromProto(mapCtx *direct.MapContext, in *
 	// MISSING: Region
 	out.SelfLink = in.SelfLink
 	// MISSING: ServerBinding
-	// MISSING: Status
-	// MISSING: StatusMessage
+	out.Status = in.Status
+	out.StatusMessage = in.StatusMessage
 	return out
 }
 func ComputeNodeTemplateStatus_v1beta1_ToProto(mapCtx *direct.MapContext, in *krm.ComputeNodeTemplateStatus) *pb.NodeTemplate {
@@ -127,7 +125,7 @@ func ComputeNodeTemplateStatus_v1beta1_ToProto(mapCtx *direct.MapContext, in *kr
 	// MISSING: Description
 	// MISSING: Disks
 	// MISSING: ID
-	// MISSING: Kind
+	out.Kind = in.Kind
 	// MISSING: Name
 	// MISSING: NodeAffinityLabels
 	// MISSING: NodeType
@@ -135,8 +133,8 @@ func ComputeNodeTemplateStatus_v1beta1_ToProto(mapCtx *direct.MapContext, in *kr
 	// MISSING: Region
 	out.SelfLink = in.SelfLink
 	// MISSING: ServerBinding
-	// MISSING: Status
-	// MISSING: StatusMessage
+	out.Status = in.Status
+	out.StatusMessage = in.StatusMessage
 	return out
 }
 func ComputeSecurityPolicyObservedState_v1beta1_FromProto(mapCtx *direct.MapContext, in *pb.SecurityPolicy) *krm.ComputeSecurityPolicyObservedState {
