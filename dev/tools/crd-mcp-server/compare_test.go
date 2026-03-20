@@ -15,6 +15,7 @@
 package main
 
 import (
+	"strings"
 	"testing"
 )
 
@@ -246,7 +247,7 @@ spec:
                       type: string
                     status:
                       type: string
-              newStatusField:
+              externalRef:
                 type: string
 `
 	old, err := parseCRD([]byte(baseCRD))
@@ -895,5 +896,133 @@ spec:
 
 	if len(result.Notes) != len(expectedNotes) {
 		t.Errorf("expected %d notes, got %d: %v", len(expectedNotes), len(result.Notes), result.Notes)
+	}
+}
+
+func TestEquivalence_NewStatusField(t *testing.T) {
+	oldCRDData := `
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: foos.example.com
+spec:
+  group: example.com
+  names:
+    kind: Foo
+    plural: foos
+  scope: Namespaced
+  versions:
+  - name: v1alpha1
+    served: true
+    storage: true
+    schema:
+      openAPIV3Schema:
+        type: object
+        properties:
+          spec:
+            type: object
+            properties:
+              foo:
+                type: string
+          status:
+            type: object
+            properties:
+              conditions:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type:
+                      type: string
+`
+
+	newCRDData := `
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: foos.example.com
+spec:
+  group: example.com
+  names:
+    kind: Foo
+    plural: foos
+  scope: Namespaced
+  versions:
+  - name: v1alpha1
+    served: true
+    storage: true
+    schema:
+      openAPIV3Schema:
+        type: object
+        properties:
+          spec:
+            type: object
+            properties:
+              foo:
+                type: string
+          status:
+            type: object
+            properties:
+              conditions:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type:
+                      type: string
+              externalRef:
+                type: string
+              observedState:
+                type: object
+                properties:
+                  bar:
+                    type: string
+              unallowedField:
+                type: string
+`
+
+	old, err := parseCRD([]byte(oldCRDData))
+	if err != nil {
+		t.Fatalf("parseCRD old: %v", err)
+	}
+	new, err := parseCRD([]byte(newCRDData))
+	if err != nil {
+		t.Fatalf("parseCRD new: %v", err)
+	}
+
+	result := compareEquivalence(old, new)
+
+	hasUnallowedDiff := false
+	for _, diff := range result.Diffs {
+		if strings.Contains(diff, "unallowedField") {
+			hasUnallowedDiff = true
+			break
+		}
+	}
+
+	if !hasUnallowedDiff {
+		t.Errorf("Expected diff for unallowedField under status, but it was allowed. Result diffs: %v", result.Diffs)
+	}
+
+	hasExternalRefNote := false
+	for _, note := range result.Notes {
+		if strings.Contains(note, "externalRef") {
+			hasExternalRefNote = true
+			break
+		}
+	}
+	if !hasExternalRefNote {
+		t.Errorf("Expected note for externalRef under status, but it was not found. Result notes: %v", result.Notes)
+	}
+
+	hasObservedStateNote := false
+	for _, note := range result.Notes {
+		if strings.Contains(note, "observedState.bar") {
+			hasObservedStateNote = true
+			break
+		}
+	}
+	if !hasObservedStateNote {
+		t.Errorf("Expected note for observedState.bar under status, but it was not found. Result notes: %v", result.Notes)
 	}
 }
