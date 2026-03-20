@@ -167,35 +167,16 @@ found existing non-generated mapping function "Batch_StateHistoryObservedState_T
 		return out
 	}
 */
-func DataprocAutoscalingPolicyObservedState_FromProto(mapCtx *direct.MapContext, in *pb.AutoscalingPolicy) *krm.DataprocAutoscalingPolicyObservedState {
-	if in == nil {
-		return nil
-	}
-	out := &krm.DataprocAutoscalingPolicyObservedState{}
-	// MISSING: ID
-	out.Name = direct.LazyPtr(in.GetName())
-	// MISSING: Labels
-	return out
-}
-func DataprocAutoscalingPolicyObservedState_ToProto(mapCtx *direct.MapContext, in *krm.DataprocAutoscalingPolicyObservedState) *pb.AutoscalingPolicy {
-	if in == nil {
-		return nil
-	}
-	out := &pb.AutoscalingPolicy{}
-	// MISSING: ID
-	out.Name = direct.ValueOf(in.Name)
-	// MISSING: Labels
-	return out
-}
 func DataprocAutoscalingPolicySpec_FromProto(mapCtx *direct.MapContext, in *pb.AutoscalingPolicy) *krm.DataprocAutoscalingPolicySpec {
 	if in == nil {
 		return nil
 	}
 	out := &krm.DataprocAutoscalingPolicySpec{}
 	// MISSING: ID
+	// MISSING: Name
 	out.BasicAlgorithm = BasicAutoscalingAlgorithm_FromProto(mapCtx, in.GetBasicAlgorithm())
 	out.WorkerConfig = InstanceGroupAutoscalingPolicyConfig_FromProto(mapCtx, in.GetWorkerConfig())
-	out.SecondaryWorkerConfig = InstanceGroupAutoscalingPolicyConfig_FromProto(mapCtx, in.GetSecondaryWorkerConfig())
+	out.SecondaryWorkerConfig = SecondaryInstanceGroupAutoscalingPolicyConfig_FromProto(mapCtx, in.GetSecondaryWorkerConfig())
 	// MISSING: Labels
 	return out
 }
@@ -205,11 +186,12 @@ func DataprocAutoscalingPolicySpec_ToProto(mapCtx *direct.MapContext, in *krm.Da
 	}
 	out := &pb.AutoscalingPolicy{}
 	// MISSING: ID
+	// MISSING: Name
 	if oneof := BasicAutoscalingAlgorithm_ToProto(mapCtx, in.BasicAlgorithm); oneof != nil {
 		out.Algorithm = &pb.AutoscalingPolicy_BasicAlgorithm{BasicAlgorithm: oneof}
 	}
 	out.WorkerConfig = InstanceGroupAutoscalingPolicyConfig_ToProto(mapCtx, in.WorkerConfig)
-	out.SecondaryWorkerConfig = InstanceGroupAutoscalingPolicyConfig_ToProto(mapCtx, in.SecondaryWorkerConfig)
+	out.SecondaryWorkerConfig = SecondaryInstanceGroupAutoscalingPolicyConfig_ToProto(mapCtx, in.SecondaryWorkerConfig)
 	// MISSING: Labels
 	return out
 }
@@ -1605,6 +1587,32 @@ func RuntimeInfoObservedState_ToProto(mapCtx *direct.MapContext, in *krmdataproc
 	out.DiagnosticOutputUri = direct.ValueOf(in.DiagnosticOutputURI)
 	out.ApproximateUsage = UsageMetrics_ToProto(mapCtx, in.ApproximateUsage)
 	out.CurrentUsage = UsageSnapshot_ToProto(mapCtx, in.CurrentUsage)
+	return out
+}
+*/
+
+/* found existing non-generated mapping function "SecondaryInstanceGroupAutoscalingPolicyConfig_FromProto", skipping
+func SecondaryInstanceGroupAutoscalingPolicyConfig_FromProto(mapCtx *direct.MapContext, in *pb.InstanceGroupAutoscalingPolicyConfig) *krm.SecondaryInstanceGroupAutoscalingPolicyConfig {
+	if in == nil {
+		return nil
+	}
+	out := &krm.SecondaryInstanceGroupAutoscalingPolicyConfig{}
+	out.MinInstances = direct.LazyPtr(in.GetMinInstances())
+	out.MaxInstances = direct.LazyPtr(in.GetMaxInstances())
+	out.Weight = direct.LazyPtr(in.GetWeight())
+	return out
+}
+*/
+
+/* found existing non-generated mapping function "SecondaryInstanceGroupAutoscalingPolicyConfig_ToProto", skipping
+func SecondaryInstanceGroupAutoscalingPolicyConfig_ToProto(mapCtx *direct.MapContext, in *krm.SecondaryInstanceGroupAutoscalingPolicyConfig) *pb.InstanceGroupAutoscalingPolicyConfig {
+	if in == nil {
+		return nil
+	}
+	out := &pb.InstanceGroupAutoscalingPolicyConfig{}
+	out.MinInstances = direct.ValueOf(in.MinInstances)
+	out.MaxInstances = direct.ValueOf(in.MaxInstances)
+	out.Weight = direct.ValueOf(in.Weight)
 	return out
 }
 */

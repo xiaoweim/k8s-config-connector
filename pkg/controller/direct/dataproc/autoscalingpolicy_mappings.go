@@ -41,3 +41,25 @@ func InstanceGroupAutoscalingPolicyConfig_ToProto(mapCtx *direct.MapContext, in 
 	out.Weight = int32(direct.ValueOf(in.Weight))
 	return out
 }
+
+func SecondaryInstanceGroupAutoscalingPolicyConfig_FromProto(mapCtx *direct.MapContext, in *pb.InstanceGroupAutoscalingPolicyConfig) *krm.SecondaryInstanceGroupAutoscalingPolicyConfig {
+	if in == nil {
+		return nil
+	}
+	out := &krm.SecondaryInstanceGroupAutoscalingPolicyConfig{}
+	out.MinInstances = direct.LazyPtr(int64(in.GetMinInstances()))
+	out.MaxInstances = direct.LazyPtr(int64(in.GetMaxInstances()))
+	out.Weight = direct.LazyPtr(int64(in.GetWeight()))
+	return out
+}
+
+func SecondaryInstanceGroupAutoscalingPolicyConfig_ToProto(mapCtx *direct.MapContext, in *krm.SecondaryInstanceGroupAutoscalingPolicyConfig) *pb.InstanceGroupAutoscalingPolicyConfig {
+	if in == nil {
+		return nil
+	}
+	out := &pb.InstanceGroupAutoscalingPolicyConfig{}
+	out.MinInstances = int32(direct.ValueOf(in.MinInstances))
+	out.MaxInstances = int32(direct.ValueOf(in.MaxInstances))
+	out.Weight = int32(direct.ValueOf(in.Weight))
+	return out
+}

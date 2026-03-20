@@ -15,6 +15,7 @@
 package v1beta1
 
 import (
+	"github.com/GoogleCloudPlatform/k8s-config-connector/apis/common/parent"
 	"github.com/GoogleCloudPlatform/k8s-config-connector/pkg/apis/k8s/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -26,44 +27,38 @@ var DataprocAutoscalingPolicyGVK = GroupVersion.WithKind("DataprocAutoscalingPol
 // +kubebuilder:object:generate=true
 type DataprocAutoscalingPolicySpec struct {
 	// Immutable. Required. YARN autoscaling configuration.
+	// +required
 	// +kcc:proto:field=google.cloud.dataproc.v1.AutoscalingPolicy.basic_algorithm
-	BasicAlgorithm *BasicAutoscalingAlgorithm `json:"basicAlgorithm,omitempty"`
+	BasicAlgorithm *BasicAutoscalingAlgorithm `json:"basicAlgorithm"`
 
 	// Immutable. Required. Describes how the autoscaler will operate for primary workers.
+	// +required
 	// +kcc:proto:field=google.cloud.dataproc.v1.AutoscalingPolicy.worker_config
-	WorkerConfig *InstanceGroupAutoscalingPolicyConfig `json:"workerConfig,omitempty"`
+	WorkerConfig *InstanceGroupAutoscalingPolicyConfig `json:"workerConfig"`
 
 	// Immutable. Optional. Describes how the autoscaler will operate for secondary workers.
 	// +kcc:proto:field=google.cloud.dataproc.v1.AutoscalingPolicy.secondary_worker_config
-	SecondaryWorkerConfig *InstanceGroupAutoscalingPolicyConfig `json:"secondaryWorkerConfig,omitempty"`
+	SecondaryWorkerConfig *SecondaryInstanceGroupAutoscalingPolicyConfig `json:"secondaryWorkerConfig,omitempty"`
 
 	// Immutable. The location for the resource
+	// +required
 	Location string `json:"location"`
 
 	// Immutable. The Project that this resource belongs to.
-	ProjectRef *ProjectRef `json:"projectRef"`
+	ProjectRef *parent.ProjectRef `json:"projectRef,omitempty"`
 
 	// Immutable. Optional. The name of the resource. Used for creation and acquisition. When unset, the value of `metadata.name` is used as the default.
 	// +kcc:proto:field=google.cloud.dataproc.v1.AutoscalingPolicy.id
 	ResourceID *string `json:"resourceID,omitempty"`
 }
 
-// +kubebuilder:object:generate=true
-type ProjectRef struct {
-	/* The `projectID` field of a project, when not managed by Config Connector. */
-	External string `json:"external,omitempty"`
-	/* The `name` field of a `Project` resource. */
-	Name string `json:"name,omitempty"`
-	/* The `namespace` field of a `Project` resource. */
-	Namespace string `json:"namespace,omitempty"`
-}
-
 // +kcc:proto=google.cloud.dataproc.v1.BasicAutoscalingAlgorithm
 // +kubebuilder:object:generate=true
 type BasicAutoscalingAlgorithm struct {
 	// Required. YARN autoscaling configuration.
+	// +required
 	// +kcc:proto:field=google.cloud.dataproc.v1.BasicAutoscalingAlgorithm.yarn_config
-	YarnConfig *BasicYarnAutoscalingConfig `json:"yarnConfig,omitempty"`
+	YarnConfig *BasicYarnAutoscalingConfig `json:"yarnConfig"`
 
 	// Optional. Duration between scaling events. A scaling period starts after
 	//  the update operation from the previous event has completed.
@@ -82,8 +77,9 @@ type BasicYarnAutoscalingConfig struct {
 	//  downscaling operations.
 	//
 	//  Bounds: [0s, 1d].
+	// +required
 	// +kcc:proto:field=google.cloud.dataproc.v1.BasicYarnAutoscalingConfig.graceful_decommission_timeout
-	GracefulDecommissionTimeout *string `json:"gracefulDecommissionTimeout,omitempty"`
+	GracefulDecommissionTimeout *string `json:"gracefulDecommissionTimeout"`
 
 	// Required. Fraction of average YARN pending memory in the last cooldown
 	//  period for which to add workers. A scale-up factor of 1.0 will result in
@@ -95,9 +91,10 @@ type BasicYarnAutoscalingConfig struct {
 	//  for more information.
 	//
 	//  Bounds: [0.0, 1.0].
+	// +required
 	// +kubebuilder:validation:Format=double
 	// +kcc:proto:field=google.cloud.dataproc.v1.BasicYarnAutoscalingConfig.scale_up_factor
-	ScaleUpFactor *float64 `json:"scaleUpFactor,omitempty"`
+	ScaleUpFactor *float64 `json:"scaleUpFactor"`
 
 	// Required. Fraction of average YARN pending memory in the last cooldown
 	//  period for which to remove workers. A scale-down factor of 1 will result in
@@ -109,9 +106,10 @@ type BasicYarnAutoscalingConfig struct {
 	//  for more information.
 	//
 	//  Bounds: [0.0, 1.0].
+	// +required
 	// +kubebuilder:validation:Format=double
 	// +kcc:proto:field=google.cloud.dataproc.v1.BasicYarnAutoscalingConfig.scale_down_factor
-	ScaleDownFactor *float64 `json:"scaleDownFactor,omitempty"`
+	ScaleDownFactor *float64 `json:"scaleDownFactor"`
 
 	// Optional. Minimum scale-up threshold as a fraction of total cluster size
 	//  before scaling occurs. For example, in a 20-worker cluster, a threshold of
@@ -139,6 +137,48 @@ type BasicYarnAutoscalingConfig struct {
 // +kcc:proto=google.cloud.dataproc.v1.InstanceGroupAutoscalingPolicyConfig
 // +kubebuilder:object:generate=true
 type InstanceGroupAutoscalingPolicyConfig struct {
+	// Optional. Minimum number of instances for this group.
+	//
+	//  Primary workers - Bounds: [2, max_instances]. Default: 2.
+	//  Secondary workers - Bounds: [0, max_instances]. Default: 0.
+	// +kcc:proto:field=google.cloud.dataproc.v1.InstanceGroupAutoscalingPolicyConfig.min_instances
+	MinInstances *int64 `json:"minInstances,omitempty"`
+
+	// Required. Maximum number of instances for this group. Required for primary
+	//  workers. Note that by default, clusters will not use secondary workers.
+	//  Required for secondary workers if the minimum secondary instances is set.
+	//
+	//  Primary workers - Bounds: [min_instances, ).
+	//  Secondary workers - Bounds: [min_instances, ). Default: 0.
+	// +required
+	// +kcc:proto:field=google.cloud.dataproc.v1.InstanceGroupAutoscalingPolicyConfig.max_instances
+	MaxInstances *int64 `json:"maxInstances"`
+
+	// Optional. Weight for the instance group, which is used to determine the
+	//  fraction of total workers in the cluster from this instance group.
+	//  For example, if primary workers have weight 2, and secondary workers have
+	//  weight 1, the cluster will have approximately 2 primary workers for each
+	//  secondary worker.
+	//
+	//  The cluster may not reach the specified balance if constrained
+	//  by min/max bounds or other autoscaling settings. For example, if
+	//  `max_instances` for secondary workers is 0, then only primary workers will
+	//  be added. The cluster can also be out of balance when created.
+	//
+	//  If weight is not set on any instance group, the cluster will default to
+	//  equal weight for all groups: the cluster will attempt to maintain an equal
+	//  number of workers in each group within the configured size bounds for each
+	//  group. If weight is set for one group only, the cluster will default to
+	//  zero weight on the unset group. For example if weight is set only on
+	//  primary workers, the cluster will use primary workers only and no
+	//  secondary workers.
+	// +kcc:proto:field=google.cloud.dataproc.v1.InstanceGroupAutoscalingPolicyConfig.weight
+	Weight *int64 `json:"weight,omitempty"`
+}
+
+// +kcc:proto=google.cloud.dataproc.v1.InstanceGroupAutoscalingPolicyConfig
+// +kubebuilder:object:generate=true
+type SecondaryInstanceGroupAutoscalingPolicyConfig struct {
 	// Optional. Minimum number of instances for this group.
 	//
 	//  Primary workers - Bounds: [2, max_instances]. Default: 2.
@@ -190,18 +230,6 @@ type DataprocAutoscalingPolicyStatus struct {
 
 	// A unique specifier for the DataprocAutoscalingPolicy resource in GCP.
 	ExternalRef *string `json:"externalRef,omitempty"`
-
-	// ObservedState is the state of the resource as most recently observed in GCP.
-	ObservedState *DataprocAutoscalingPolicyObservedState `json:"observedState,omitempty"`
-}
-
-// DataprocAutoscalingPolicyObservedState is the state of the DataprocAutoscalingPolicy resource as most recently observed in GCP.
-// +kcc:observedstate:proto=google.cloud.dataproc.v1.AutoscalingPolicy
-// +kubebuilder:object:generate=true
-type DataprocAutoscalingPolicyObservedState struct {
-	// Output only. The "resource name" of the autoscaling policy, as described in https://cloud.google.com/apis/design/resource_names.
-	// +kcc:proto:field=google.cloud.dataproc.v1.AutoscalingPolicy.name
-	Name *string `json:"name,omitempty"`
 }
 
 // +genclient

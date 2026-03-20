@@ -137,7 +137,13 @@ spec:
                            Bounds: [0.0, 1.0]. Default: 0.0.
                         format: double
                         type: number
+                    required:
+                    - gracefulDecommissionTimeout
+                    - scaleDownFactor
+                    - scaleUpFactor
                     type: object
+                required:
+                - yarnConfig
                 type: object
               location:
                 description: Immutable. The location for the resource
@@ -264,10 +270,13 @@ spec:
                        secondary workers.
                     format: int64
                     type: integer
+                required:
+                - maxInstances
                 type: object
             required:
+            - basicAlgorithm
             - location
-            - projectRef
+            - workerConfig
             type: object
           status:
             description: DataprocAutoscalingPolicyStatus defines the config connector
@@ -310,15 +319,6 @@ spec:
                   current reported status reflects the most recent desired state of
                   the resource.
                 type: integer
-              observedState:
-                description: ObservedState is the state of the resource as most recently
-                  observed in GCP.
-                properties:
-                  name:
-                    description: Output only. The "resource name" of the autoscaling
-                      policy, as described in https://cloud.google.com/apis/design/resource_names.
-                    type: string
-                type: object
             type: object
         required:
         - spec
