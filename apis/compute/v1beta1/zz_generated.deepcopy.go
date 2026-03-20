@@ -658,6 +658,11 @@ func (in *ComputeNodeTemplateStatus) DeepCopyInto(out *ComputeNodeTemplateStatus
 		*out = new(int64)
 		**out = **in
 	}
+	if in.ExternalRef != nil {
+		in, out := &in.ExternalRef, &out.ExternalRef
+		*out = new(string)
+		**out = **in
+	}
 	if in.CreationTimestamp != nil {
 		in, out := &in.CreationTimestamp, &out.CreationTimestamp
 		*out = new(string)

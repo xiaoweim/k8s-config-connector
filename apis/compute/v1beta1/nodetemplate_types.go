@@ -107,6 +107,8 @@ type ComputeNodeTemplateStatus struct {
 	// +kubebuilder:validation:Format=""
 	ObservedGeneration *int64 `json:"observedGeneration,omitempty"`
 
+	/* A unique specifier for the ComputeNodeTemplate resource in GCP. */
+	ExternalRef *string `json:"externalRef,omitempty"`
 	/* Creation timestamp in RFC3339 text format. */
 	// +kcc:proto:field=google.cloud.compute.v1.NodeTemplate.creation_timestamp
 	CreationTimestamp *string `json:"creationTimestamp,omitempty"`

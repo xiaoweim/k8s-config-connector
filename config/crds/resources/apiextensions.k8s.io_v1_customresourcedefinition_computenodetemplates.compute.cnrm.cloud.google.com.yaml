@@ -161,6 +161,10 @@ spec:
               creationTimestamp:
                 description: Creation timestamp in RFC3339 text format.
                 type: string
+              externalRef:
+                description: A unique specifier for the ComputeNodeTemplate resource
+                  in GCP.
+                type: string
               kind:
                 description: '[Output Only] The type of the resource. Always compute#nodeTemplate
                   for node templates.'
