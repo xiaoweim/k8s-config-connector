@@ -15,6 +15,7 @@
 package v1alpha1
 
 import (
+	"github.com/GoogleCloudPlatform/k8s-config-connector/apis/common/parent"
 	"github.com/GoogleCloudPlatform/k8s-config-connector/pkg/apis/k8s/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -51,7 +52,7 @@ type BigQueryDatasetAccessSpec struct {
 
 	/* The project that this resource belongs to. */
 	// +required
-	ProjectRef ProjectRef `json:"projectRef"`
+	ProjectRef parent.ProjectRef `json:"projectRef"`
 
 	/* Immutable. Optional. The routine of the resource. Used
 	   for creation and acquisition. When unset, the value of `metadata.name`
@@ -121,21 +122,6 @@ type BigQueryDatasetAccessDataset struct {
 	   table. */
 	// +required
 	ProjectId string `json:"projectId"`
-}
-
-// +k8s:deepcopy-gen=true
-type ProjectRef struct {
-	/* Allowed value: The `name` field of a `Project` resource. */
-	// +optional
-	External *string `json:"external,omitempty"`
-
-	/* Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names */
-	// +optional
-	Name *string `json:"name,omitempty"`
-
-	/* Namespace of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/ */
-	// +optional
-	Namespace *string `json:"namespace,omitempty"`
 }
 
 // +k8s:deepcopy-gen=true
