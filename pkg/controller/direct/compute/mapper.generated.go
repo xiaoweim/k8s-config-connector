@@ -50,15 +50,15 @@ func ComputeNodeTemplateSpec_v1beta1_FromProto(mapCtx *direct.MapContext, in *pb
 		return nil
 	}
 	out := &krm.ComputeNodeTemplateSpec{}
-	out.Accelerators = direct.Slice_FromProto(mapCtx, in.Accelerators, AcceleratorConfig_v1beta1_FromProto)
+	// MISSING: Accelerators
 	out.CPUOvercommitType = in.CpuOvercommitType
 	// MISSING: CreationTimestamp
 	out.Description = in.Description
-	out.Disks = direct.Slice_FromProto(mapCtx, in.Disks, LocalDisk_v1beta1_FromProto)
+	// MISSING: Disks
 	// MISSING: ID
 	// MISSING: Kind
 	// MISSING: Name
-	out.NodeAffinityLabels = in.NodeAffinityLabels
+	// MISSING: NodeAffinityLabels
 	out.NodeType = in.NodeType
 	out.NodeTypeFlexibility = NodeTemplateNodeTypeFlexibility_v1beta1_FromProto(mapCtx, in.GetNodeTypeFlexibility())
 	out.Region = in.Region
@@ -73,15 +73,15 @@ func ComputeNodeTemplateSpec_v1beta1_ToProto(mapCtx *direct.MapContext, in *krm.
 		return nil
 	}
 	out := &pb.NodeTemplate{}
-	out.Accelerators = direct.Slice_ToProto(mapCtx, in.Accelerators, AcceleratorConfig_v1beta1_ToProto)
+	// MISSING: Accelerators
 	out.CpuOvercommitType = in.CPUOvercommitType
 	// MISSING: CreationTimestamp
 	out.Description = in.Description
-	out.Disks = direct.Slice_ToProto(mapCtx, in.Disks, LocalDisk_v1beta1_ToProto)
+	// MISSING: Disks
 	// MISSING: ID
 	// MISSING: Kind
 	// MISSING: Name
-	out.NodeAffinityLabels = in.NodeAffinityLabels
+	// MISSING: NodeAffinityLabels
 	out.NodeType = in.NodeType
 	out.NodeTypeFlexibility = NodeTemplateNodeTypeFlexibility_v1beta1_ToProto(mapCtx, in.NodeTypeFlexibility)
 	out.Region = in.Region

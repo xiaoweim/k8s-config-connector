@@ -58,10 +58,6 @@ type NodeTemplateServerBinding struct {
 // ComputeNodeTemplateSpec defines the desired state of ComputeNodeTemplate
 // +kcc:spec:proto=google.cloud.compute.v1.NodeTemplate
 type ComputeNodeTemplateSpec struct {
-	/* Immutable. List of accelerator configs to expose on this node template. */
-	// +kcc:proto:field=google.cloud.compute.v1.NodeTemplate.accelerators
-	Accelerators []AcceleratorConfig `json:"accelerators,omitempty"`
-
 	/* Immutable. CPU overcommit. Default value: "NONE" Possible
 	values: ["ENABLED", "NONE"]. */
 	// +kcc:proto:field=google.cloud.compute.v1.NodeTemplate.cpu_overcommit_type
@@ -70,14 +66,6 @@ type ComputeNodeTemplateSpec struct {
 	/* Immutable. An optional textual description of the resource. */
 	// +kcc:proto:field=google.cloud.compute.v1.NodeTemplate.description
 	Description *string `json:"description,omitempty"`
-
-	/* Immutable. List of local disks to be exposed on this node template. */
-	// +kcc:proto:field=google.cloud.compute.v1.NodeTemplate.disks
-	Disks []LocalDisk `json:"disks,omitempty"`
-
-	/* Immutable. Labels to use for node affinity, which will be used in instance group as node affinity labels. */
-	// +kcc:proto:field=google.cloud.compute.v1.NodeTemplate.node_affinity_labels
-	NodeAffinityLabels map[string]string `json:"nodeAffinityLabels,omitempty"`
 
 	/* Immutable. Node type to use for nodes group that are created from this template.
 	Only one of nodeTypeFlexibility and nodeType can be specified. */

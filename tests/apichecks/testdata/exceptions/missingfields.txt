@@ -823,13 +823,7 @@
 [missing_field] crd=computenodegroups.compute.cnrm.cloud.google.com version=v1beta1: field ".spec.shareSettings.projectMap[].idRef" is not set; neither 'external' nor 'name' are set
 [missing_field] crd=computenodegroups.compute.cnrm.cloud.google.com version=v1beta1: field ".spec.shareSettings.projectMap[].projectIdRef" is not set; neither 'external' nor 'name' are set
 [missing_field] crd=computenodegroups.compute.cnrm.cloud.google.com version=v1beta1: field ".spec.shareSettings.shareType" is not set in unstructured objects
-[missing_field] crd=computenodetemplates.compute.cnrm.cloud.google.com version=v1beta1: field ".spec.accelerators[].acceleratorCount" is not set in unstructured objects
-[missing_field] crd=computenodetemplates.compute.cnrm.cloud.google.com version=v1beta1: field ".spec.accelerators[].acceleratorType" is not set in unstructured objects
 [missing_field] crd=computenodetemplates.compute.cnrm.cloud.google.com version=v1beta1: field ".spec.cpuOvercommitType" is not set in unstructured objects
-[missing_field] crd=computenodetemplates.compute.cnrm.cloud.google.com version=v1beta1: field ".spec.disks[].diskCount" is not set in unstructured objects
-[missing_field] crd=computenodetemplates.compute.cnrm.cloud.google.com version=v1beta1: field ".spec.disks[].diskSizeGB" is not set in unstructured objects
-[missing_field] crd=computenodetemplates.compute.cnrm.cloud.google.com version=v1beta1: field ".spec.disks[].diskType" is not set in unstructured objects
-[missing_field] crd=computenodetemplates.compute.cnrm.cloud.google.com version=v1beta1: field ".spec.nodeAffinityLabels" is not set in unstructured objects
 [missing_field] crd=computenodetemplates.compute.cnrm.cloud.google.com version=v1beta1: field ".spec.nodeType" is not set in unstructured objects
 [missing_field] crd=computenodetemplates.compute.cnrm.cloud.google.com version=v1beta1: field ".spec.nodeTypeFlexibility.localSsd" is not set in unstructured objects
 [missing_field] crd=computenodetemplates.compute.cnrm.cloud.google.com version=v1beta1: field ".spec.serverBinding.type" is not set in unstructured objects
