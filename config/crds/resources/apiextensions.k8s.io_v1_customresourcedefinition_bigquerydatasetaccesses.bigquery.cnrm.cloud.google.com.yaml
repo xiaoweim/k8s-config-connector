@@ -141,8 +141,8 @@ spec:
                     type: string
                 type: object
               resourceID:
-                description: Immutable. Optional. The routine of the resource. Used
-                  for creation and acquisition. When unset, the value of `metadata.name`
+                description: Immutable. Optional. The name of the resource. Used for
+                  creation and acquisition. When unset, the value of `metadata.name`
                   is used as the default.
                 type: string
               role:
