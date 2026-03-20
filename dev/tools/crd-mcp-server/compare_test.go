@@ -1026,3 +1026,108 @@ spec:
 		t.Errorf("Expected note for observedState.bar under status, but it was not found. Result notes: %v", result.Notes)
 	}
 }
+
+func TestEquivalence_EmptyObservedState(t *testing.T) {
+	oldCRDData := `
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: foos.example.com
+spec:
+  group: example.com
+  names:
+    kind: Foo
+    plural: foos
+  scope: Namespaced
+  versions:
+  - name: v1alpha1
+    served: true
+    storage: true
+    schema:
+      openAPIV3Schema:
+        type: object
+        properties:
+          spec:
+            type: object
+            properties:
+              foo:
+                type: string
+          status:
+            type: object
+            properties:
+              conditions:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type:
+                      type: string
+`
+
+	newCRDData := `
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: foos.example.com
+spec:
+  group: example.com
+  names:
+    kind: Foo
+    plural: foos
+  scope: Namespaced
+  versions:
+  - name: v1alpha1
+    served: true
+    storage: true
+    schema:
+      openAPIV3Schema:
+        type: object
+        properties:
+          spec:
+            type: object
+            properties:
+              foo:
+                type: string
+          status:
+            type: object
+            properties:
+              conditions:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type:
+                      type: string
+              observedState:
+                type: object
+`
+
+	old, err := parseCRD([]byte(oldCRDData))
+	if err != nil {
+		t.Fatalf("parseCRD old: %v", err)
+	}
+	new, err := parseCRD([]byte(newCRDData))
+	if err != nil {
+		t.Fatalf("parseCRD new: %v", err)
+	}
+
+	result := compareEquivalence(old, new)
+
+	// Currently, our code allows an empty observedState.
+	// If the requirement "non-empty observedState" means it must have fields,
+	// this should probably be a diff.
+	hasObservedStateNote := false
+	for _, note := range result.Notes {
+		if strings.Contains(note, "observedState") {
+			hasObservedStateNote = true
+			break
+		}
+	}
+	if !hasObservedStateNote {
+		t.Errorf("Expected note for observedState under status, but it was not found. Result notes: %v", result.Notes)
+	}
+
+	if len(result.Diffs) > 0 {
+		t.Errorf("Expected no diffs, but got: %v", result.Diffs)
+	}
+}
