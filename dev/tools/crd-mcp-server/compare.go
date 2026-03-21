@@ -179,6 +179,9 @@ func walkDepth(s *apiextensionsv1.JSONSchemaProps, depth int) any {
 func flatten(path string, schema any, out map[string]string) {
 	switch v := schema.(type) {
 	case map[string]any:
+		if path != "" {
+			out[path] = "object"
+		}
 		for k, child := range v {
 			childPath := k
 			if path != "" {
@@ -187,6 +190,9 @@ func flatten(path string, schema any, out map[string]string) {
 			flatten(childPath, child, out)
 		}
 	case []any:
+		if path != "" {
+			out[path] = "array"
+		}
 		for _, item := range v {
 			flatten(path+"[]", item, out)
 		}
@@ -228,7 +234,8 @@ type CompareResult struct {
 // compareEquivalence checks whether the change from oldCRD to newCRD is equivalent.
 //
 // Equivalent means:
-//   - No fields are added or deleted (only status.externalRef and status.observedState may be added under 'status')
+//   - No fields are added or deleted (only status.externalRef and status.observedState,
+//     and their sub-fields, may be added under 'status')
 //   - Field names and types do not change (descriptions may change freely)
 //   - Adding spec.names.listKind is fine
 func compareEquivalence(oldCRD, newCRD *apiextensionsv1.CustomResourceDefinition) CompareResult {
@@ -296,10 +303,12 @@ func schemaEquivalenceDiff(version string, oldPaths, newPaths map[string]string)
 		if _, ok := oldPaths[path]; ok {
 			continue
 		}
-		if isUnderStatus(path) && isAllowedNewStatusField(path) {
-			notes = append(notes, fmt.Sprintf("%sfield added under status: %s (type: %s, allowed)", prefix, path, newPaths[path]))
-		} else if isUnderStatus(path) {
-			diffs = append(diffs, fmt.Sprintf("%sfield added under status: %s (type: %s) (not allowed during migration)", prefix, path, newPaths[path]))
+		if isUnderStatus(path) {
+			if isAllowedNewStatusField(path) {
+				notes = append(notes, fmt.Sprintf("%sfield added under status: %s (type: %s, allowed)", prefix, path, newPaths[path]))
+			} else {
+				diffs = append(diffs, fmt.Sprintf("%sfield added under status: %s (type: %s)", prefix, path, newPaths[path]))
+			}
 		} else {
 			diffs = append(diffs, fmt.Sprintf("%sfield added: %s (type: %s)", prefix, path, newPaths[path]))
 		}

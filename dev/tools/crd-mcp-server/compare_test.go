@@ -15,6 +15,7 @@
 package main
 
 import (
+	"slices"
 	"strings"
 	"testing"
 )
@@ -202,7 +203,7 @@ spec:
 	}
 }
 
-func TestEquivalence_AddStatusField(t *testing.T) {
+func TestEquivalence_AllowedExternalRef(t *testing.T) {
 	modified := `
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
@@ -261,10 +262,10 @@ spec:
 
 	result := compareEquivalence(old, new)
 	if len(result.Diffs) != 0 {
-		t.Errorf("expected no diffs for status field addition, got: %v", result.Diffs)
+		t.Errorf("expected 0 diffs for allowed status field addition, got %d: %v", len(result.Diffs), result.Diffs)
 	}
-	if len(result.Notes) == 0 {
-		t.Error("expected a note about status field addition")
+	if len(result.Notes) != 1 {
+		t.Errorf("expected 1 note for allowed status field addition, got %d: %v", len(result.Notes), result.Notes)
 	}
 }
 
@@ -899,8 +900,7 @@ spec:
 	}
 }
 
-func TestEquivalence_NewStatusField(t *testing.T) {
-	oldCRDData := `
+const testOldCRDData = `
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
@@ -936,6 +936,7 @@ spec:
                       type: string
 `
 
+func TestEquivalence_NewStatusField(t *testing.T) {
 	newCRDData := `
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
@@ -977,11 +978,13 @@ spec:
                 properties:
                   bar:
                     type: string
+              observedStateFoo:
+                type: string
               unallowedField:
                 type: string
 `
 
-	old, err := parseCRD([]byte(oldCRDData))
+	old, err := parseCRD([]byte(testOldCRDData))
 	if err != nil {
 		t.Fatalf("parseCRD old: %v", err)
 	}
@@ -992,78 +995,35 @@ spec:
 
 	result := compareEquivalence(old, new)
 
-	hasUnallowedDiff := false
-	for _, diff := range result.Diffs {
-		if strings.Contains(diff, "unallowedField") {
-			hasUnallowedDiff = true
-			break
+	t.Run("Check diffs", func(t *testing.T) {
+		if len(result.Diffs) != 2 {
+			t.Errorf("Expected 2 diffs (unallowedField and observedStateFoo), but got %d: %v", len(result.Diffs), result.Diffs)
 		}
-	}
-
-	if !hasUnallowedDiff {
-		t.Errorf("Expected diff for unallowedField under status, but it was allowed. Result diffs: %v", result.Diffs)
-	}
-
-	hasExternalRefNote := false
-	for _, note := range result.Notes {
-		if strings.Contains(note, "externalRef") {
-			hasExternalRefNote = true
-			break
+		if !slices.ContainsFunc(result.Diffs, func(diff string) bool { return strings.Contains(diff, "status.unallowedField") }) {
+			t.Errorf("Expected diff for status.unallowedField, but it was not found. Result diffs: %v", result.Diffs)
 		}
-	}
-	if !hasExternalRefNote {
-		t.Errorf("Expected note for externalRef under status, but it was not found. Result notes: %v", result.Notes)
-	}
-
-	hasObservedStateNote := false
-	for _, note := range result.Notes {
-		if strings.Contains(note, "observedState.bar") {
-			hasObservedStateNote = true
-			break
+		if !slices.ContainsFunc(result.Diffs, func(diff string) bool { return strings.Contains(diff, "status.observedStateFoo") }) {
+			t.Errorf("Expected diff for status.observedStateFoo (prefix matching should require a trailing dot), but it was not found. Result diffs: %v", result.Diffs)
 		}
-	}
-	if !hasObservedStateNote {
-		t.Errorf("Expected note for observedState.bar under status, but it was not found. Result notes: %v", result.Notes)
-	}
+	})
+
+	t.Run("Check notes", func(t *testing.T) {
+		if len(result.Notes) != 3 {
+			t.Errorf("Expected 3 notes (externalRef, observedState, observedState.bar), but got %d: %v", len(result.Notes), result.Notes)
+		}
+		if !slices.ContainsFunc(result.Notes, func(note string) bool { return strings.Contains(note, "status.externalRef") }) {
+			t.Errorf("Expected note for status.externalRef, but it was not found. Result notes: %v", result.Notes)
+		}
+		if !slices.ContainsFunc(result.Notes, func(note string) bool { return strings.Contains(note, "status.observedState") && !strings.Contains(note, "status.observedState.") }) {
+			t.Errorf("Expected note for status.observedState (parent), but it was not found. Result notes: %v", result.Notes)
+		}
+		if !slices.ContainsFunc(result.Notes, func(note string) bool { return strings.Contains(note, "status.observedState.bar") }) {
+			t.Errorf("Expected note for status.observedState.bar, but it was not found. Result notes: %v", result.Notes)
+		}
+	})
 }
 
 func TestEquivalence_EmptyObservedState(t *testing.T) {
-	oldCRDData := `
-apiVersion: apiextensions.k8s.io/v1
-kind: CustomResourceDefinition
-metadata:
-  name: foos.example.com
-spec:
-  group: example.com
-  names:
-    kind: Foo
-    plural: foos
-  scope: Namespaced
-  versions:
-  - name: v1alpha1
-    served: true
-    storage: true
-    schema:
-      openAPIV3Schema:
-        type: object
-        properties:
-          spec:
-            type: object
-            properties:
-              foo:
-                type: string
-          status:
-            type: object
-            properties:
-              conditions:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    type:
-                      type: string
-`
-
 	newCRDData := `
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
@@ -1102,7 +1062,7 @@ spec:
                 type: object
 `
 
-	old, err := parseCRD([]byte(oldCRDData))
+	old, err := parseCRD([]byte(testOldCRDData))
 	if err != nil {
 		t.Fatalf("parseCRD old: %v", err)
 	}
@@ -1113,21 +1073,15 @@ spec:
 
 	result := compareEquivalence(old, new)
 
-	// Currently, our code allows an empty observedState.
-	// If the requirement "non-empty observedState" means it must have fields,
-	// this should probably be a diff.
-	hasObservedStateNote := false
-	for _, note := range result.Notes {
-		if strings.Contains(note, "observedState") {
-			hasObservedStateNote = true
-			break
-		}
-	}
-	if !hasObservedStateNote {
-		t.Errorf("Expected note for observedState under status, but it was not found. Result notes: %v", result.Notes)
+	if len(result.Diffs) != 0 {
+		t.Errorf("Expected 0 diffs, but got %d: %v", len(result.Diffs), result.Diffs)
 	}
 
-	if len(result.Diffs) > 0 {
-		t.Errorf("Expected no diffs, but got: %v", result.Diffs)
+	if len(result.Notes) != 1 {
+		t.Errorf("Expected 1 note, but got %d: %v", len(result.Notes), result.Notes)
+	}
+
+	if !slices.ContainsFunc(result.Notes, func(note string) bool { return strings.Contains(note, "status.observedState") }) {
+		t.Errorf("Expected note for status.observedState, but it was not found. Result notes: %v", result.Notes)
 	}
 }
