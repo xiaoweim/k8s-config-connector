@@ -997,7 +997,7 @@ spec:
 
 	t.Run("Check diffs", func(t *testing.T) {
 		if len(result.Diffs) != 2 {
-			t.Errorf("Expected 2 diffs (unallowedField and observedStateFoo), but got %d: %v", len(result.Diffs), result.Diffs)
+			t.Fatalf("Expected 2 diffs (unallowedField and observedStateFoo), but got %d: %v", len(result.Diffs), result.Diffs)
 		}
 		if !slices.ContainsFunc(result.Diffs, func(diff string) bool { return strings.Contains(diff, "status.unallowedField") }) {
 			t.Errorf("Expected diff for status.unallowedField, but it was not found. Result diffs: %v", result.Diffs)
@@ -1009,12 +1009,12 @@ spec:
 
 	t.Run("Check notes", func(t *testing.T) {
 		if len(result.Notes) != 3 {
-			t.Errorf("Expected 3 notes (externalRef, observedState, observedState.bar), but got %d: %v", len(result.Notes), result.Notes)
+			t.Fatalf("Expected 3 notes (externalRef, observedState, observedState.bar), but got %d: %v", len(result.Notes), result.Notes)
 		}
 		if !slices.ContainsFunc(result.Notes, func(note string) bool { return strings.Contains(note, "status.externalRef") }) {
 			t.Errorf("Expected note for status.externalRef, but it was not found. Result notes: %v", result.Notes)
 		}
-		if !slices.ContainsFunc(result.Notes, func(note string) bool { return strings.Contains(note, "status.observedState") && !strings.Contains(note, "status.observedState.") }) {
+		if !slices.ContainsFunc(result.Notes, func(note string) bool { return strings.Contains(note, " status.observedState ") }) {
 			t.Errorf("Expected note for status.observedState (parent), but it was not found. Result notes: %v", result.Notes)
 		}
 		if !slices.ContainsFunc(result.Notes, func(note string) bool { return strings.Contains(note, "status.observedState.bar") }) {

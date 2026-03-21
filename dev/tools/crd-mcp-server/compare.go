@@ -176,6 +176,9 @@ func walkDepth(s *apiextensionsv1.JSONSchemaProps, depth int) any {
 }
 
 // flatten converts a nested schema structure to a flat path -> type map.
+// Note: More complex OpenAPI features (like tuples, anyOf, or allOf) are currently flattened
+// into simplified structural representations. Their specific validation logic might require
+// future enhancements if strict structural equivalence checking of those complex types is needed.
 func flatten(path string, schema any, out map[string]string) {
 	switch v := schema.(type) {
 	case map[string]any:
@@ -318,16 +321,16 @@ func schemaEquivalenceDiff(version string, oldPaths, newPaths map[string]string)
 }
 
 func isAllowedNewStatusField(path string) bool {
-	if path == "status" {
+	switch {
+	case path == "status":
 		return true
-	}
-	if path == "status.externalRef" || strings.HasPrefix(path, "status.externalRef.") {
+	case path == "status.externalRef" || strings.HasPrefix(path, "status.externalRef."):
 		return true
-	}
-	if path == "status.observedState" || strings.HasPrefix(path, "status.observedState.") {
+	case path == "status.observedState" || strings.HasPrefix(path, "status.observedState."):
 		return true
+	default:
+		return false
 	}
-	return false
 }
 
 func isAllowedTypeChange(path, oldType, newType string) bool {
