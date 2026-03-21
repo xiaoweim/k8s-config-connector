@@ -668,23 +668,8 @@ func (in *ComputeNodeTemplateStatus) DeepCopyInto(out *ComputeNodeTemplateStatus
 		*out = new(string)
 		**out = **in
 	}
-	if in.Kind != nil {
-		in, out := &in.Kind, &out.Kind
-		*out = new(string)
-		**out = **in
-	}
 	if in.SelfLink != nil {
 		in, out := &in.SelfLink, &out.SelfLink
-		*out = new(string)
-		**out = **in
-	}
-	if in.Status != nil {
-		in, out := &in.Status, &out.Status
-		*out = new(string)
-		**out = **in
-	}
-	if in.StatusMessage != nil {
-		in, out := &in.StatusMessage, &out.StatusMessage
 		*out = new(string)
 		**out = **in
 	}

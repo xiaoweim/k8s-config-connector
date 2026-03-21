@@ -113,21 +113,9 @@ type ComputeNodeTemplateStatus struct {
 	// +kcc:proto:field=google.cloud.compute.v1.NodeTemplate.creation_timestamp
 	CreationTimestamp *string `json:"creationTimestamp,omitempty"`
 
-	/* [Output Only] The type of the resource. Always compute#nodeTemplate for node templates. */
-	// +kcc:proto:field=google.cloud.compute.v1.NodeTemplate.kind
-	Kind *string `json:"kind,omitempty"`
-
 	// Server-defined URL for the resource.
 	// +kcc:proto:field=google.cloud.compute.v1.NodeTemplate.self_link
 	SelfLink *string `json:"selfLink,omitempty"`
-
-	/* [Output Only] The status of the node template. One of the following values: CREATING, READY, DELETING, or INVALID. */
-	// +kcc:proto:field=google.cloud.compute.v1.NodeTemplate.status
-	Status *string `json:"status,omitempty"`
-
-	/* [Output Only] An optional, human-readable explanation of the status. */
-	// +kcc:proto:field=google.cloud.compute.v1.NodeTemplate.status_message
-	StatusMessage *string `json:"statusMessage,omitempty"`
 }
 
 // +genclient

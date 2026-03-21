@@ -165,10 +165,6 @@ spec:
                 description: A unique specifier for the ComputeNodeTemplate resource
                   in GCP.
                 type: string
-              kind:
-                description: '[Output Only] The type of the resource. Always compute#nodeTemplate
-                  for node templates.'
-                type: string
               observedGeneration:
                 description: ObservedGeneration is the generation of the resource
                   that was most recently observed by the Config Connector controller.
@@ -178,14 +174,6 @@ spec:
                 type: integer
               selfLink:
                 description: Server-defined URL for the resource.
-                type: string
-              status:
-                description: '[Output Only] The status of the node template. One of
-                  the following values: CREATING, READY, DELETING, or INVALID.'
-                type: string
-              statusMessage:
-                description: '[Output Only] An optional, human-readable explanation
-                  of the status.'
                 type: string
             type: object
         required:

@@ -102,7 +102,7 @@ func ComputeNodeTemplateStatus_v1beta1_FromProto(mapCtx *direct.MapContext, in *
 	// MISSING: Description
 	// MISSING: Disks
 	// MISSING: ID
-	out.Kind = in.Kind
+	// MISSING: Kind
 	// MISSING: Name
 	// MISSING: NodeAffinityLabels
 	// MISSING: NodeType
@@ -110,8 +110,8 @@ func ComputeNodeTemplateStatus_v1beta1_FromProto(mapCtx *direct.MapContext, in *
 	// MISSING: Region
 	out.SelfLink = in.SelfLink
 	// MISSING: ServerBinding
-	out.Status = in.Status
-	out.StatusMessage = in.StatusMessage
+	// MISSING: Status
+	// MISSING: StatusMessage
 	return out
 }
 func ComputeNodeTemplateStatus_v1beta1_ToProto(mapCtx *direct.MapContext, in *krm.ComputeNodeTemplateStatus) *pb.NodeTemplate {
@@ -125,7 +125,7 @@ func ComputeNodeTemplateStatus_v1beta1_ToProto(mapCtx *direct.MapContext, in *kr
 	// MISSING: Description
 	// MISSING: Disks
 	// MISSING: ID
-	out.Kind = in.Kind
+	// MISSING: Kind
 	// MISSING: Name
 	// MISSING: NodeAffinityLabels
 	// MISSING: NodeType
@@ -133,8 +133,8 @@ func ComputeNodeTemplateStatus_v1beta1_ToProto(mapCtx *direct.MapContext, in *kr
 	// MISSING: Region
 	out.SelfLink = in.SelfLink
 	// MISSING: ServerBinding
-	out.Status = in.Status
-	out.StatusMessage = in.StatusMessage
+	// MISSING: Status
+	// MISSING: StatusMessage
 	return out
 }
 func ComputeSecurityPolicyObservedState_v1beta1_FromProto(mapCtx *direct.MapContext, in *pb.SecurityPolicy) *krm.ComputeSecurityPolicyObservedState {
