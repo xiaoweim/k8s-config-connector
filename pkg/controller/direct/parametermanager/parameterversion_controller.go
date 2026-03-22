@@ -184,6 +184,12 @@ func (a *ParameterVersionAdapter) Update(ctx context.Context, updateOp *directba
 		return err
 	}
 
+	// If parameterversion is disabled, payload is not available for retrieval leading to mismatch
+	// For disabled parameterversion, ignore difference in payload
+	if a.actual.GetDisabled() {
+		paths = paths.Delete("payload.data")
+	}
+
 	if len(paths) == 0 {
 		log.V(2).Info("no field needs update", "name", a.id)
 		if a.desired.Status.ExternalRef == nil {
