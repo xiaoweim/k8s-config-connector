@@ -980,8 +980,11 @@ spec:
                     type: string
               observedStateFoo:
                 type: string
-              unallowedField:
-                type: string
+              unallowedObject:
+                type: object
+                properties:
+                  child:
+                    type: string
 `
 
 	old, err := parseCRD([]byte(testOldCRDData))
@@ -997,10 +1000,13 @@ spec:
 
 	t.Run("Check diffs", func(t *testing.T) {
 		if len(result.Diffs) != 2 {
-			t.Fatalf("Expected 2 diffs (unallowedField and observedStateFoo), but got %d: %v", len(result.Diffs), result.Diffs)
+			t.Fatalf("Expected 2 diffs (unallowedObject and observedStateFoo), but got %d: %v", len(result.Diffs), result.Diffs)
 		}
-		if !slices.ContainsFunc(result.Diffs, func(diff string) bool { return strings.Contains(diff, "status.unallowedField") }) {
-			t.Errorf("Expected diff for status.unallowedField, but it was not found. Result diffs: %v", result.Diffs)
+		if !slices.ContainsFunc(result.Diffs, func(diff string) bool { return strings.Contains(diff, "status.unallowedObject") }) {
+			t.Errorf("Expected diff for status.unallowedObject, but it was not found. Result diffs: %v", result.Diffs)
+		}
+		if slices.ContainsFunc(result.Diffs, func(diff string) bool { return strings.Contains(diff, "status.unallowedObject.child") }) {
+			t.Errorf("Unexpected cascading diff for status.unallowedObject.child, should be suppressed. Result diffs: %v", result.Diffs)
 		}
 		if !slices.ContainsFunc(result.Diffs, func(diff string) bool { return strings.Contains(diff, "status.observedStateFoo") }) {
 			t.Errorf("Expected diff for status.observedStateFoo (prefix matching should require a trailing dot), but it was not found. Result diffs: %v", result.Diffs)

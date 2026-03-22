@@ -302,8 +302,12 @@ func schemaEquivalenceDiff(version string, oldPaths, newPaths map[string]string)
 		}
 	}
 
+	lastDiffPrefix := ""
 	for _, path := range slices.Sorted(maps.Keys(newPaths)) {
 		if _, ok := oldPaths[path]; ok {
+			continue
+		}
+		if lastDiffPrefix != "" && strings.HasPrefix(path, lastDiffPrefix+".") {
 			continue
 		}
 		if isUnderStatus(path) {
@@ -311,9 +315,11 @@ func schemaEquivalenceDiff(version string, oldPaths, newPaths map[string]string)
 				notes = append(notes, fmt.Sprintf("%sfield added under status: %s (type: %s, allowed)", prefix, path, newPaths[path]))
 			} else {
 				diffs = append(diffs, fmt.Sprintf("%sfield added under status: %s (type: %s)", prefix, path, newPaths[path]))
+				lastDiffPrefix = path
 			}
 		} else {
 			diffs = append(diffs, fmt.Sprintf("%sfield added: %s (type: %s)", prefix, path, newPaths[path]))
+			lastDiffPrefix = path
 		}
 	}
 
