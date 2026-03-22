@@ -70,12 +70,12 @@ func (m *modelLBRouteExtension) client(ctx context.Context) (*gcp.DepClient, err
 func (m *modelLBRouteExtension) AdapterForObject(ctx context.Context, op *directbase.AdapterForObjectOperation) (directbase.Adapter, error) {
 	u := op.GetUnstructured()
 	reader := op.Reader
-	obj := &krm.NetworkServicesLBRouteExtension{}
-	if err := runtime.DefaultUnstructuredConverter.FromUnstructured(u.Object, &obj); err != nil {
-		return nil, fmt.Errorf("error converting to %T: %w", obj, err)
+	desired := &krm.NetworkServicesLBRouteExtension{}
+	if err := runtime.DefaultUnstructuredConverter.FromUnstructured(u.Object, &desired); err != nil {
+		return nil, fmt.Errorf("error converting to %T: %w", desired, err)
 	}
 
-	id, err := krm.NewLBRouteExtensionIdentity(ctx, reader, obj)
+	id, err := krm.NewLBRouteExtensionIdentity(ctx, reader, desired)
 	if err != nil {
 		return nil, err
 	}
@@ -89,8 +89,9 @@ func (m *modelLBRouteExtension) AdapterForObject(ctx context.Context, op *direct
 	return &LBRouteExtensionAdapter{
 		id:        id,
 		gcpClient: gcpClient,
-		obj:       obj,
+		desired:   desired,
 		reader:    reader,
+		labels:    label.NewGCPLabelsFromK8sLabels(u.GetLabels()),
 	}, nil
 }
 
@@ -102,9 +103,10 @@ func (m *modelLBRouteExtension) AdapterForURL(ctx context.Context, url string) (
 type LBRouteExtensionAdapter struct {
 	id        *krm.LBRouteExtensionIdentity
 	gcpClient *gcp.DepClient
-	obj       *krm.NetworkServicesLBRouteExtension
+	desired   *krm.NetworkServicesLBRouteExtension
 	reader    client.Reader
 	actual    *networkservicespb.LbRouteExtension
+	labels    map[string]string
 }
 
 var _ directbase.Adapter = &LBRouteExtensionAdapter{}
@@ -163,14 +165,15 @@ func (a *LBRouteExtensionAdapter) normalizeURL(url string, projectID string) str
 
 func (a *LBRouteExtensionAdapter) resolve(ctx context.Context) (*networkservicespb.LbRouteExtension, error) {
 	reader := a.reader
-	obj := a.obj
+	desired := a.desired
+	projectID := a.id.Parent().ProjectID
 
 	// Resolve references
-	for _, ref := range obj.Spec.ForwardingRuleRefs {
+	for _, ref := range desired.Spec.ForwardingRuleRefs {
 		if ref == nil {
 			continue
 		}
-		if err := ref.Normalize(ctx, reader, obj.GetNamespace()); err != nil {
+		if err := ref.Normalize(ctx, reader, desired.GetNamespace()); err != nil {
 			return nil, fmt.Errorf("resolving forwardingRuleRef: %w", err)
 		}
 		// GCP LBRouteExtension returns full URLs for forwarding rules.
@@ -178,40 +181,79 @@ func (a *LBRouteExtensionAdapter) resolve(ctx context.Context) (*networkservices
 		if ref.External != "" && !strings.HasPrefix(ref.External, "https://") {
 			ref.External = "https://www.googleapis.com/compute/v1/" + ref.External
 		}
+
+		// Ensure the forwarding rule is in the same project as the LBRouteExtension.
+		if refProject := extractProjectID(ref.External); refProject != "" && refProject != projectID {
+			return nil, fmt.Errorf("cross-project references are not supported for LBRouteExtension: forwardingRule %q is in project %q, but LBRouteExtension is in project %q", ref.External, refProject, projectID)
+		}
 	}
-	for i := range obj.Spec.ExtensionChains {
-		chain := &obj.Spec.ExtensionChains[i]
+	for i := range desired.Spec.ExtensionChains {
+		chain := &desired.Spec.ExtensionChains[i]
 		for j := range chain.Extensions {
 			extension := &chain.Extensions[j]
 			if extension.BackendServiceRef != nil {
-				external, err := extension.BackendServiceRef.NormalizedExternal(ctx, reader, obj.GetNamespace())
+				external, err := extension.BackendServiceRef.NormalizedExternal(ctx, reader, desired.GetNamespace())
 				if err != nil {
 					return nil, fmt.Errorf("resolving backendServiceRef: %w", err)
 				}
 				extension.BackendServiceRef.External = external
+
+				// Ensure the backend service is in the same project as the LBRouteExtension.
+				if refProject := extractProjectID(external); refProject != "" && refProject != projectID {
+					return nil, fmt.Errorf("cross-project references are not supported for LBRouteExtension: backendService %q is in project %q, but LBRouteExtension is in project %q", external, refProject, projectID)
+				}
 			}
 			if extension.WasmPluginRef != nil {
-				if err := extension.WasmPluginRef.Normalize(ctx, reader, obj.GetNamespace()); err != nil {
+				if err := extension.WasmPluginRef.Normalize(ctx, reader, desired.GetNamespace()); err != nil {
 					return nil, fmt.Errorf("resolving wasmPluginRef: %w", err)
+				}
+				// Ensure the wasm plugin is in the same project as the LBRouteExtension.
+				if refProject := extractProjectID(extension.WasmPluginRef.External); refProject != "" && refProject != projectID {
+					return nil, fmt.Errorf("cross-project references are not supported for LBRouteExtension: wasmPlugin %q is in project %q, but LBRouteExtension is in project %q", extension.WasmPluginRef.External, refProject, projectID)
 				}
 			}
 		}
 	}
 
 	mapCtx := &direct.MapContext{}
-	desired := NetworkServicesLBRouteExtensionSpec_ToProto(mapCtx, &obj.Spec)
+	desiredProto := NetworkServicesLBRouteExtensionSpec_ToProto(mapCtx, &desired.Spec)
 	if mapCtx.Err() != nil {
 		return nil, mapCtx.Err()
 	}
 
-	// Handle GCP Labels
-	labels := make(map[string]string)
-	for k, v := range obj.GetLabels() {
-		labels[k] = v
-	}
-	desired.Labels = label.NewGCPLabelsFromK8sLabels(labels)
+	// Set GCP Labels
+	desiredProto.Labels = a.labels
 
-	return desired, nil
+	return desiredProto, nil
+}
+
+func extractProjectID(resourceName string) string {
+	if resourceName == "" {
+		return ""
+	}
+	if strings.HasPrefix(resourceName, "https://") {
+		tokens := strings.Split(resourceName, "/")
+		for i, token := range tokens {
+			if token == "projects" && i+1 < len(tokens) {
+				return tokens[i+1]
+			}
+		}
+	}
+	if strings.HasPrefix(resourceName, "//") {
+		tokens := strings.Split(resourceName, "/")
+		for i, token := range tokens {
+			if token == "projects" && i+1 < len(tokens) {
+				return tokens[i+1]
+			}
+		}
+	}
+	if strings.HasPrefix(resourceName, "projects/") {
+		tokens := strings.Split(resourceName, "/")
+		if len(tokens) > 1 {
+			return tokens[1]
+		}
+	}
+	return ""
 }
 
 func (a *LBRouteExtensionAdapter) Create(ctx context.Context, createOp *directbase.CreateOperation) error {
@@ -219,12 +261,12 @@ func (a *LBRouteExtensionAdapter) Create(ctx context.Context, createOp *directba
 	log.V(2).Info("creating LBRouteExtension", "name", a.id)
 	mapCtx := &direct.MapContext{}
 
-	desired, err := a.resolve(ctx)
+	desiredProto, err := a.resolve(ctx)
 	if err != nil {
 		return err
 	}
 
-	resource := proto.Clone(desired).(*networkservicespb.LbRouteExtension)
+	resource := proto.Clone(desiredProto).(*networkservicespb.LbRouteExtension)
 	resource.Name = a.id.String()
 
 	req := &networkservicespb.CreateLbRouteExtensionRequest{
@@ -256,12 +298,12 @@ func (a *LBRouteExtensionAdapter) Update(ctx context.Context, updateOp *directba
 	log.V(2).Info("updating LBRouteExtension", "name", a.id)
 	mapCtx := &direct.MapContext{}
 
-	desired, err := a.resolve(ctx)
+	desiredProto, err := a.resolve(ctx)
 	if err != nil {
 		return err
 	}
 
-	resource := proto.Clone(desired).(*networkservicespb.LbRouteExtension)
+	resource := proto.Clone(desiredProto).(*networkservicespb.LbRouteExtension)
 	resource.Name = a.id.String()
 
 	diff, err := common.CompareProtoMessage(a.actual, resource, common.BasicDiff)
@@ -307,14 +349,14 @@ func (a *LBRouteExtensionAdapter) Export(ctx context.Context) (*unstructured.Uns
 	}
 	u := &unstructured.Unstructured{}
 
-	obj := &krm.NetworkServicesLBRouteExtension{}
+	desired := &krm.NetworkServicesLBRouteExtension{}
 	mapCtx := &direct.MapContext{}
-	obj.Spec = direct.ValueOf(NetworkServicesLBRouteExtensionSpec_FromProto(mapCtx, a.actual))
+	desired.Spec = direct.ValueOf(NetworkServicesLBRouteExtensionSpec_FromProto(mapCtx, a.actual))
 	if mapCtx.Err() != nil {
 		return nil, mapCtx.Err()
 	}
 
-	uObj, err := runtime.DefaultUnstructuredConverter.ToUnstructured(obj)
+	uObj, err := runtime.DefaultUnstructuredConverter.ToUnstructured(desired)
 	if err != nil {
 		return nil, err
 	}

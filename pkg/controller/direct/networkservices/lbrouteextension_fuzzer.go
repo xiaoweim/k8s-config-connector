@@ -43,7 +43,7 @@ func lbRouteExtensionFuzzer() fuzztesting.KRMFuzzer {
 	f.StatusFields.Insert(".update_time")
 
 	f.UnimplementedFields.Insert(".name")
-	f.UnimplementedFields.Insert(".labels")
+	f.Unimplemented_LabelsAnnotations(".labels")
 
 	f.Unimplemented_NotYetTriaged(".extension_chains[].extensions[].service")
 
