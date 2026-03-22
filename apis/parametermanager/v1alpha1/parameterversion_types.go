@@ -21,6 +21,14 @@ import (
 
 var ParameterManagerParameterVersionGVK = GroupVersion.WithKind("ParameterManagerParameterVersion")
 
+// +kcc:proto=google.cloud.parametermanager.v1.ParameterVersionPayload
+type ParameterVersionPayload struct {
+	// Required. bytes data for storing payload.
+	// +kcc:proto:field=google.cloud.parametermanager.v1.ParameterVersionPayload.data
+	// +required
+	Data []byte `json:"data,omitempty"`
+}
+
 // ParameterManagerParameterVersionSpec defines the desired state of ParameterManagerParameterVersion
 // +kcc:spec:proto=google.cloud.parametermanager.v1.ParameterVersion
 type ParameterManagerParameterVersionSpec struct {

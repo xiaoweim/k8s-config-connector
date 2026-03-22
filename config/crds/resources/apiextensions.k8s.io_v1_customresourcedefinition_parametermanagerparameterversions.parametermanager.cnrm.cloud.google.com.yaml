@@ -110,6 +110,8 @@ spec:
                     description: Required. bytes data for storing payload.
                     format: byte
                     type: string
+                required:
+                - data
                 type: object
               resourceID:
                 description: The ParameterManagerParameterVersion name. If not given,
