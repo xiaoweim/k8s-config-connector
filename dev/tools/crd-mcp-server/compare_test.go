@@ -134,7 +134,10 @@ spec:
 
 	result := compareEquivalence(old, new)
 	if len(result.Diffs) != 0 {
-		t.Errorf("expected no diffs for description-only change, got: %v", result.Diffs)
+		t.Fatalf("expected 0 diffs for description-only change, got %d: %v", len(result.Diffs), result.Diffs)
+	}
+	if len(result.Notes) != 0 {
+		t.Fatalf("expected 0 notes for description-only change, got %d: %v", len(result.Notes), result.Notes)
 	}
 }
 
@@ -196,10 +199,10 @@ spec:
 
 	result := compareEquivalence(old, new)
 	if len(result.Diffs) != 0 {
-		t.Errorf("expected no diffs for listKind addition, got: %v", result.Diffs)
+		t.Fatalf("expected 0 diffs for listKind addition, got %d: %v", len(result.Diffs), result.Diffs)
 	}
-	if len(result.Notes) == 0 {
-		t.Error("expected a note about listKind addition")
+	if len(result.Notes) != 1 {
+		t.Fatalf("expected 1 note about listKind addition, got %d: %v", len(result.Notes), result.Notes)
 	}
 }
 
@@ -327,8 +330,11 @@ spec:
 	}
 
 	result := compareEquivalence(old, new)
-	if len(result.Diffs) == 0 {
-		t.Error("expected diffs for spec field addition")
+	if len(result.Diffs) != 1 {
+		t.Fatalf("expected 1 diff for spec field addition, got %d: %v", len(result.Diffs), result.Diffs)
+	}
+	if len(result.Notes) != 0 {
+		t.Fatalf("expected 0 notes for spec field addition, got %d: %v", len(result.Notes), result.Notes)
 	}
 }
 
@@ -386,8 +392,11 @@ spec:
 	}
 
 	result := compareEquivalence(old, new)
-	if len(result.Diffs) == 0 {
-		t.Error("expected diffs for removed spec field")
+	if len(result.Diffs) != 1 {
+		t.Fatalf("expected 1 diff for removed spec field, got %d: %v", len(result.Diffs), result.Diffs)
+	}
+	if len(result.Notes) != 0 {
+		t.Fatalf("expected 0 notes for removed spec field, got %d: %v", len(result.Notes), result.Notes)
 	}
 }
 
@@ -447,8 +456,11 @@ spec:
 	}
 
 	result := compareEquivalence(old, new)
-	if len(result.Diffs) == 0 {
-		t.Error("expected diffs for type change")
+	if len(result.Diffs) != 1 {
+		t.Fatalf("expected 1 diff for type change, got %d: %v", len(result.Diffs), result.Diffs)
+	}
+	if len(result.Notes) != 0 {
+		t.Fatalf("expected 0 notes for type change, got %d: %v", len(result.Notes), result.Notes)
 	}
 }
 
@@ -511,10 +523,10 @@ spec:
 
 	result := compareBackwardCompatibility(old, new)
 	if len(result.Diffs) != 0 {
-		t.Errorf("expected no diffs for field addition, got: %v", result.Diffs)
+		t.Fatalf("expected 0 diffs for field addition, got %d: %v", len(result.Diffs), result.Diffs)
 	}
-	if len(result.Notes) == 0 {
-		t.Error("expected a note about added field")
+	if len(result.Notes) != 1 {
+		t.Fatalf("expected 1 note about added field, got %d: %v", len(result.Notes), result.Notes)
 	}
 }
 
@@ -572,8 +584,11 @@ spec:
 	}
 
 	result := compareBackwardCompatibility(old, new)
-	if len(result.Diffs) == 0 {
-		t.Error("expected diffs for removed field")
+	if len(result.Diffs) != 1 {
+		t.Fatalf("expected 1 diff for removed field, got %d: %v", len(result.Diffs), result.Diffs)
+	}
+	if len(result.Notes) != 0 {
+		t.Fatalf("expected 0 notes for removed field, got %d: %v", len(result.Notes), result.Notes)
 	}
 }
 
@@ -581,10 +596,10 @@ func TestGitShow_InvalidRef(t *testing.T) {
 	// An invalid ref should return an error, not silently report "file is new".
 	_, isNew, err := gitShow("nonexistent-ref-xyz123", "compare_test.go")
 	if err == nil {
-		t.Error("expected an error for an invalid git ref, got nil")
+		t.Fatal("expected an error for an invalid git ref, got nil")
 	}
 	if isNew {
-		t.Error("an invalid git ref should return an error, not 'file is new'")
+		t.Fatal("an invalid git ref should return an error, not 'file is new'")
 	}
 }
 
@@ -645,10 +660,14 @@ spec:
 	}
 
 	result := compareBackwardCompatibility(old, new)
-	if len(result.Diffs) == 0 {
-		t.Error("expected diffs for type change")
+	if len(result.Diffs) != 1 {
+		t.Fatalf("expected 1 diff for type change, got %d: %v", len(result.Diffs), result.Diffs)
+	}
+	if len(result.Notes) != 0 {
+		t.Fatalf("expected 0 notes for type change, got %d: %v", len(result.Notes), result.Notes)
 	}
 }
+
 
 func TestEquivalence_IntegerTypeChange(t *testing.T) {
 	oldCRDStr := `
