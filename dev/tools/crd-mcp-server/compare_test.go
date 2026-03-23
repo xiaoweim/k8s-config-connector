@@ -572,6 +572,10 @@ spec:
                       type: string
               externalRef:
                 type: string
+              externalRefFoo:
+                type: string
+              externalRefName:
+                type: string
               observedState:
                 type: object
                 properties:
@@ -587,6 +591,8 @@ spec:
 `,
 			expectedDiffs: []string{
 				"[v1alpha1] field added under status: status.conditions[].newField (type: string)",
+				"[v1alpha1] field added under status: status.externalRefFoo (type: string)",
+				"[v1alpha1] field added under status: status.externalRefName (type: string)",
 				"[v1alpha1] field added under status: status.observedStateFoo (type: string)",
 				"[v1alpha1] field added under status: status.unallowedObject (type: object)",
 			},
