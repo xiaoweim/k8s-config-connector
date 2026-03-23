@@ -288,12 +288,20 @@ func schemaEquivalenceDiff(version string, oldPaths, newPaths map[string]string)
 		prefix = fmt.Sprintf("[%s] ", version)
 	}
 
+	lastRemovedPrefix := ""
 	for _, path := range slices.Sorted(maps.Keys(oldPaths)) {
 		oldType := oldPaths[path]
 		newType, ok := newPaths[path]
 		if !ok {
+			if lastRemovedPrefix != "" && (strings.HasPrefix(path, lastRemovedPrefix+".") || strings.HasPrefix(path, lastRemovedPrefix+"[")) {
+				continue
+			}
 			diffs = append(diffs, fmt.Sprintf("%sfield removed: %s (was %s)", prefix, path, oldType))
-		} else if oldType != newType {
+			lastRemovedPrefix = path
+			continue
+		}
+		lastRemovedPrefix = ""
+		if oldType != newType {
 			if isAllowedTypeChange(path, oldType, newType) {
 				notes = append(notes, fmt.Sprintf("%sfield type changed: %s (%s -> %s) (allowed)", prefix, path, oldType, newType))
 			} else {
@@ -307,7 +315,7 @@ func schemaEquivalenceDiff(version string, oldPaths, newPaths map[string]string)
 		if _, ok := oldPaths[path]; ok {
 			continue
 		}
-		if lastDiffPrefix != "" && strings.HasPrefix(path, lastDiffPrefix+".") {
+		if lastDiffPrefix != "" && (strings.HasPrefix(path, lastDiffPrefix+".") || strings.HasPrefix(path, lastDiffPrefix+"[")) {
 			continue
 		}
 		if isUnderStatus(path) {
@@ -394,12 +402,20 @@ func schemaBackwardCompatDiff(version string, oldPaths, newPaths map[string]stri
 		prefix = fmt.Sprintf("[%s] ", version)
 	}
 
+	lastRemovedPrefix := ""
 	for _, path := range slices.Sorted(maps.Keys(oldPaths)) {
 		oldType := oldPaths[path]
 		newType, ok := newPaths[path]
 		if !ok {
+			if lastRemovedPrefix != "" && (strings.HasPrefix(path, lastRemovedPrefix+".") || strings.HasPrefix(path, lastRemovedPrefix+"[")) {
+				continue
+			}
 			diffs = append(diffs, fmt.Sprintf("%sfield removed: %s (was %s)", prefix, path, oldType))
-		} else if oldType != newType {
+			lastRemovedPrefix = path
+			continue
+		}
+		lastRemovedPrefix = ""
+		if oldType != newType {
 			if isAllowedTypeChange(path, oldType, newType) {
 				notes = append(notes, fmt.Sprintf("%sfield type changed: %s (%s -> %s) (allowed)", prefix, path, oldType, newType))
 			} else {

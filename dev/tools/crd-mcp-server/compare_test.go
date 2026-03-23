@@ -380,7 +380,7 @@ spec:
                 type: integer
                 format: int64
 `,
-			expectedDiffs: []string{"[v1alpha1] field removed: status.conditions (was array)", "[v1alpha1] field removed: status.conditions[] (was object)", "[v1alpha1] field removed: status.conditions[].status (was string)", "[v1alpha1] field removed: status.conditions[].type (was string)"},
+			expectedDiffs: []string{"[v1alpha1] field removed: status.conditions (was array)"},
 			expectedNotes: nil,
 		},
 		{
@@ -665,22 +665,20 @@ spec:
 			result := compareEquivalence(oldCRD, newCRD)
 
 			if len(result.Diffs) != len(tc.expectedDiffs) {
-				t.Errorf("expected %d diffs, got %d: %v", len(tc.expectedDiffs), len(result.Diffs), result.Diffs)
-			} else {
-				for i, d := range result.Diffs {
-					if d != tc.expectedDiffs[i] {
-						t.Errorf("diff mismatch at %d: expected %q, got %q", i, tc.expectedDiffs[i], d)
-					}
+				t.Fatalf("expected %d diffs, got %d: %v", len(tc.expectedDiffs), len(result.Diffs), result.Diffs)
+			}
+			for i, d := range result.Diffs {
+				if d != tc.expectedDiffs[i] {
+					t.Errorf("diff mismatch at %d: expected %q, got %q", i, tc.expectedDiffs[i], d)
 				}
 			}
 
 			if len(result.Notes) != len(tc.expectedNotes) {
-				t.Errorf("expected %d notes, got %d: %v", len(tc.expectedNotes), len(result.Notes), result.Notes)
-			} else {
-				for i, n := range result.Notes {
-					if n != tc.expectedNotes[i] {
-						t.Errorf("note mismatch at %d: expected %q, got %q", i, tc.expectedNotes[i], n)
-					}
+				t.Fatalf("expected %d notes, got %d: %v", len(tc.expectedNotes), len(result.Notes), result.Notes)
+			}
+			for i, n := range result.Notes {
+				if n != tc.expectedNotes[i] {
+					t.Errorf("note mismatch at %d: expected %q, got %q", i, tc.expectedNotes[i], n)
 				}
 			}
 		})
@@ -951,22 +949,20 @@ spec:
 			result := compareBackwardCompatibility(oldCRD, newCRD)
 
 			if len(result.Diffs) != len(tc.expectedDiffs) {
-				t.Errorf("expected %d diffs, got %d: %v", len(tc.expectedDiffs), len(result.Diffs), result.Diffs)
-			} else {
-				for i, d := range result.Diffs {
-					if d != tc.expectedDiffs[i] {
-						t.Errorf("diff mismatch at %d: expected %q, got %q", i, tc.expectedDiffs[i], d)
-					}
+				t.Fatalf("expected %d diffs, got %d: %v", len(tc.expectedDiffs), len(result.Diffs), result.Diffs)
+			}
+			for i, d := range result.Diffs {
+				if d != tc.expectedDiffs[i] {
+					t.Errorf("diff mismatch at %d: expected %q, got %q", i, tc.expectedDiffs[i], d)
 				}
 			}
 
 			if len(result.Notes) != len(tc.expectedNotes) {
-				t.Errorf("expected %d notes, got %d: %v", len(tc.expectedNotes), len(result.Notes), result.Notes)
-			} else {
-				for i, n := range result.Notes {
-					if n != tc.expectedNotes[i] {
-						t.Errorf("note mismatch at %d: expected %q, got %q", i, tc.expectedNotes[i], n)
-					}
+				t.Fatalf("expected %d notes, got %d: %v", len(tc.expectedNotes), len(result.Notes), result.Notes)
+			}
+			for i, n := range result.Notes {
+				if n != tc.expectedNotes[i] {
+					t.Errorf("note mismatch at %d: expected %q, got %q", i, tc.expectedNotes[i], n)
 				}
 			}
 		})
