@@ -116,7 +116,7 @@ func (s *instanceServer) populateDefaultsForInstance(name *instanceName, obj *pb
 	if obj.Mode == pb.Instance_MODE_UNSPECIFIED {
 		obj.Mode = pb.Instance_CLUSTER
 	}
-	if obj.PscAttachmentDetails == nil {
+	if len(obj.PscAttachmentDetails) == 0 {
 		var types []pb.ConnectionType
 		switch obj.GetMode() {
 		case pb.Instance_CLUSTER:
@@ -138,7 +138,7 @@ func (s *instanceServer) populateDefaultsForInstance(name *instanceName, obj *pb
 		}
 	}
 	if len(obj.Endpoints) > 0 {
-		if len(obj.Endpoints[0].Connections) > 0 {
+		if obj.Endpoints[0] != nil && len(obj.Endpoints[0].Connections) > 0 {
 			connections := obj.Endpoints[0].Connections
 			if len(connections) == 1 {
 				autoConnection := connections[0].GetPscAutoConnection()
@@ -254,7 +254,6 @@ func (s *instanceServer) populateDefaultsForInstance(name *instanceName, obj *pb
 		obj.AutomatedBackupConfig.AutomatedBackupMode = pb.AutomatedBackupConfig_DISABLED
 	}
 	if crr := obj.CrossInstanceReplicationConfig; crr != nil {
-		crr.UpdateTime = timestamppb.New(time.Now())
 		switch crr.InstanceRole {
 		case pb.CrossInstanceReplicationConfig_PRIMARY:
 			if len(crr.SecondaryInstances) == 0 {
@@ -294,7 +293,7 @@ func (s *instanceServer) populateDefaultsForInstance(name *instanceName, obj *pb
 					Uid:      crr.PrimaryInstance.Uid,
 				},
 				SecondaryInstances: []*pb.CrossInstanceReplicationConfig_RemoteInstance{
-					&pb.CrossInstanceReplicationConfig_RemoteInstance{
+					{
 						Instance: name.String(),
 						Uid:      obj.Uid,
 					},
@@ -306,6 +305,8 @@ func (s *instanceServer) populateDefaultsForInstance(name *instanceName, obj *pb
 			return fmt.Errorf("unknown instance role %v", crr.InstanceRole)
 		}
 	}
+	// PscAutoConnections is not included in the response
+	obj.PscAutoConnections = nil
 	return nil
 }
 
@@ -380,10 +381,13 @@ func (r *instanceServer) UpdateInstance(ctx context.Context, req *pb.UpdateInsta
 		case "crossInstanceReplicationConfig":
 			obj.CrossInstanceReplicationConfig = req.Instance.CrossInstanceReplicationConfig
 		case "gcsSource":
-			obj.ImportSources = &pb.Instance_GcsSource{GcsSource: req.Instance.GetGcsSource()}
+			if gcsSource := req.Instance.GetGcsSource(); gcsSource != nil {
+				obj.ImportSources = &pb.Instance_GcsSource{GcsSource: gcsSource}
+			}
 		case "managedBackupSource":
-			obj.ImportSources = &pb.Instance_ManagedBackupSource_{ManagedBackupSource: req.Instance.GetManagedBackupSource()}
-
+			if managedBackupSource := req.Instance.GetManagedBackupSource(); managedBackupSource != nil {
+				obj.ImportSources = &pb.Instance_ManagedBackupSource_{ManagedBackupSource: managedBackupSource}
+			}
 		default:
 			return nil, status.Errorf(codes.InvalidArgument, "update_mask path %q not supported by mockgcp", path)
 		}
@@ -600,147 +604,6 @@ func (r *instanceServer) DeleteBackup(ctx context.Context, req *pb.DeleteBackupR
 		metadata.EndTime = timestamppb.Now()
 		deletedObj := &pb.Backup{}
 		r.storage.Delete(ctx, fqn, deletedObj)
-		return &emptypb.Empty{}, nil
-	})
-}
-
-func (r *instanceServer) GetBackup(ctx context.Context, req *pb.GetBackupRequest) (*pb.Backup, error) {
-	name, err := r.parseBackupName(req.Name)
-	if err != nil {
-		return nil, err
-	}
-
-	fqn := name.String()
-
-	obj := &pb.Backup{}
-	if err := r.storage.Get(ctx, fqn, obj); err != nil {
-		if status.Code(err) == codes.NotFound {
-			return nil, status.Errorf(codes.NotFound, "Resource '%s' was not found", fqn)
-		}
-		return nil, err
-	}
-
-	retObj := proto.Clone(obj).(*pb.Backup)
-	return retObj, nil
-}
-
-func (r *instanceServer) BackupInstance(ctx context.Context, req *pb.BackupInstanceRequest) (*longrunning.Operation, error) {
-	instanceName, err := r.parseInstanceName(req.Name)
-	if err != nil {
-		return nil, err
-	}
-
-	instanceFqn := instanceName.String()
-	instanceObj := &pb.Instance{}
-	if err := r.storage.Get(ctx, instanceFqn, instanceObj); err != nil {
-		if status.Code(err) == codes.NotFound {
-			return nil, status.Errorf(codes.NotFound, "Resource '%s' was not found", instanceFqn)
-		}
-		return nil, err
-	}
-
-	backupCollectionName := ""
-	if instanceObj.BackupCollection != nil {
-		backupCollectionName = *instanceObj.BackupCollection
-	} else {
-		backupCollectionName = fmt.Sprintf("projects/%s/locations/%s/backupCollections/backupCollection-%s", instanceName.Project.ID, instanceName.Location, instanceName.Name)
-		instanceObj.BackupCollection = mocks.PtrTo(backupCollectionName)
-		if err := r.storage.Update(ctx, instanceFqn, instanceObj); err != nil {
-			return nil, err
-		}
-	}
-
-	backupID := req.GetBackupId()
-	if backupID == "" {
-		backupID = fmt.Sprintf("%s-backup", instanceName.Name)
-	}
-
-	reqName := fmt.Sprintf("%s/backups/%s", backupCollectionName, backupID)
-	name, err := r.parseBackupName(reqName)
-	if err != nil {
-		return nil, err
-	}
-
-	fqn := name.String()
-	now := time.Now()
-
-	// Default TTL is 100 years
-	ttl := durationpb.New(100 * 365 * 24 * time.Hour)
-	if req.GetTtl() != nil {
-		ttl = req.GetTtl()
-	}
-
-	obj := &pb.Backup{
-		BackupType: pb.Backup_ON_DEMAND,
-		BackupFiles: []*pb.BackupFile{
-			&pb.BackupFile{
-				FileName:   fmt.Sprintf("file-%s.rdb", backupID),
-				SizeBytes:  141,
-				CreateTime: timestamppb.New(now),
-			},
-		},
-		CreateTime:     timestamppb.New(now),
-		ExpireTime:     timestamppb.New(now.Add(ttl.AsDuration())),
-		EngineVersion:  instanceObj.EngineVersion,
-		Instance:       instanceName.String(),
-		InstanceUid:    instanceObj.Uid,
-		Name:           fqn,
-		NodeType:       instanceObj.NodeType,
-		ShardCount:     instanceObj.ShardCount,
-		State:          pb.Backup_ACTIVE,
-		TotalSizeBytes: 141,
-		Uid:            fmt.Sprintf("backup-%s", backupID),
-	}
-	if err := r.storage.Create(ctx, fqn, obj); err != nil {
-		return nil, err
-	}
-
-	prefix := name.OperationPrefix()
-	metadata := &pb.OperationMetadata{
-		ApiVersion: "v1",
-		CreateTime: timestamppb.New(now),
-		Target:     instanceName.String(),
-		Verb:       "backup",
-	}
-
-	return r.operations.StartLRO(ctx, prefix, metadata, func() (proto.Message, error) {
-		metadata.EndTime = timestamppb.Now()
-		return proto.Clone(instanceObj).(*pb.Instance), nil
-	})
-}
-
-func (r *instanceServer) DeleteBackup(ctx context.Context, req *pb.DeleteBackupRequest) (*longrunning.Operation, error) {
-	name, err := r.parseBackupName(req.Name)
-	if err != nil {
-		return nil, err
-	}
-	fqn := name.String()
-
-	now := time.Now()
-
-	obj := &pb.Backup{}
-
-	if err := r.storage.Get(ctx, fqn, obj); err != nil {
-		if status.Code(err) == codes.NotFound {
-			return nil, status.Errorf(codes.NotFound, "Resource '%s' was not found", fqn)
-		}
-		return nil, err
-	}
-
-	deletedObj := &pb.Backup{}
-	if err := r.storage.Delete(ctx, fqn, deletedObj); err != nil {
-		return nil, err
-	}
-
-	metadata := &pb.OperationMetadata{
-		ApiVersion: "v1",
-		CreateTime: timestamppb.New(now),
-		Target:     fqn,
-		Verb:       "delete",
-	}
-	prefix := fmt.Sprintf("projects/%s/locations/%s", name.Project.ID, name.Location)
-	return r.operations.StartLRO(ctx, prefix, metadata, func() (proto.Message, error) {
-		metadata.EndTime = timestamppb.Now()
 		return &emptypb.Empty{}, nil
 	})
 }
