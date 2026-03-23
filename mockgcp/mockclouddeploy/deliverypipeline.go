@@ -211,6 +211,12 @@ func (s *MockService) parseDeliveryPipelineName(name string) (*deliveryPipelineN
 	tokens := strings.Split(name, "/")
 
 	if len(tokens) == 6 && tokens[0] == "projects" && tokens[2] == "locations" && tokens[4] == "deliveryPipelines" {
+		for i := 1; i < len(tokens); i += 2 {
+			if tokens[i] == "" {
+				return nil, status.Errorf(codes.InvalidArgument, "name %q is not valid", name)
+			}
+		}
+
 		project, err := s.Projects.GetProjectByID(tokens[1])
 		if err != nil {
 			return nil, err

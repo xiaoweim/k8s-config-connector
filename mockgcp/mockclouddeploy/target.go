@@ -59,6 +59,10 @@ func (s *cloudDeploy) GetTarget(ctx context.Context, req *pb.GetTargetRequest) (
 }
 
 func (s *cloudDeploy) CreateTarget(ctx context.Context, req *pb.CreateTargetRequest) (*longrunningpb.Operation, error) {
+	if req.TargetId == "" {
+		return nil, status.Errorf(codes.InvalidArgument, "target_id must be provided")
+	}
+
 	reqName := fmt.Sprintf("%s/targets/%s", req.Parent, req.TargetId)
 	name, err := s.parseTargetName(reqName)
 	if err != nil {
@@ -73,7 +77,7 @@ func (s *cloudDeploy) CreateTarget(ctx context.Context, req *pb.CreateTargetRequ
 	obj.Uid = uuid.NewString()
 	obj.CreateTime = timestamppb.New(time.Now())
 	obj.UpdateTime = timestamppb.New(time.Now())
-	obj.Etag = "mock-etag"
+	obj.Etag = uuid.NewString()
 
 	s.defaultTarget(name, obj)
 
@@ -82,7 +86,7 @@ func (s *cloudDeploy) CreateTarget(ctx context.Context, req *pb.CreateTargetRequ
 	}
 
 	// By default, immediately finish the LRO with success.
-	lroPrefix := fmt.Sprintf("projects/%s/locations/%s", name.Project.ID, name.Location)
+	lroPrefix := name.LocationPrefix()
 	lroMetadata := &pb.OperationMetadata{
 		CreateTime: timestamppb.New(time.Now()),
 		Target:     name.String(),
@@ -96,6 +100,10 @@ func (s *cloudDeploy) CreateTarget(ctx context.Context, req *pb.CreateTargetRequ
 }
 
 func (s *cloudDeploy) UpdateTarget(ctx context.Context, req *pb.UpdateTargetRequest) (*longrunningpb.Operation, error) {
+	if req.Target == nil {
+		return nil, status.Errorf(codes.InvalidArgument, "target must be provided")
+	}
+
 	name, err := s.parseTargetName(req.Target.Name)
 	if err != nil {
 		return nil, err
@@ -113,7 +121,8 @@ func (s *cloudDeploy) UpdateTarget(ctx context.Context, req *pb.UpdateTargetRequ
 			obj.TargetId = name.Target
 			obj.Uid = uuid.NewString()
 			obj.CreateTime = timestamppb.New(time.Now())
-			obj.Etag = "mock-etag"
+			obj.UpdateTime = timestamppb.New(time.Now())
+			obj.Etag = uuid.NewString()
 			s.defaultTarget(name, obj)
 		} else {
 			if status.Code(err) == codes.NotFound {
@@ -124,12 +133,6 @@ func (s *cloudDeploy) UpdateTarget(ctx context.Context, req *pb.UpdateTargetRequ
 	}
 
 	if exists {
-		req.Target.Uid = obj.GetUid()
-		req.Target.CreateTime = obj.GetCreateTime()
-		req.Target.UpdateTime = timestamppb.New(time.Now())
-		req.Target.Etag = "mock-etag"
-		req.Target.TargetId = name.Target
-
 		// Apply the update mask to the object.
 		paths := req.GetUpdateMask().GetPaths()
 		if len(paths) == 0 {
@@ -140,19 +143,21 @@ func (s *cloudDeploy) UpdateTarget(ctx context.Context, req *pb.UpdateTargetRequ
 			return nil, fmt.Errorf("update field_mask.paths: %w", err)
 		}
 
+		obj.UpdateTime = timestamppb.New(time.Now())
+		obj.Etag = uuid.NewString()
+
 		s.defaultTarget(name, obj)
 
 		if err := s.storage.Update(ctx, fqn, obj); err != nil {
 			return nil, err
 		}
 	} else {
-		obj.UpdateTime = timestamppb.New(time.Now())
 		if err := s.storage.Create(ctx, fqn, obj); err != nil {
 			return nil, err
 		}
 	}
 
-	lroPrefix := fmt.Sprintf("projects/%s/locations/%s", name.Project.ID, name.Location)
+	lroPrefix := name.LocationPrefix()
 	lroMetadata := &pb.OperationMetadata{
 		CreateTime: timestamppb.New(time.Now()),
 		Target:     name.String(),
@@ -201,8 +206,7 @@ func (s *cloudDeploy) DeleteTarget(ctx context.Context, req *pb.DeleteTargetRequ
 
 	fqn := name.String()
 
-	deleted := &pb.Target{}
-	if err := s.storage.Delete(ctx, fqn, deleted); err != nil {
+	if err := s.storage.Delete(ctx, fqn, &pb.Target{}); err != nil {
 		if status.Code(err) == codes.NotFound && req.GetAllowMissing() {
 			// Return success (LRO) if not found and AllowMissing is true
 		} else {
@@ -214,7 +218,7 @@ func (s *cloudDeploy) DeleteTarget(ctx context.Context, req *pb.DeleteTargetRequ
 	}
 
 	// By default, immediately finish the LRO with success.
-	lroPrefix := fmt.Sprintf("projects/%s/locations/%s", name.Project.ID, name.Location)
+	lroPrefix := name.LocationPrefix()
 	lroMetadata := &pb.OperationMetadata{
 		CreateTime: timestamppb.New(time.Now()),
 		Target:     name.String(),
@@ -265,12 +269,22 @@ func (n *targetName) String() string {
 	return fmt.Sprintf("projects/%s/locations/%s/targets/%s", n.Project.ID, n.Location, n.Target)
 }
 
+func (n *targetName) LocationPrefix() string {
+	return fmt.Sprintf("projects/%s/locations/%s", n.Project.ID, n.Location)
+}
+
 // parseTargetName parses a string into a targetName.
 // The expected form is `projects/*/locations/*/targets/*`.
 func (s *MockService) parseTargetName(name string) (*targetName, error) {
 	tokens := strings.Split(name, "/")
 
 	if len(tokens) == 6 && tokens[0] == "projects" && tokens[2] == "locations" && tokens[4] == "targets" {
+		for i := 1; i < len(tokens); i += 2 {
+			if tokens[i] == "" {
+				return nil, status.Errorf(codes.InvalidArgument, "name %q is not valid", name)
+			}
+		}
+
 		project, err := s.Projects.GetProjectByID(tokens[1])
 		if err != nil {
 			return nil, err

@@ -38,6 +38,7 @@ func (s *MockService) ConfigureVisitor(url string, replacements mockgcpregistry.
 	replacements.ReplacePath(".targets[].uid", PlaceholderUID)
 	replacements.ReplacePath(".targets[].createTime", PlaceholderTimestamp)
 	replacements.ReplacePath(".targets[].updateTime", PlaceholderTimestamp)
+	replacements.ReplacePath(".targets[].etag", PlaceholderEtag)
 
 	// Some responses wrap the object in a "response" field (e.g. LROs or some List responses in the harness)
 	replacements.ReplacePath(".response.createTime", PlaceholderTimestamp)
@@ -46,6 +47,7 @@ func (s *MockService) ConfigureVisitor(url string, replacements mockgcpregistry.
 	replacements.ReplacePath(".response.targets[].uid", PlaceholderUID)
 	replacements.ReplacePath(".response.targets[].createTime", PlaceholderTimestamp)
 	replacements.ReplacePath(".response.targets[].updateTime", PlaceholderTimestamp)
+	replacements.ReplacePath(".response.targets[].etag", PlaceholderEtag)
 
 	// LRO metadata
 	replacements.ReplacePath(".metadata.createTime", PlaceholderTimestamp)
