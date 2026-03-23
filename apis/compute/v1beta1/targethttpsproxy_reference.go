@@ -61,7 +61,7 @@ func (r *ComputeTargetHTTPSProxyRef) SetExternal(ref string) {
 
 func (r *ComputeTargetHTTPSProxyRef) ValidateExternal(ref string) error {
 	id := &ComputeTargetHTTPSProxyIdentity{}
-	if err := id.FromExternal(r.GetExternal()); err != nil {
+	if err := id.FromExternal(ref); err != nil {
 		return err
 	}
 	return nil
@@ -248,11 +248,24 @@ func (r *CertificateManagerCertificateRef) NormalizedExternal(ctx context.Contex
 		return "", fmt.Errorf("reading referenced CertificateManagerCertificate %s: %w", key, err)
 	}
 
-	externalRef, _, err := unstructured.NestedString(u.Object, "status", "externalRef")
-	if err != nil || externalRef == "" {
-		return "", fmt.Errorf("cannot get externalRef for referenced CertificateManagerCertificate %v (status.externalRef is empty)", key)
+	// CertificateManagerCertificate is an unmigrated Terraform-based CRD and does not expose status.externalRef.
+	// We must manually construct the external reference.
+	resourceID, err := refsv1beta1.GetResourceID(u)
+	if err != nil {
+		return "", err
 	}
-	return externalRef, nil
+
+	projectID, err := refsv1beta1.ResolveProjectID(ctx, reader, u)
+	if err != nil {
+		return "", err
+	}
+
+	location, err := refsv1beta1.GetLocation(u)
+	if err != nil {
+		return "", err
+	}
+
+	return fmt.Sprintf("//certificatemanager.googleapis.com/projects/%s/locations/%s/certificates/%s", projectID, location, resourceID), nil
 }
 
 // A reference to a CertificateManagerCertificateMap resource.
@@ -294,11 +307,19 @@ func (r *CertificateManagerCertificateMapRef) NormalizedExternal(ctx context.Con
 		return "", fmt.Errorf("reading referenced CertificateManagerCertificateMap %s: %w", key, err)
 	}
 
-	externalRef, _, err := unstructured.NestedString(u.Object, "status", "externalRef")
-	if err != nil || externalRef == "" {
-		return "", fmt.Errorf("cannot get externalRef for referenced CertificateManagerCertificateMap %v (status.externalRef is empty)", key)
+	// CertificateManagerCertificateMap is an unmigrated Terraform-based CRD and does not expose status.externalRef.
+	// We must manually construct the external reference.
+	resourceID, err := refsv1beta1.GetResourceID(u)
+	if err != nil {
+		return "", err
 	}
-	return externalRef, nil
+
+	projectID, err := refsv1beta1.ResolveProjectID(ctx, reader, u)
+	if err != nil {
+		return "", err
+	}
+
+	return fmt.Sprintf("//certificatemanager.googleapis.com/projects/%s/locations/global/certificateMaps/%s", projectID, resourceID), nil
 }
 
 // A reference to a NetworkSecurityServerTLSPolicy resource.
@@ -340,9 +361,22 @@ func (r *NetworkSecurityServerTLSPolicyRef) NormalizedExternal(ctx context.Conte
 		return "", fmt.Errorf("reading referenced NetworkSecurityServerTLSPolicy %s: %w", key, err)
 	}
 
-	externalRef, _, err := unstructured.NestedString(u.Object, "status", "externalRef")
-	if err != nil || externalRef == "" {
-		return "", fmt.Errorf("cannot get externalRef for referenced NetworkSecurityServerTLSPolicy %v (status.externalRef is empty)", key)
+	// NetworkSecurityServerTLSPolicy is an unmigrated Terraform-based CRD and does not expose status.externalRef.
+	// We must manually construct the external reference.
+	resourceID, err := refsv1beta1.GetResourceID(u)
+	if err != nil {
+		return "", err
 	}
-	return externalRef, nil
+
+	projectID, err := refsv1beta1.ResolveProjectID(ctx, reader, u)
+	if err != nil {
+		return "", err
+	}
+
+	location, err := refsv1beta1.GetLocation(u)
+	if err != nil {
+		return "", err
+	}
+
+	return fmt.Sprintf("projects/%s/locations/%s/serverTlsPolicies/%s", projectID, location, resourceID), nil
 }

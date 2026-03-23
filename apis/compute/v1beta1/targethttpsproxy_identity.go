@@ -47,7 +47,7 @@ func (i *ComputeTargetHTTPSProxyIdentity) FromExternal(ref string) error {
 		return err
 	}
 	if tokens[len(tokens)-2] != "targetHttpsProxies" {
-		return fmt.Errorf("format of ComputeTargetHTTPSProxy external=%q was not known (use %s/targetHttpsProxies/{{targetHttpsProxyID}}", ref, p)
+		return fmt.Errorf("format of ComputeTargetHTTPSProxy external=%q was not known (use %s/targetHttpsProxies/{{targetHttpsProxyID}})", ref, p)
 	}
 	i.ResourceID = tokens[len(tokens)-1]
 	i.ParentID = p

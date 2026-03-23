@@ -15,6 +15,8 @@
 package compute
 
 import (
+	"strings"
+
 	pb "cloud.google.com/go/compute/apiv1/computepb"
 	krm "github.com/GoogleCloudPlatform/k8s-config-connector/apis/compute/v1beta1"
 	"github.com/GoogleCloudPlatform/k8s-config-connector/pkg/controller/direct"
@@ -90,7 +92,7 @@ func ComputeTargetHTTPSProxySpec_v1beta1_FromProto(mapCtx *direct.MapContext, in
 		// based on the format.
 		// Classic: projects/{{project}}/global/sslCertificates/{{name}}
 		// CertManager: //certificatemanager.googleapis.com/projects/{{project}}/locations/{{location}}/certificates/{{name}}
-		if cert != "" && cert[0] == '/' {
+		if cert != "" && strings.Contains(cert, "certificatemanager.googleapis.com") {
 			out.CertificateManagerCertificates = append(out.CertificateManagerCertificates, krm.CertificateManagerCertificateRef{External: cert})
 		} else {
 			out.SslCertificates = append(out.SslCertificates, krm.ComputeSSLCertificateRef{External: cert})

@@ -49,7 +49,6 @@ func computeTargetHTTPSProxyFuzzer() fuzztesting.KRMFuzzer {
 	// KRM-only spec fields
 	f.SpecFields.Insert(".location")
 	f.SpecFields.Insert(".resourceID")
-	f.SpecFields.Insert(".projectRef")
 
 	// Status fields
 	f.StatusFields.Insert(".creation_timestamp")

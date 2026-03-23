@@ -99,9 +99,6 @@ type ComputeTargetHTTPSProxySpec struct {
 	// +kcc:proto:field=google.cloud.compute.v1.TargetHttpsProxy.quic_override
 	QuicOverride *string `json:"quicOverride,omitempty"`
 
-	// The project that this resource belongs to.
-	// ProjectRef *refsv1beta1.ProjectRef `json:"projectRef,omitempty"`
-
 	// Immutable. Optional. The name of the resource. Used for
 	// creation and acquisition. When unset, the value of `metadata.name`
 	// is used as the default.
