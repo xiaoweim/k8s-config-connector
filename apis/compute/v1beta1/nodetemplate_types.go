@@ -19,6 +19,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+// ComputeNodeTemplateGVK is the GroupVersionKind for the ComputeNodeTemplate resource.
 var ComputeNodeTemplateGVK = GroupVersion.WithKind("ComputeNodeTemplate")
 
 // +kcc:proto=google.cloud.compute.v1.NodeTemplateNodeTypeFlexibility
@@ -79,8 +80,7 @@ type ComputeNodeTemplateSpec struct {
 	// +kcc:proto:field=google.cloud.compute.v1.NodeTemplate.node_type_flexibility
 	NodeTypeFlexibility *NodeTemplateNodeTypeFlexibility `json:"nodeTypeFlexibility,omitempty"`
 
-	/* Immutable. Region where nodes using the node template will be created.
-	If it is not provided, the provider region is used. */
+	/* Immutable. Region where nodes using the node template will be created. */
 	// +required
 	// +kcc:proto:field=google.cloud.compute.v1.NodeTemplate.region
 	Region *string `json:"region"`
