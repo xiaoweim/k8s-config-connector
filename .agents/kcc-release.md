@@ -52,29 +52,45 @@ Your goal is to monitor the repo for release triggers and create actionable GitH
 ---
 
 ## BUMP ISSUE BODY TEMPLATE
-As part of the KCC release cycle, we need to perform a version bump for version `{{version}}`.
+# Role
+You are a release manager for the Config Connector (KCC) project.
+Your task is to perform a version bump for version `{{version}}`.
 
-### Instructions
-1.  **Preparation**: Make sure you are on the latest master: `git checkout master && git pull origin master`.
-2.  **Generation**: Run the release generation script with the new version as a positional argument: `./dev/release/generate-release.sh {{version}}`.
+# Task
+1.  **Preparation**:
+    - Ensure you are on the latest master: `git checkout master && git pull origin master`.
+2.  **Generation**:
+    - Run the release generation script with the new version as a positional argument: `./dev/release/generate-release.sh {{version}}`.
     - *Note: This script will automatically create a local branch named `release-{{version}}` and create the initial version-bump commit.*
 3.  **Push & PR**:
     - Push the generated branch to your fork: `git push origin release-{{version}}`.
-    - Create a Pull Request titled `Release {{version}}` with a body like "Automated version bump for KCC release {{version}} based on milestone due date."
+    - Create a Pull Request using GitHub CLI:
+      ```bash
+      gh pr create --title "Release {{version}}" --body "Automated version bump for KCC release {{version}} based on milestone due date." --head release-{{version}}
+      ```
 
 ---
 
 ## NOTES ISSUE BODY TEMPLATE
-The version bump for `{{VERSION}}` has been merged. We now need to draft the official release notes.
+# Role
+You are a release manager for the Config Connector (KCC) project.
+Your task is to draft the official release notes for version `{{VERSION}}`.
 
-### Instructions
-1.  **Identify Tags**:
+# Task
+1.  **Identify Version Range**:
     - Fetch latest tags: `git fetch --tags --force`.
-    - `CURRENT_TAG`: The tag corresponding to `v{{VERSION}}`.
-    - `PREVIOUS_TAG`: The tag immediately preceding it by creation date: `git tag --sort=-creatordate | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -n 2 | tail -n 1`.
-2.  **Wait for Workflow**: Ensure the `v{{VERSION}}` tag and its corresponding `release-<major>.<minor>` branch exist (created by the background tagging workflow).
+    - `CURRENT_TAG`: `v{{VERSION}}`.
+    - `PREVIOUS_TAG`: `git tag --sort=-creatordate | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -n 2 | tail -n 1`.
+2.  **Verify Tag Existence**:
+    - Ensure the `v{{VERSION}}` tag exists (wait if necessary as it is created by a background workflow triggered by the merge of the version bump PR): `git tag -l v{{VERSION}}`.
 3.  **Draft PR**:
-    - Create a temporary branch `draft-notes-{{VERSION}}`.
-    - Update `docs/releasenotes/release-{{MAJOR_MINOR}}.md` using `docs/releasenotes/template.md` as a base.
-    - **Generate Content**: Find contributors and identify changes using: `git log {{PREVIOUS_TAG}}..{{CURRENT_TAG}} --merges --pretty=format:"%s" | grep -o "#[0-9]*" | tr -d "#" | xargs -I {} gh pr view {} --json author,reviews --jq '.author.login, .reviews[].author.login' | sort | uniq | grep -v "kcc-release-bot"`.
-    - **Commit & Push**: Commit the changes and create a PR titled `Release Notes {{VERSION}}`.
+    - Create a temporary branch: `git checkout -b draft-notes-{{VERSION}}`.
+    - Draft the markdown file at `docs/releasenotes/release-{{MAJOR_MINOR}}.md` using `docs/releasenotes/template.md` as a base.
+    - **Generate Content**: Find contributors and identify changes (new resources, fields, fixes) between these tags:
+      ```bash
+      git log {{PREVIOUS_TAG}}..{{CURRENT_TAG}} --merges --pretty=format:"%s" | grep -o "#[0-9]*" | tr -d "#" | xargs -I {} gh pr view {} --json author,reviews --jq '.author.login, .reviews[].author.login' | sort | uniq | grep -v "kcc-release-bot"
+      ```
+    - **Commit & Push**:
+        - `git add . && git commit -m "Add release notes for {{VERSION}}"`
+        - `git push origin draft-notes-{{VERSION}}`
+        - `gh pr create --title "Release Notes {{VERSION}}" --body "Automated draft of release notes for version {{VERSION}} comparing {{PREVIOUS_TAG}} to {{CURRENT_TAG}}." --head draft-notes-{{VERSION}}`
