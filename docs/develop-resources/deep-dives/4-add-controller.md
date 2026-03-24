@@ -102,14 +102,14 @@ When migrating an existing resource, you'll want to support both the old (TF/DCL
         kind: ConfigConnectorContext
         metadata:
           name: configconnectorcontext.core.cnrm.cloud.google.com
-          namespace: my-namespace
+          namespace: ${NAMESPACE}
         spec:
-          googleServiceAccount: "{kcc-sa}@{my-project}.iam.gserviceaccount.com"
           experiments:
             controllerOverrides:
-              <KIND>.<GROUP>: direct
+            - group: <GROUP>
+              kind: <KIND>
+              controller: direct
         ```
-
 
 ### Scenario 3: Promoting an alpha direct resource to beta
 
