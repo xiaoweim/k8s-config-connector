@@ -74,11 +74,12 @@ spec:
                       items:
                         properties:
                           pscConnection:
-                            description: Detailed information of a PSC connection
-                              that is created through service connectivity automation.
+                            description: Optional. Detailed information of a PSC connection
+                              that is created by the user.
                             properties:
                               forwardingRuleRef:
-                                description: The PSC connection id.
+                                description: Required. The consumer side forwarding
+                                  rule.
                                 oneOf:
                                 - not:
                                     required:
@@ -115,11 +116,15 @@ spec:
                                   or Discovery endpoint.
                                 format: int32
                                 type: integer
+                            required:
+                            - forwardingRuleRef
                             type: object
                         type: object
                       type: array
+                      x-kubernetes-list-type: atomic
                   type: object
                 type: array
+                x-kubernetes-list-type: atomic
               instanceRef:
                 description: Required. The Memorystore instance reference of the endpoint.
                 oneOf:
@@ -149,8 +154,8 @@ spec:
                     type: string
                 type: object
               resourceID:
-                description: The MemorystoreInstanceEndpoint name. If not given, the
-                  metadata.name will be used.
+                description: Optional. The MemorystoreInstanceEndpoint name. If not
+                  given, the metadata.name will be used.
                 type: string
             required:
             - instanceRef
@@ -208,8 +213,9 @@ spec:
                           items:
                             properties:
                               pscConnection:
-                                description: Detailed information of a PSC connection
-                                  that is created through service connectivity automation.
+                                description: Optional. Detailed information of a PSC
+                                  connection that is created through service connectivity
+                                  automation.
                                 properties:
                                   connectionType:
                                     description: Output only. Type of the PSC connection.
@@ -230,8 +236,10 @@ spec:
                                 type: object
                             type: object
                           type: array
+                          x-kubernetes-list-type: atomic
                       type: object
                     type: array
+                    x-kubernetes-list-type: atomic
                 type: object
             type: object
         required:

@@ -3593,7 +3593,8 @@ func (in *Target) DeepCopyInto(out *Target) {
 	}
 	if in.MemorystoreInstanceServiceAttachmentRef != nil {
 		in, out := &in.MemorystoreInstanceServiceAttachmentRef, &out.MemorystoreInstanceServiceAttachmentRef
-		*out = (*in).DeepCopy()
+		*out = new(refsv1beta1.MemorystoreInstanceServiceAttachmentRef)
+		(*in).DeepCopyInto(*out)
 	}
 	if in.ServiceAttachmentRef != nil {
 		in, out := &in.ServiceAttachmentRef, &out.ServiceAttachmentRef

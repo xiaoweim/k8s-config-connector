@@ -75,7 +75,7 @@ func Endpoint_ConnectionDetail_FromProto(mapCtx *direct.MapContext, in *pb.Insta
 		return nil
 	}
 	out := &krm.Endpoint_ConnectionDetail{}
-	out.PscConnection = PscConnection_v1alpha1_FromProto(mapCtx, userConnection)
+	out.PscConnection = PscConnection_FromProto(mapCtx, userConnection)
 	return out
 }
 func Endpoint_ConnectionDetail_ToProto(mapCtx *direct.MapContext, in *krm.Endpoint_ConnectionDetail) *pb.Instance_ConnectionDetail {
@@ -83,7 +83,7 @@ func Endpoint_ConnectionDetail_ToProto(mapCtx *direct.MapContext, in *krm.Endpoi
 		return nil
 	}
 	out := &pb.Instance_ConnectionDetail{}
-	if oneof := PscConnection_v1alpha1_ToProto(mapCtx, in.PscConnection); oneof != nil {
+	if oneof := PscConnection_ToProto(mapCtx, in.PscConnection); oneof != nil {
 		out.Connection = &pb.Instance_ConnectionDetail_PscConnection{PscConnection: oneof}
 	}
 	return out
@@ -142,7 +142,7 @@ func MemorystoreInstanceEndpointSpec_ToProto(mapCtx *direct.MapContext, in *krm.
 	out.Endpoints = direct.Slice_ToProto(mapCtx, in.Endpoints, Endpoint_ToProto)
 	return out
 }
-func PscConnection_v1alpha1_FromProto(mapCtx *direct.MapContext, in *pb.PscConnection) *krm.PscConnection {
+func PscConnection_FromProto(mapCtx *direct.MapContext, in *pb.PscConnection) *krm.PscConnection {
 	if in == nil {
 		return nil
 	}
@@ -153,7 +153,7 @@ func PscConnection_v1alpha1_FromProto(mapCtx *direct.MapContext, in *pb.PscConne
 	out.ForwardingRuleRef = &computev1beta1.ForwardingRuleRef{External: in.GetForwardingRule()}
 	return out
 }
-func PscConnection_v1alpha1_ToProto(mapCtx *direct.MapContext, in *krm.PscConnection) *pb.PscConnection {
+func PscConnection_ToProto(mapCtx *direct.MapContext, in *krm.PscConnection) *pb.PscConnection {
 	if in == nil {
 		return nil
 	}
@@ -161,7 +161,9 @@ func PscConnection_v1alpha1_ToProto(mapCtx *direct.MapContext, in *krm.PscConnec
 	if in.Port != nil {
 		out.Ports = &pb.PscConnection_Port{Port: direct.ValueOf(in.Port)}
 	}
-	out.ForwardingRule = in.ForwardingRuleRef.External
+	if in.ForwardingRuleRef != nil {
+		out.ForwardingRule = in.ForwardingRuleRef.External
+	}
 	return out
 }
 func PscConnectionObservedState_v1alpha1_FromProto(mapCtx *direct.MapContext, in *pb.PscConnection) *krm.PscConnectionObservedState {

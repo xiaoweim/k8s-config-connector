@@ -46,7 +46,6 @@ func memorystoreInstanceEndpointFuzzer() fuzztesting.KRMFuzzer {
 	f.UnimplementedFields.Insert(".effective_maintenance_version")
 	f.UnimplementedFields.Insert(".encryption_info")
 	f.UnimplementedFields.Insert(".endpoints[].connections[].psc_auto_connection")
-	f.UnimplementedFields.Insert(".endpoints[].connections[].psc_connection.port")
 	f.UnimplementedFields.Insert(".engine_configs")
 	f.UnimplementedFields.Insert(".engine_version")
 	f.UnimplementedFields.Insert(".gcs_source")

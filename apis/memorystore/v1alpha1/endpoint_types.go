@@ -27,13 +27,17 @@ var MemorystoreInstanceEndpointGVK = GroupVersion.WithKind("MemorystoreInstanceE
 // +kcc:spec:proto=google.cloud.memorystore.v1.Instance
 type MemorystoreInstanceEndpointSpec struct {
 	// Required. The Memorystore instance reference of the endpoint.
+	// +required
 	InstanceRef *refsv1beta1.MemorystoreInstanceRef `json:"instanceRef"`
 
-	// The MemorystoreInstanceEndpoint name. If not given, the metadata.name will be used.
+	// Optional. The MemorystoreInstanceEndpoint name. If not given, the metadata.name will be used.
+	// +optional
 	ResourceID *string `json:"resourceID,omitempty"`
 
 	// Optional. Endpoints for the instance.
 	// +kcc:proto:field=google.cloud.memorystore.v1.Instance.endpoints
+	// +optional
+	// +listType=atomic
 	Endpoints []Endpoint `json:"endpoints,omitempty"`
 }
 
@@ -44,6 +48,7 @@ type MemorystoreInstanceEndpointStatus struct {
 	Conditions []v1alpha1.Condition `json:"conditions,omitempty"`
 
 	// ObservedGeneration is the generation of the resource that was most recently observed by the Config Connector controller. If this is equal to metadata.generation, then that means that the current reported status reflects the most recent desired state of the resource.
+	// +optional
 	ObservedGeneration *int64 `json:"observedGeneration,omitempty"`
 
 	// ObservedState is the state of the resource as most recently observed in GCP.
@@ -55,6 +60,8 @@ type MemorystoreInstanceEndpointStatus struct {
 type MemorystoreInstanceEndpointObservedState struct {
 	// Optional. Endpoints for the instance.
 	// +kcc:proto:field=google.cloud.memorystore.v1.Instance.endpoints
+	// +optional
+	// +listType=atomic
 	Endpoints []EndpointObservedState `json:"endpoints,omitempty"`
 }
 
@@ -63,25 +70,30 @@ type Endpoint struct {
 	// Optional. A group of PSC connections. They are created in the same VPC
 	//  network, one for each service attachment in the cluster.
 	// +kcc:proto:field=google.cloud.memorystore.v1.Instance.InstanceEndpoint.connections
+	// +optional
+	// +listType=atomic
 	Connections []Endpoint_ConnectionDetail `json:"connections,omitempty"`
 }
 
 // +kcc:proto=google.cloud.memorystore.v1.Instance.ConnectionDetail
 type Endpoint_ConnectionDetail struct {
-	// Detailed information of a PSC connection that is created through
-	//  service connectivity automation.
+	// Optional. Detailed information of a PSC connection that is created by the user.
 	// +kcc:proto:field=google.cloud.memorystore.v1.Instance.ConnectionDetail.psc_connection
+	// +optional
 	PscConnection *PscConnection `json:"pscConnection,omitempty"`
 }
 
-// +kcc:proto=google.cloud.memorystore.v1.Instance.PscConnection
+// +kcc:proto=google.cloud.memorystore.v1.PscConnection
 type PscConnection struct {
-	// The PSC connection id.
-	// +kcc:proto:field=google.cloud.memorystore.v1.Instance.PscConnection.forwarding_rule
-	ForwardingRuleRef *computev1beta1.ForwardingRuleRef `json:"forwardingRuleRef,omitempty"`
+	// Required. The consumer side forwarding rule.
+	// +kcc:proto:field=google.cloud.memorystore.v1.PscConnection.forwarding_rule
+	// +required
+	ForwardingRuleRef *computev1beta1.ForwardingRuleRef `json:"forwardingRuleRef"`
+
 	// Optional. The port number of the PSC connection.
 	//  Port will only be set for Primary/Reader or Discovery endpoint.
 	// +kcc:proto:field=google.cloud.memorystore.v1.PscConnection.port
+	// +optional
 	Port *int32 `json:"port,omitempty"`
 }
 
@@ -90,21 +102,25 @@ type EndpointObservedState struct {
 	// Optional. A group of PSC connections. They are created in the same VPC
 	//  network, one for each service attachment in the cluster.
 	// +kcc:proto:field=google.cloud.memorystore.v1.Instance.InstanceEndpoint.connections
+	// +optional
+	// +listType=atomic
 	Connections []Endpoint_ConnectionDetailObservedState `json:"connections,omitempty"`
 }
 
 // +kcc:observedstate:proto=google.cloud.memorystore.v1.Instance.ConnectionDetail
 type Endpoint_ConnectionDetailObservedState struct {
-	// Detailed information of a PSC connection that is created through
+	// Optional. Detailed information of a PSC connection that is created through
 	//  service connectivity automation.
 	// +kcc:proto:field=google.cloud.memorystore.v1.Instance.ConnectionDetail.psc_connection
+	// +optional
 	PscConnection *PscConnectionObservedState `json:"pscConnection,omitempty"`
 }
 
-// +kcc:observedstate:proto=google.cloud.memorystore.v1.Instance.PscConnection
+// +kcc:observedstate:proto=google.cloud.memorystore.v1.PscConnection
 type PscConnectionObservedState struct {
 	// Output only. The consumer project_id where the forwarding rule is created from.
 	// +kcc:proto:field=google.cloud.memorystore.v1.PscConnection.project_id
+	// +optional
 	ProjectID *string `json:"projectID,omitempty"`
 
 	// Output only. The status of the PSC connection: whether a connection exists
@@ -112,12 +128,14 @@ type PscConnectionObservedState struct {
 	//  periodically. Please use Private Service Connect APIs for the latest
 	//  status. For valid values,
 	//  see https://docs.cloud.google.com/memorystore/docs/valkey/reference/rest/v1/projects.locations.instances#pscconnectionstatus
-	// +kcc:proto:field=google.cloud.memorystore.v1.PscAutoConnection.psc_connection_status
+	// +kcc:proto:field=google.cloud.memorystore.v1.PscConnection.psc_connection_status
+	// +optional
 	PscConnectionStatus *string `json:"pscConnectionStatus,omitempty"`
 
 	// Output only. Type of the PSC connection. For valid values,
 	//  see https://docs.cloud.google.com/memorystore/docs/valkey/reference/rest/v1/projects.locations.instances#connectiontype
-	// +kcc:proto:field=google.cloud.memorystore.v1.PscAutoConnection.connection_type
+	// +kcc:proto:field=google.cloud.memorystore.v1.PscConnection.connection_type
+	// +optional
 	ConnectionType *string `json:"connectionType,omitempty"`
 }
 

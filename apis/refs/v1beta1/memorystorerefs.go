@@ -1,4 +1,4 @@
-// Copyright 2025 Google LLC
+// Copyright 2026 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,6 +19,9 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/GoogleCloudPlatform/k8s-config-connector/pkg/k8s"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -26,17 +29,21 @@ import (
 
 var _ Ref = &MemorystoreInstanceRef{}
 
-// MemorystoreInstanceRef defines the resource reference to MemorystoreInstance, which "External" field
+// MemorystoreInstanceRef defines the resource reference to MemorystoreInstance, whose "External" field
 // holds the GCP identifier for the KRM object.
+// +k8s:deepcopy-gen=true
 type MemorystoreInstanceRef struct {
 	// A reference to an externally managed MemorystoreInstance resource.
-	// Should be in the format "projects/{{projectID}}/locations/{{location}}/instances/{{instanceID}}".
+	//  Should be in the format "projects/{{projectID}}/locations/{{location}}/instances/{{instanceID}}".
+	// +optional
 	External string `json:"external,omitempty"`
 
 	// The name of a MemorystoreInstance resource.
+	// +optional
 	Name string `json:"name,omitempty"`
 
 	// The namespace of a MemorystoreInstance resource.
+	// +optional
 	Namespace string `json:"namespace,omitempty"`
 }
 
@@ -72,7 +79,7 @@ func (r *MemorystoreInstanceRef) ValidateExternal(ref string) error {
 	if len(parts) != 6 {
 		return fmt.Errorf("invalid external reference format: %s", ref)
 	}
-	if parts[0] != "projects" || parts[2] != "locations" || parts[4] != "instances" {
+	if parts[0] != "projects" || parts[1] == "" || parts[2] != "locations" || parts[3] == "" || parts[4] != "instances" || parts[5] == "" {
 		return fmt.Errorf("invalid external reference format: %s", ref)
 	}
 	return nil
@@ -89,4 +96,80 @@ func (r *MemorystoreInstanceRef) ValidateExternal(ref string) error {
 // `defaultNamespace“ will be used instead.
 func (r *MemorystoreInstanceRef) Normalize(ctx context.Context, reader client.Reader, defaultNamespace string) error {
 	return Normalize(ctx, reader, r, defaultNamespace)
+}
+
+var _ ExternalNormalizer = &MemorystoreInstanceServiceAttachmentRef{}
+
+// MemorystoreInstanceServiceAttachmentRef defines the resource reference to the GCP identifier
+// for the ServiceAttachment managed by the MemorystoreInstance pointed by the MemorystoreInstanceRef.
+// +k8s:deepcopy-gen=true
+type MemorystoreInstanceServiceAttachmentRef struct {
+	// A reference to a ServiceAttachment managed by a MemorystoreInstance resource.
+	// +optional
+	ServiceAttachmentExternal string `json:"serviceAttachmentExternal,omitempty"`
+
+	// The name of a MemorystoreInstance resource.
+	// +optional
+	MemorystoreInstanceName string `json:"memorystoreInstanceName,omitempty"`
+
+	// The namespace of a MemorystoreInstance resource.
+	// +optional
+	MemorystoreInstanceNamespace string `json:"memorystoreInstanceNamespace,omitempty"`
+
+	// The index of the PSC attachment details.
+	// +optional
+	PscAttachmentDetailsIndex *int `json:"pscAttachmentDetailsIndex,omitempty"`
+}
+
+func (r *MemorystoreInstanceServiceAttachmentRef) NormalizedExternal(ctx context.Context, reader client.Reader, otherNamespace string) (string, error) {
+	if r.ServiceAttachmentExternal == "" {
+		if r.MemorystoreInstanceName == "" || r.PscAttachmentDetailsIndex == nil {
+			return "", fmt.Errorf("must specify either serviceAttachmentExternal or (memorystoreInstanceName and pscAttachmentDetailsIndex)")
+		}
+
+		key := types.NamespacedName{
+			Namespace: r.MemorystoreInstanceNamespace,
+			Name:      r.MemorystoreInstanceName,
+		}
+		if key.Namespace == "" {
+			key.Namespace = otherNamespace
+		}
+		u := &unstructured.Unstructured{}
+		u.SetGroupVersionKind(schema.GroupVersionKind{
+			Group:   "memorystore.cnrm.cloud.google.com",
+			Version: "v1beta1",
+			Kind:    "MemorystoreInstance",
+		})
+		if err := reader.Get(ctx, key, u); err != nil {
+			if apierrors.IsNotFound(err) {
+				return "", k8s.NewReferenceNotFoundError(u.GroupVersionKind(), key)
+			}
+			return "", fmt.Errorf("reading referenced %s %s: %w", u.GroupVersionKind(), key, err)
+		}
+
+		// Read status.observedState.pscAttachmentDetails[PscAttachmentDetailsIndex]
+		// to retrieve the service attachment external.
+		pscAttachmentDetails, found, err := unstructured.NestedSlice(u.Object, "status", "observedState", "pscAttachmentDetails")
+		if err != nil {
+			return "", fmt.Errorf("getting status.observedState.pscAttachmentDetails[]: %w", err)
+		}
+		if !found {
+			return "", k8s.NewReferenceNotFoundError(u.GroupVersionKind(), key)
+		}
+		index := int(*r.PscAttachmentDetailsIndex)
+		if index < 0 || len(pscAttachmentDetails) <= index {
+			return "", fmt.Errorf("pscAttachmentDetailsIndex %d is out of range", index)
+		}
+
+		pscAttachmentDetail, ok := pscAttachmentDetails[index].(map[string]interface{})
+		if !ok {
+			return "", fmt.Errorf("failed getting status.observedState.pscAttachmentDetails[%d]", *r.PscAttachmentDetailsIndex)
+		}
+		serviceAttachmentExternal, ok := pscAttachmentDetail["serviceAttachment"].(string)
+		if !ok {
+			return "", fmt.Errorf("failed getting status.observedState.pscAttachmentDetails[%d].serviceAttachment", *r.PscAttachmentDetailsIndex)
+		}
+		r.ServiceAttachmentExternal = serviceAttachmentExternal
+	}
+	return r.ServiceAttachmentExternal, nil
 }

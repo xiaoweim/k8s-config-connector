@@ -474,7 +474,6 @@ func resolveForwardingRuleRefs(ctx context.Context, reader client.Reader, obj *k
 			serviceAttachmentExternal, err := obj.Spec.Target.MemorystoreInstanceServiceAttachmentRef.NormalizedExternal(ctx, reader, obj.GetNamespace())
 			if err != nil {
 				return err
-
 			}
 			obj.Spec.Target.MemorystoreInstanceServiceAttachmentRef.ServiceAttachmentExternal = serviceAttachmentExternal
 		}
