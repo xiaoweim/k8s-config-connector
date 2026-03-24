@@ -237,8 +237,8 @@ type CompareResult struct {
 // compareEquivalence checks whether the change from oldCRD to newCRD is equivalent.
 //
 // Equivalent means:
-//   - No fields are added or deleted (only status.externalRef and status.observedState,
-//     and their sub-fields, may be added under 'status')
+//   - No fields are added or deleted (only status.externalRef, status.observedState,
+//     and status.observedState's sub-fields, may be added under 'status')
 //   - Field names and types do not change (descriptions may change freely)
 //   - Adding spec.names.listKind is fine
 func compareEquivalence(oldCRD, newCRD *apiextensionsv1.CustomResourceDefinition) CompareResult {
@@ -320,7 +320,11 @@ func schemaEquivalenceDiff(version string, oldPaths, newPaths map[string]string)
 		}
 		if isUnderStatus(path) {
 			if isAllowedNewStatusField(path) {
-				notes = append(notes, fmt.Sprintf("%sfield added under status: %s (type: %s, allowed)", prefix, path, newPaths[path]))
+				if path == "status" {
+					notes = append(notes, fmt.Sprintf("%sstatus block added (allowed)", prefix))
+				} else {
+					notes = append(notes, fmt.Sprintf("%sfield added under status: %s (type: %s, allowed)", prefix, path, newPaths[path]))
+				}
 			} else {
 				diffs = append(diffs, fmt.Sprintf("%sfield added under status: %s (type: %s)", prefix, path, newPaths[path]))
 				lastDiffPrefix = path
@@ -338,7 +342,7 @@ func isAllowedNewStatusField(path string) bool {
 	switch {
 	case path == "status":
 		return true
-	case path == "status.externalRef" || strings.HasPrefix(path, "status.externalRef."):
+	case path == "status.externalRef":
 		return true
 	case path == "status.observedState" || strings.HasPrefix(path, "status.observedState."):
 		return true
