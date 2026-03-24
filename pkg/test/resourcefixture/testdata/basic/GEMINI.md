@@ -50,24 +50,25 @@ hack/compare-mock pkg/test/resourcefixture/testdata/basic/storage/v1beta1/storag
 
 ```bash
 # Run a specific fixture against MockGCP
-RUN_E2E=1 E2E_GCP_TARGET=mock go test -v ./tests/e2e -run TestAllInSeries/fixtures/storagebucketbasic
+RUN_E2E=1 E2E_GCP_TARGET=mock E2E_KUBE_TARGET=envtest go test -v ./tests/e2e -run TestAllInSeries/fixtures/storagebucketbasic
 
-# Run all fixtures in a service
-RUN_E2E=1 E2E_GCP_TARGET=mock go test -v ./tests/e2e -run TestAllInSeries/fixtures/storage
+# Run all fixtures for a service (matches any fixture with "storage" in its name)
+RUN_E2E=1 E2E_GCP_TARGET=mock E2E_KUBE_TARGET=envtest go test -v ./tests/e2e -run TestAllInSeries/fixtures/storage
 
 # Record against real GCP manually (not recommended over hack/record-gcp)
-RUN_E2E=1 E2E_GCP_TARGET=real WRITE_GOLDEN_OUTPUT=1 GOLDEN_OBJECT_CHECKS=1 GOLDEN_REQUEST_CHECKS=1 go test -v ./tests/e2e -run TestAllInSeries/fixtures/storagebucketbasic
+RUN_E2E=1 E2E_GCP_TARGET=real E2E_KUBE_TARGET=envtest WRITE_GOLDEN_OUTPUT=1 GOLDEN_OBJECT_CHECKS=1 GOLDEN_REQUEST_CHECKS=1 go test -v ./tests/e2e -run TestAllInSeries/fixtures/storagebucketbasic
 ```
 
 ## Creating a New Test
 
 1. **Scaffold**: Create the directory structure `.../basic/<service>/<version>/<kind>/<test-name>/`.
 2. **Manifests**: Add `create.yaml` and optionally `dependencies.yaml` or `update.yaml`.
+   - Ensure resources follow the order of their dependencies (dependencies first).
 3. **Record**: Run `hack/record-gcp <path>` to generate golden files. This requires real GCP credentials and an active project.
 4. **Mock**: Run `hack/compare-mock <path>` to ensure the test passes against MockGCP. If it fails, you may need to improve the MockGCP implementation.
 
 ## Best Practices
 
-- **Uniqueness**: The test framework appends a unique suffix to resource names, so you can use simple names in your YAML files.
+- **Uniqueness**: The test framework replaces `${uniqueId}` with a unique ID in your YAML files. It does *not* automatically append a suffix to resource names. You should explicitly use `${uniqueId}` in your resource names (e.g., `name: storagebucket-${uniqueId}`) to avoid collisions when running against real GCP.
 - **Normalization**: If tests are flaky due to volatile fields (e.g., server-generated IDs or timestamps), add normalization rules in the corresponding MockGCP service directory (e.g., `mockgcp/mockstorage/normalize.go`). Use `Previsit` or `ConfigureVisitor` to define replacement rules, ensuring they are scoped to the correct service URL.
-- **Dependencies**: Keep `dependencies.yaml` minimal. Only include resources directly required by the primary resource.
+- **Dependencies**: Keep `dependencies.yaml` minimal. Only include resources directly required by the primary resource. Resources in `dependencies.yaml` should follow the order of their dependencies.
