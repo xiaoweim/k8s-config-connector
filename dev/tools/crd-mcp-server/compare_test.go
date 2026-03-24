@@ -655,6 +655,106 @@ spec:
 			expectedDiffs: nil,
 			expectedNotes: []string{"[v1alpha1] field added under status: status.observedState (type: object, allowed)"},
 		},
+		{
+			name: "DisallowedStatusFieldTypeChange",
+			old: `
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: foos.example.com
+spec:
+  group: example.com
+  names:
+    kind: Foo
+    plural: foos
+  scope: Namespaced
+  versions:
+  - name: v1alpha1
+    served: true
+    storage: true
+    schema:
+      openAPIV3Schema:
+        type: object
+        properties:
+          status:
+            type: object
+            properties:
+              externalRef:
+                type: string
+`,
+			new: `
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: foos.example.com
+spec:
+  group: example.com
+  names:
+    kind: Foo
+    plural: foos
+  scope: Namespaced
+  versions:
+  - name: v1alpha1
+    served: true
+    storage: true
+    schema:
+      openAPIV3Schema:
+        type: object
+        properties:
+          status:
+            type: object
+            properties:
+              externalRef:
+                type: integer
+`,
+			expectedDiffs: []string{"[v1alpha1] field type changed: status.externalRef (string -> integer)"},
+			expectedNotes: nil,
+		},
+		{
+			name: "ChangeListKind",
+			old: `
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: foos.example.com
+spec:
+  group: example.com
+  names:
+    kind: Foo
+    listKind: OldList
+    plural: foos
+  scope: Namespaced
+  versions:
+  - name: v1alpha1
+    served: true
+    storage: true
+    schema:
+      openAPIV3Schema:
+        type: object
+`,
+			new: `
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: foos.example.com
+spec:
+  group: example.com
+  names:
+    kind: Foo
+    listKind: NewList
+    plural: foos
+  scope: Namespaced
+  versions:
+  - name: v1alpha1
+    served: true
+    storage: true
+    schema:
+      openAPIV3Schema:
+        type: object
+`,
+			expectedDiffs: []string{`spec.names.listKind changed: "OldList" -> "NewList"`},
+			expectedNotes: nil,
+		},
 	}
 
 	for _, tc := range cases {
