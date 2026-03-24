@@ -33,7 +33,7 @@ go run . generate-types \
   --resource ComputeSecurityPolicy:SecurityPolicy \
   --resource ComputeSubnetwork:Subnetwork \
   --resource ComputeTargetTcpProxy:TargetTcpProxy \
-  --resource ComputeTargetHTTPSProxy:TargetHttpsProxy
+  --resource ComputeTargetHTTPSProxy:TargetHttpsProxy \
   --resource ComputeNodeTemplate:NodeTemplate
 
 go run . generate-mapper \
