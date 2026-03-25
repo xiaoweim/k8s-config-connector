@@ -60,7 +60,7 @@ Your task is to perform a version bump for version `{{version}}`.
 1.  **Preparation**:
     - Ensure you are on the latest master: `git checkout master && git pull origin master`.
 2.  **Generation**:
-    - Run the release generation script with the new version as a positional argument: `./dev/release/generate-release.sh {{version}}`.
+    - Run the release generation script with the new version as a positional argument: `./dev/release/generate-release.sh "{{version}}"`.
     - *Note: This script will automatically create a local branch named `release-{{version}}` and create the initial version-bump commit.*
 3.  **Push & PR**:
     - Push the generated branch to your fork: `git push origin release-{{version}}`.
