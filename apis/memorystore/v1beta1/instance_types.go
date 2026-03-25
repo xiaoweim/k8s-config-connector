@@ -143,6 +143,10 @@ type MemorystoreInstanceObservedState struct {
 	// Optional. Endpoints for the instance.
 	// +kcc:proto:field=google.cloud.memorystore.v1.Instance.endpoints
 	Endpoints []Instance_InstanceEndpointObservedState `json:"endpoints,omitempty"`
+
+	// Output only. List of PSC connections for the instance.
+	// +kcc:proto:field=google.cloud.memorystore.v1.Instance.psc_attachment_details
+	PscAttachmentDetails []PscAttachmentDetailObservedState `json:"pscAttachmentDetails,omitempty"`
 }
 
 // +kcc:proto=google.cloud.memorystore.v1.Instance.ConnectionDetail
@@ -151,10 +155,6 @@ type Instance_ConnectionDetail struct {
 	//  service connectivity automation.
 	// +kcc:proto:field=google.cloud.memorystore.v1.Instance.ConnectionDetail.psc_auto_connection
 	PscAutoConnection *PscAutoConnection `json:"pscAutoConnection,omitempty"`
-
-	// Detailed information of a PSC connection that is created by the user.
-	// +kcc:proto:field=google.cloud.memorystore.v1.Instance.ConnectionDetail.psc_connection
-	// PscConnection *PscConnection `json:"pscConnection,omitempty"`
 }
 
 // +kcc:proto=google.cloud.memorystore.v1.Instance.InstanceEndpoint
@@ -163,18 +163,6 @@ type Instance_InstanceEndpoint struct {
 	//  network, one for each service attachment in the cluster.
 	// +kcc:proto:field=google.cloud.memorystore.v1.Instance.InstanceEndpoint.connections
 	Connections []Instance_ConnectionDetail `json:"connections,omitempty"`
-}
-
-// +kcc:proto=google.cloud.memorystore.v1.Instance.StateInfo
-type Instance_StateInfo struct {
-}
-
-// +kcc:proto=google.cloud.memorystore.v1.Instance.StateInfo.UpdateInfo
-type Instance_StateInfo_UpdateInfo struct {
-}
-
-// +kcc:proto=google.cloud.memorystore.v1.NodeConfig
-type NodeConfig struct {
 }
 
 // +kcc:proto=google.cloud.memorystore.v1.PersistenceConfig
@@ -263,9 +251,6 @@ type Instance_ConnectionDetailObservedState struct {
 	// service connectivity automation.
 	// +kcc:proto:field=google.cloud.memorystore.v1.Instance.ConnectionDetail.psc_auto_connection
 	PscAutoConnection *PscAutoConnectionObservedState `json:"pscAutoConnection,omitempty"`
-	// Detailed information of a PSC connection that is created by the user.
-	// +kcc:proto:field=google.cloud.memorystore.v1.Instance.ConnectionDetail.psc_connection
-	// PscConnection *PscConnectionObservedState `json:"pscConnection,omitempty"`
 }
 
 // +kcc:observedstate:proto=google.cloud.memorystore.v1.Instance.InstanceEndpoint
@@ -280,7 +265,7 @@ type Instance_InstanceEndpointObservedState struct {
 type Instance_StateInfoObservedState struct {
 	// Output only. Describes ongoing update when instance state is UPDATING.
 	// +kcc:proto:field=google.cloud.memorystore.v1.Instance.StateInfo.update_info
-	UpdateInfo *Instance_StateInfo_UpdateInfo `json:"updateInfo,omitempty"`
+	UpdateInfo *Instance_StateInfo_UpdateInfoObservedState `json:"updateInfo,omitempty"`
 }
 
 // +kcc:observedstate:proto=google.cloud.memorystore.v1.Instance.StateInfo.UpdateInfo
@@ -299,6 +284,16 @@ type NodeConfigObservedState struct {
 	// Output only. Memory size in GB of the node.
 	// +kcc:proto:field=google.cloud.memorystore.v1.NodeConfig.size_gb
 	SizeGB *float64 `json:"sizeGB,omitempty"`
+}
+
+// +kcc:observedstate:proto=google.cloud.memorystore.v1.PscAttachmentDetail
+type PscAttachmentDetailObservedState struct {
+	// Output only. Service attachment URI which your self-created PscConnection
+	// should use as target.
+	ServiceAttachment *string `json:"serviceAttachment,omitempty"`
+
+	// Output only. Type of Psc endpoint.
+	ConnectionType *string `json:"connectionType,omitempty"`
 }
 
 // +kcc:observedstate:proto=google.cloud.memorystore.v1.PscAutoConnection

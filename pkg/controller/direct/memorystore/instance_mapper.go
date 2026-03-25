@@ -103,26 +103,12 @@ func Instance_InstanceEndpointObservedState_ToProto(mapCtx *direct.MapContext, i
 	out.Connections = direct.Slice_ToProto(mapCtx, in.Connections, Instance_ConnectionDetailObservedState_ToProto)
 	return out
 }
-func Instance_StateInfo_FromProto(mapCtx *direct.MapContext, in *pb.Instance_StateInfo) *krmv1beta1.Instance_StateInfo {
-	if in == nil {
-		return nil
-	}
-	out := &krmv1beta1.Instance_StateInfo{}
-	return out
-}
-func Instance_StateInfo_ToProto(mapCtx *direct.MapContext, in *krmv1beta1.Instance_StateInfo) *pb.Instance_StateInfo {
-	if in == nil {
-		return nil
-	}
-	out := &pb.Instance_StateInfo{}
-	return out
-}
 func Instance_StateInfoObservedState_FromProto(mapCtx *direct.MapContext, in *pb.Instance_StateInfo) *krmv1beta1.Instance_StateInfoObservedState {
 	if in == nil {
 		return nil
 	}
 	out := &krmv1beta1.Instance_StateInfoObservedState{}
-	out.UpdateInfo = Instance_StateInfo_UpdateInfo_FromProto(mapCtx, in.GetUpdateInfo())
+	out.UpdateInfo = Instance_StateInfo_UpdateInfoObservedState_FromProto(mapCtx, in.GetUpdateInfo())
 	return out
 }
 func Instance_StateInfoObservedState_ToProto(mapCtx *direct.MapContext, in *krmv1beta1.Instance_StateInfoObservedState) *pb.Instance_StateInfo {
@@ -130,23 +116,9 @@ func Instance_StateInfoObservedState_ToProto(mapCtx *direct.MapContext, in *krmv
 		return nil
 	}
 	out := &pb.Instance_StateInfo{}
-	if oneof := Instance_StateInfo_UpdateInfo_ToProto(mapCtx, in.UpdateInfo); oneof != nil {
+	if oneof := Instance_StateInfo_UpdateInfoObservedState_ToProto(mapCtx, in.UpdateInfo); oneof != nil {
 		out.Info = &pb.Instance_StateInfo_UpdateInfo_{UpdateInfo: oneof}
 	}
-	return out
-}
-func Instance_StateInfo_UpdateInfo_FromProto(mapCtx *direct.MapContext, in *pb.Instance_StateInfo_UpdateInfo) *krmv1beta1.Instance_StateInfo_UpdateInfo {
-	if in == nil {
-		return nil
-	}
-	out := &krmv1beta1.Instance_StateInfo_UpdateInfo{}
-	return out
-}
-func Instance_StateInfo_UpdateInfo_ToProto(mapCtx *direct.MapContext, in *krmv1beta1.Instance_StateInfo_UpdateInfo) *pb.Instance_StateInfo_UpdateInfo {
-	if in == nil {
-		return nil
-	}
-	out := &pb.Instance_StateInfo_UpdateInfo{}
 	return out
 }
 func Instance_StateInfo_UpdateInfoObservedState_FromProto(mapCtx *direct.MapContext, in *pb.Instance_StateInfo_UpdateInfo) *krmv1beta1.Instance_StateInfo_UpdateInfoObservedState {
@@ -179,6 +151,8 @@ func MemorystoreInstanceObservedState_FromProto(mapCtx *direct.MapContext, in *p
 	out.Uid = direct.LazyPtr(in.GetUid())
 	out.NodeConfig = NodeConfigObservedState_FromProto(mapCtx, in.GetNodeConfig())
 	out.Endpoints = direct.Slice_FromProto(mapCtx, in.Endpoints, Instance_InstanceEndpointObservedState_FromProto)
+	// TODO: fix psc attachment details
+	// out.PscAttachmentDetails = direct.Slice_FromProto(mapCtx, in.PscAttachmentDetails, PscAttachmentDetailObservedState_FromProto)
 	return out
 }
 func MemorystoreInstanceObservedState_ToProto(mapCtx *direct.MapContext, in *krmv1beta1.MemorystoreInstanceObservedState) *pb.Instance {
@@ -193,6 +167,8 @@ func MemorystoreInstanceObservedState_ToProto(mapCtx *direct.MapContext, in *krm
 	out.Uid = direct.ValueOf(in.Uid)
 	out.NodeConfig = NodeConfigObservedState_ToProto(mapCtx, in.NodeConfig)
 	out.Endpoints = direct.Slice_ToProto(mapCtx, in.Endpoints, Instance_InstanceEndpointObservedState_ToProto)
+	// TODO: fix psc attachment details
+	// out.PscAttachmentDetails = direct.Slice_ToProto(mapCtx, in.PscAttachmentDetails, PscAttachmentDetailObservedState_ToProto)
 	return out
 }
 func MemorystoreInstanceSpec_FromProto(mapCtx *direct.MapContext, in *pb.Instance) *krmv1beta1.MemorystoreInstanceSpec {
@@ -213,6 +189,7 @@ func MemorystoreInstanceSpec_FromProto(mapCtx *direct.MapContext, in *pb.Instanc
 	out.DeletionProtectionEnabled = in.DeletionProtectionEnabled
 	out.Endpoints = direct.Slice_FromProto(mapCtx, in.Endpoints, Instance_InstanceEndpoint_FromProto)
 	out.Mode = direct.Enum_FromProto(mapCtx, in.GetMode())
+
 	return out
 }
 func MemorystoreInstanceSpec_ToProto(mapCtx *direct.MapContext, in *krmv1beta1.MemorystoreInstanceSpec) *pb.Instance {
@@ -233,20 +210,6 @@ func MemorystoreInstanceSpec_ToProto(mapCtx *direct.MapContext, in *krmv1beta1.M
 	out.DeletionProtectionEnabled = in.DeletionProtectionEnabled
 	out.Endpoints = direct.Slice_ToProto(mapCtx, in.Endpoints, Instance_InstanceEndpoint_ToProto)
 	out.Mode = direct.Enum_ToProto[pb.Instance_Mode](mapCtx, in.Mode)
-	return out
-}
-func NodeConfig_FromProto(mapCtx *direct.MapContext, in *pb.NodeConfig) *krmv1beta1.NodeConfig {
-	if in == nil {
-		return nil
-	}
-	out := &krmv1beta1.NodeConfig{}
-	return out
-}
-func NodeConfig_ToProto(mapCtx *direct.MapContext, in *krmv1beta1.NodeConfig) *pb.NodeConfig {
-	if in == nil {
-		return nil
-	}
-	out := &pb.NodeConfig{}
 	return out
 }
 func NodeConfigObservedState_FromProto(mapCtx *direct.MapContext, in *pb.NodeConfig) *krmv1beta1.NodeConfigObservedState {
