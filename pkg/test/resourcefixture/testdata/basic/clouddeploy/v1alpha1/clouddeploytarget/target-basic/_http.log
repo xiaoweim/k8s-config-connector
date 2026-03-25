@@ -16,7 +16,14 @@ X-Xss-Protection: 0
 {
   "error": {
     "code": 404,
-    "message": "Resource 'projects/${projectId}/locations/us-central1/targets/clouddeploytarget-${uniqueId}' was not found",
+    "errors": [
+      {
+        "domain": "global",
+        "message": "target \"projects/${projectId}/locations/us-central1/targets/clouddeploytarget-${uniqueId}\" not found",
+        "reason": "notFound"
+      }
+    ],
+    "message": "target \"projects/${projectId}/locations/us-central1/targets/clouddeploytarget-${uniqueId}\" not found",
     "status": "NOT_FOUND"
   }
 }
@@ -50,12 +57,10 @@ X-Frame-Options: SAMEORIGIN
 X-Xss-Protection: 0
 
 {
-  "done": false,
   "metadata": {
     "@type": "type.googleapis.com/google.cloud.deploy.v1.OperationMetadata",
     "apiVersion": "v1",
     "createTime": "2024-04-01T12:34:56.123456Z",
-    "requestedCancellation": false,
     "target": "projects/${projectId}/locations/us-central1/targets/clouddeploytarget-${uniqueId}",
     "verb": "create"
   },
@@ -86,7 +91,6 @@ X-Xss-Protection: 0
     "apiVersion": "v1",
     "createTime": "2024-04-01T12:34:56.123456Z",
     "endTime": "2024-04-01T12:34:56.123456Z",
-    "requestedCancellation": false,
     "target": "projects/${projectId}/locations/us-central1/targets/clouddeploytarget-${uniqueId}",
     "verb": "create"
   },
@@ -110,8 +114,7 @@ X-Xss-Protection: 0
           "DEPLOY",
           "VERIFY",
           "PREDEPLOY",
-          "POSTDEPLOY",
-          "ANALYSIS"
+          "POSTDEPLOY"
         ]
       }
     ],
@@ -164,8 +167,7 @@ X-Xss-Protection: 0
         2,
         3,
         4,
-        5,
-        6
+        5
       ]
     }
   ],
@@ -212,12 +214,10 @@ X-Frame-Options: SAMEORIGIN
 X-Xss-Protection: 0
 
 {
-  "done": false,
   "metadata": {
     "@type": "type.googleapis.com/google.cloud.deploy.v1.OperationMetadata",
     "apiVersion": "v1",
     "createTime": "2024-04-01T12:34:56.123456Z",
-    "requestedCancellation": false,
     "target": "projects/${projectId}/locations/us-central1/targets/clouddeploytarget-${uniqueId}",
     "verb": "update"
   },
@@ -248,7 +248,6 @@ X-Xss-Protection: 0
     "apiVersion": "v1",
     "createTime": "2024-04-01T12:34:56.123456Z",
     "endTime": "2024-04-01T12:34:56.123456Z",
-    "requestedCancellation": false,
     "target": "projects/${projectId}/locations/us-central1/targets/clouddeploytarget-${uniqueId}",
     "verb": "update"
   },
@@ -272,8 +271,7 @@ X-Xss-Protection: 0
           "DEPLOY",
           "VERIFY",
           "PREDEPLOY",
-          "POSTDEPLOY",
-          "ANALYSIS"
+          "POSTDEPLOY"
         ]
       }
     ],
@@ -326,8 +324,7 @@ X-Xss-Protection: 0
         2,
         3,
         4,
-        5,
-        6
+        5
       ]
     }
   ],
@@ -362,12 +359,10 @@ X-Frame-Options: SAMEORIGIN
 X-Xss-Protection: 0
 
 {
-  "done": false,
   "metadata": {
     "@type": "type.googleapis.com/google.cloud.deploy.v1.OperationMetadata",
     "apiVersion": "v1",
     "createTime": "2024-04-01T12:34:56.123456Z",
-    "requestedCancellation": false,
     "target": "projects/${projectId}/locations/us-central1/targets/clouddeploytarget-${uniqueId}",
     "verb": "delete"
   },
@@ -398,7 +393,6 @@ X-Xss-Protection: 0
     "apiVersion": "v1",
     "createTime": "2024-04-01T12:34:56.123456Z",
     "endTime": "2024-04-01T12:34:56.123456Z",
-    "requestedCancellation": false,
     "target": "projects/${projectId}/locations/us-central1/targets/clouddeploytarget-${uniqueId}",
     "verb": "delete"
   },
