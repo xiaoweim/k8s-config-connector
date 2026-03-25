@@ -155,8 +155,6 @@ func (s *instanceServer) populateDefaultsForInstance(name *instanceName, obj *pb
 		for _, endpoint := range obj.Endpoints {
 			for i, connections := range endpoint.Connections {
 				attachmentDetails := obj.PscAttachmentDetails[i%2]
-			for i, connections := range endpoint.Connections {
-				attachmentDetails := obj.PscAttachmentDetails[i%2]
 				if connections.GetPscAutoConnection() != nil {
 					autoConnection := connections.GetPscAutoConnection()
 					network, err := s.parseNetworkName(autoConnection.GetNetwork())
@@ -208,8 +206,6 @@ func (s *instanceServer) populateDefaultsForInstance(name *instanceName, obj *pb
 	}
 	if obj.NodeConfig == nil {
 		obj.NodeConfig = &pb.NodeConfig{}
-	if obj.NodeConfig == nil {
-		obj.NodeConfig = &pb.NodeConfig{}
 	}
 	nodeCapacity := float64(1)
 	switch obj.GetNodeType() {
@@ -225,13 +221,11 @@ func (s *instanceServer) populateDefaultsForInstance(name *instanceName, obj *pb
 		return fmt.Errorf("unknown node type %v", obj.GetNodeType())
 	}
 	obj.NodeConfig.SizeGb = *mocks.PtrTo(float64(nodeCapacity))
-	obj.NodeConfig.SizeGb = *mocks.PtrTo(float64(nodeCapacity))
 
 	if obj.TransitEncryptionMode == pb.Instance_TRANSIT_ENCRYPTION_MODE_UNSPECIFIED {
 		obj.TransitEncryptionMode = pb.Instance_TRANSIT_ENCRYPTION_DISABLED
 	}
 	if obj.Uid == "" {
-		obj.Uid = fmt.Sprintf("instance-%s", name.Name)
 		obj.Uid = fmt.Sprintf("instance-%s", name.Name)
 	}
 	if obj.ZoneDistributionConfig == nil {
@@ -350,30 +344,22 @@ func (r *instanceServer) UpdateInstance(ctx context.Context, req *pb.UpdateInsta
 		switch path {
 		case "labels":
 			obj.Labels = req.Instance.Labels
-		case "labels":
-			obj.Labels = req.Instance.Labels
 		case "replicaCount":
 			obj.ReplicaCount = req.Instance.ReplicaCount
 		case "shardCount":
 			obj.ShardCount = req.Instance.ShardCount
 		case "nodeType":
 			obj.NodeType = req.Instance.NodeType
-		case "nodeType":
-			obj.NodeType = req.Instance.NodeType
 		case "persistenceConfig":
 			obj.PersistenceConfig = req.Instance.PersistenceConfig
-		case "engineVersion":
-			obj.EngineVersion = req.Instance.EngineVersion
 		case "engineVersion":
 			obj.EngineVersion = req.Instance.EngineVersion
 		case "engineConfigs":
 			obj.EngineConfigs = req.Instance.EngineConfigs
 		case "deletionProtectionEnabled":
 			obj.DeletionProtectionEnabled = req.Instance.DeletionProtectionEnabled
-		case "deletionProtectionEnabled":
-			obj.DeletionProtectionEnabled = req.Instance.DeletionProtectionEnabled
 		case "endpoints":
-			obj.Endpoints = req.Instance.Endpoints
+			obj.Endpoints = r.mergeEndpoints(obj.Endpoints, req.Instance.Endpoints)
 		case "maintenancePolicy":
 			if req.Instance.MaintenancePolicy != nil {
 				obj.MaintenancePolicy = req.Instance.MaintenancePolicy
@@ -425,6 +411,21 @@ func (r *instanceServer) UpdateInstance(ctx context.Context, req *pb.UpdateInsta
 		r.storage.Update(ctx, fqn, retObj)
 		return retObj, nil
 	})
+}
+
+func (r *instanceServer) mergeEndpoints(current, updates []*pb.Instance_InstanceEndpoint) []*pb.Instance_InstanceEndpoint {
+	var results []*pb.Instance_InstanceEndpoint
+	for _, item := range current {
+		if item != nil && len(item.Connections) > 0 && item.Connections[0].GetPscAutoConnection() != nil {
+			results = append(results, item)
+		}
+	}
+	for _, item := range updates {
+		if item != nil && len(item.Connections) > 0 && item.Connections[0].GetPscConnection() != nil {
+			results = append(results, item)
+		}
+	}
+	return results
 }
 
 func (r *instanceServer) DeleteInstance(ctx context.Context, req *pb.DeleteInstanceRequest) (*longrunning.Operation, error) {
