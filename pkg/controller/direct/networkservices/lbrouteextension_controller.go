@@ -234,8 +234,6 @@ func (a *LBRouteExtensionAdapter) resolve(ctx context.Context) (*networkservices
 	return desiredProto, nil
 }
 
-
-
 func (a *LBRouteExtensionAdapter) Create(ctx context.Context, createOp *directbase.CreateOperation) error {
 	log := klog.FromContext(ctx)
 	log.V(2).Info("creating LBRouteExtension", "name", a.id)
