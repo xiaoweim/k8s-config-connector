@@ -2,7 +2,6 @@
 name: KCC Release Scheduler
 description: Monitors milestones and merged PRs to create release-related tasks as GitHub Issues.
 schedule: "@daily"
-skipPR: true
 ---
 
 <!--
@@ -61,7 +60,7 @@ Your task is to perform a version bump for version `{{version}}`.
 
 # Task
 1.  **Preparation**:
-    - Ensure you are on a clean and updated master branch: `git fetch origin master && git checkout master && git reset --hard origin/master`.
+    - Ensure you are on a clean and updated master branch: `git fetch upstream master && git checkout master && git reset --hard upstream/master`.
 2.  **Generation**:
     - Run the release generation script with the new version as a positional argument: `./dev/release/generate-release.sh "{{version}}"`.
     - *Note: This script will automatically create a local branch named `release-{{version}}` and create the initial version-bump commit.*
@@ -82,7 +81,7 @@ Your task is to draft the official release notes for version `{{VERSION}}`.
 # Task
 1.  **Identify Version Range**:
     - Fetch latest tags: `git fetch --tags --force`.
-    - `CURRENT_TAG`: `v{{VERSION}}`. (e.g. if the milestone is 1.148, the current tag is `v1.148.0`).
+    - `CURRENT_TAG`: `v{{VERSION}}`.
     - `PREVIOUS_TAG`: The version previously recorded in the repository: `git tag --sort=-creatordate | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -n 2 | tail -n 1`.
 2.  **Verify Tag Existence**:
     - Ensure the `v{{VERSION}}` tag exists (wait if necessary as it is created by a background workflow triggered by the merge of the version bump PR): `git tag -l v{{VERSION}}`.
