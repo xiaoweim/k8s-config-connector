@@ -29,23 +29,26 @@ Your goal is to monitor the repo for release triggers and create actionable GitH
 1.  **Identify Milestone**:
     - Identify open milestones: `gh api repos/GoogleCloudPlatform/k8s-config-connector/milestones?state=open`.
     - Check if any milestone's `due_on` matches exactly tomorrow (`date -u -d '+1 day' +%Y-%m-%d`).
-    - If a milestone is due tomorrow (e.g., `1.147`), identify its version.
+    - If a milestone is due tomorrow (e.g., `1.148`), append `.0` to it to form the release version (e.g., `1.148.0`).
+    - Note: The previous version is the version in `version/VERSION` file.
 2.  **Verify Necessity**:
-    - Check if an issue or PR titled "Release [version]" already exists (open or closed): `gh issue list --state all --search "Release {{version}}"` and `gh pr list --state all --search "Release {{version}}"`.
+    - Let `VERSION` be `{{milestone}}.0`.
+    - Check if an issue or PR titled "Release {{VERSION}}" already exists (open or closed): `gh issue list --state all --search "Release {{VERSION}}"` and `gh pr list --state all --search "Release {{VERSION}}"`.
     - If NO tracking issue or PR exists, create a new issue for the release version bump.
-3.  **Task**: Create an issue titled `Release version bump for {{version}}` with the labels `overseer`, `area/release`, `priority/high`.
+3.  **Task**: Create an issue titled `Release version bump for {{VERSION}}` with the labels `overseer`, `area/release`, `priority/high`.
     - Include the instructions from the **BUMP ISSUE BODY TEMPLATE** below.
 
 # Scan Trigger: Draft Release Notes
-1.  **Identify Merged Release**:
-    - Look for the most recently merged PR with the title pattern "Release [0-9].[0-9]*": `gh pr list --state merged --search "Release " --limit 1 --json title,number,mergedAt`.
-    - Extract the version number (e.g., `1.147.0`).
+1.  **Identify Latest Tag**:
+    - Fetch latest tags: `git fetch --tags --force`.
+    - Get the most recent semantic version tag: `CURRENT_TAG=$(git tag --sort=-creatordate | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -n 1)`.
 2.  **Verify Necessity**:
-    - Extract `VERSION` (e.g., `1.147.0`) and `MAJOR_MINOR` (e.g., `1.147`).
+    - Check if an official release exists for this tag on GitHub: `gh release view "${CURRENT_TAG}"`. If this succeeds, the release is already published; skip Scenario 2.
+    - Extract `VERSION` from `CURRENT_TAG` (e.g., `1.147.0`) and `MAJOR_MINOR` (e.g., `1.147`).
     - Check if the release notes file already contains this version: `grep "{{VERSION}}" docs/releasenotes/release-{{MAJOR_MINOR}}.md`.
     - Check if a GitHub Issue for these notes already exists: `gh issue list --state all --search "Draft release notes for {{VERSION}}"`.
     - Check if a pending PR exists for these notes: `gh pr list --state open --search "Release Notes {{VERSION}}"`.
-    - If the version is NOT documented, no issue exists, and no open PR exists, create a new issue.
+    - If the release is NOT published, the version is NOT documented, and no issue/PR exists, create a new issue.
 3.  **Task**: Create an issue titled `Draft release notes for {{VERSION}}` with the labels `overseer`, `area/release`, `priority/medium`.
     - Include the instructions from the **NOTES ISSUE BODY TEMPLATE** below.
 
@@ -63,10 +66,10 @@ Your task is to perform a version bump for version `{{version}}`.
     - Run the release generation script with the new version as a positional argument: `./dev/release/generate-release.sh "{{version}}"`.
     - *Note: This script will automatically create a local branch named `release-{{version}}` and create the initial version-bump commit.*
 3.  **Push & PR**:
-    - Push the generated branch to your fork, using force if necessary to overwrite previous attempts: `git push -uf origin release-{{version}}`.
+    - Push the generated branch to your fork: `git push origin release-{{version}}`.
     - Create a Pull Request using GitHub CLI:
       ```bash
-      gh pr create --title "Release {{version}}" --body "Automated version bump for KCC release {{version}} based on milestone due date." --head release-{{version}}
+      gh pr create --title "Release {{version}}" --body "Config Connector Release {{version}}" --head release-{{version}}
       ```
 
 ---
@@ -79,8 +82,8 @@ Your task is to draft the official release notes for version `{{VERSION}}`.
 # Task
 1.  **Identify Version Range**:
     - Fetch latest tags: `git fetch --tags --force`.
-    - `CURRENT_TAG`: `v{{VERSION}}`.
-    - `PREVIOUS_TAG`: `git tag --sort=-creatordate | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -n 2 | tail -n 1`.
+    - `CURRENT_TAG`: `v{{VERSION}}`. (e.g. if the milestone is 1.148, the current tag is `v1.148.0`).
+    - `PREVIOUS_TAG`: The version previously recorded in the repository: `git tag --sort=-creatordate | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -n 2 | tail -n 1`.
 2.  **Verify Tag Existence**:
     - Ensure the `v{{VERSION}}` tag exists (wait if necessary as it is created by a background workflow triggered by the merge of the version bump PR): `git tag -l v{{VERSION}}`.
 3.  **Draft PR**:
