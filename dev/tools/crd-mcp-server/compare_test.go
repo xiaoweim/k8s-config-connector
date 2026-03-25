@@ -786,7 +786,7 @@ spec:
 		if len(result.Notes) != 3 {
 			t.Fatalf("Expected 3 notes (externalRef, observedState, observedState.bar), but got %d: %v", len(result.Notes), result.Notes)
 		}
-		if !slices.ContainsFunc(result.Notes, func(note string) bool { return strings.Contains(note, "status.externalRef") }) {
+		if !slices.ContainsFunc(result.Notes, func(note string) bool { return strings.Contains(note, " status.externalRef ") }) {
 			t.Errorf("Expected note for status.externalRef, but it was not found. Result notes: %v", result.Notes)
 		}
 		if !slices.ContainsFunc(result.Notes, func(note string) bool { return strings.Contains(note, " status.observedState ") }) {
@@ -855,7 +855,7 @@ spec:
 	if len(result.Notes) != 1 {
 		t.Fatalf("expected 1 note, got %d: %v", len(result.Notes), result.Notes)
 	}
-	if !slices.ContainsFunc(result.Notes, func(note string) bool { return strings.Contains(note, "status.observedState") }) {
+	if !slices.ContainsFunc(result.Notes, func(note string) bool { return strings.Contains(note, " status.observedState ") }) {
 		t.Errorf("Expected note for status.observedState, but it was not found. Result notes: %v", result.Notes)
 	}
 }
