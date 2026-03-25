@@ -102,7 +102,7 @@ func (m *modelTarget) AdapterForObject(ctx context.Context, op *directbase.Adapt
 func (m *modelTarget) AdapterForURL(ctx context.Context, url string) (directbase.Adapter, error) {
 	id := &krm.CloudDeployTargetIdentity{}
 	if err := id.FromExternal(url); err != nil {
-		return nil, err
+		return nil, nil
 	}
 
 	// Get clouddeploy GCP client
