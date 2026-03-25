@@ -86,12 +86,19 @@ func (m *modelLBRouteExtension) AdapterForObject(ctx context.Context, op *direct
 		return nil, err
 	}
 
+	mapCtx := &direct.MapContext{}
+	desiredProto := NetworkServicesLBRouteExtensionSpec_ToProto(mapCtx, &desired.Spec)
+	if mapCtx.Err() != nil {
+		return nil, mapCtx.Err()
+	}
+	desiredProto.Labels = label.NewGCPLabelsFromK8sLabels(u.GetLabels())
+
 	return &LBRouteExtensionAdapter{
-		id:        id,
-		gcpClient: gcpClient,
-		desired:   desired,
-		reader:    reader,
-		labels:    label.NewGCPLabelsFromK8sLabels(u.GetLabels()),
+		id:           id,
+		gcpClient:    gcpClient,
+		desired:      desired,
+		reader:       reader,
+		desiredProto: desiredProto,
 	}, nil
 }
 
@@ -101,12 +108,12 @@ func (m *modelLBRouteExtension) AdapterForURL(ctx context.Context, url string) (
 }
 
 type LBRouteExtensionAdapter struct {
-	id        *krm.LBRouteExtensionIdentity
-	gcpClient *gcp.DepClient
-	desired   *krm.NetworkServicesLBRouteExtension
-	reader    client.Reader
-	actual    *networkservicespb.LbRouteExtension
-	labels    map[string]string
+	id           *krm.LBRouteExtensionIdentity
+	gcpClient    *gcp.DepClient
+	desired      *krm.NetworkServicesLBRouteExtension
+	reader       client.Reader
+	actual       *networkservicespb.LbRouteExtension
+	desiredProto *networkservicespb.LbRouteExtension
 }
 
 var _ directbase.Adapter = &LBRouteExtensionAdapter{}
@@ -183,7 +190,7 @@ func (a *LBRouteExtensionAdapter) resolve(ctx context.Context) (*networkservices
 		}
 
 		// Ensure the forwarding rule is in the same project as the LBRouteExtension.
-		if refProject := extractProjectID(ref.External); refProject != "" && refProject != projectID {
+		if refProject := common.ExtractProjectID(ref.External); refProject == "" || refProject != projectID {
 			return nil, fmt.Errorf("cross-project references are not supported for LBRouteExtension: forwardingRule %q is in project %q, but LBRouteExtension is in project %q", ref.External, refProject, projectID)
 		}
 	}
@@ -199,7 +206,7 @@ func (a *LBRouteExtensionAdapter) resolve(ctx context.Context) (*networkservices
 				extension.BackendServiceRef.External = external
 
 				// Ensure the backend service is in the same project as the LBRouteExtension.
-				if refProject := extractProjectID(external); refProject != "" && refProject != projectID {
+				if refProject := common.ExtractProjectID(external); refProject == "" || refProject != projectID {
 					return nil, fmt.Errorf("cross-project references are not supported for LBRouteExtension: backendService %q is in project %q, but LBRouteExtension is in project %q", external, refProject, projectID)
 				}
 			}
@@ -208,7 +215,7 @@ func (a *LBRouteExtensionAdapter) resolve(ctx context.Context) (*networkservices
 					return nil, fmt.Errorf("resolving wasmPluginRef: %w", err)
 				}
 				// Ensure the wasm plugin is in the same project as the LBRouteExtension.
-				if refProject := extractProjectID(extension.WasmPluginRef.External); refProject != "" && refProject != projectID {
+				if refProject := common.ExtractProjectID(extension.WasmPluginRef.External); refProject == "" || refProject != projectID {
 					return nil, fmt.Errorf("cross-project references are not supported for LBRouteExtension: wasmPlugin %q is in project %q, but LBRouteExtension is in project %q", extension.WasmPluginRef.External, refProject, projectID)
 				}
 			}
@@ -222,39 +229,12 @@ func (a *LBRouteExtensionAdapter) resolve(ctx context.Context) (*networkservices
 	}
 
 	// Set GCP Labels
-	desiredProto.Labels = a.labels
+	desiredProto.Labels = a.desiredProto.Labels
 
 	return desiredProto, nil
 }
 
-func extractProjectID(resourceName string) string {
-	if resourceName == "" {
-		return ""
-	}
-	if strings.HasPrefix(resourceName, "https://") {
-		tokens := strings.Split(resourceName, "/")
-		for i, token := range tokens {
-			if token == "projects" && i+1 < len(tokens) {
-				return tokens[i+1]
-			}
-		}
-	}
-	if strings.HasPrefix(resourceName, "//") {
-		tokens := strings.Split(resourceName, "/")
-		for i, token := range tokens {
-			if token == "projects" && i+1 < len(tokens) {
-				return tokens[i+1]
-			}
-		}
-	}
-	if strings.HasPrefix(resourceName, "projects/") {
-		tokens := strings.Split(resourceName, "/")
-		if len(tokens) > 1 {
-			return tokens[1]
-		}
-	}
-	return ""
-}
+
 
 func (a *LBRouteExtensionAdapter) Create(ctx context.Context, createOp *directbase.CreateOperation) error {
 	log := klog.FromContext(ctx)
