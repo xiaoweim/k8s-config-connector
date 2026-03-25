@@ -58,12 +58,12 @@ Your task is to perform a version bump for version `{{version}}`.
 
 # Task
 1.  **Preparation**:
-    - Ensure you are on the latest master: `git checkout master && git pull origin master`.
+    - Ensure you are on a clean and updated master branch: `git fetch origin master && git checkout master && git reset --hard origin/master`.
 2.  **Generation**:
     - Run the release generation script with the new version as a positional argument: `./dev/release/generate-release.sh "{{version}}"`.
     - *Note: This script will automatically create a local branch named `release-{{version}}` and create the initial version-bump commit.*
 3.  **Push & PR**:
-    - Push the generated branch to your fork: `git push origin release-{{version}}`.
+    - Push the generated branch to your fork, using force if necessary to overwrite previous attempts: `git push -uf origin release-{{version}}`.
     - Create a Pull Request using GitHub CLI:
       ```bash
       gh pr create --title "Release {{version}}" --body "Automated version bump for KCC release {{version}} based on milestone due date." --head release-{{version}}
@@ -91,6 +91,6 @@ Your task is to draft the official release notes for version `{{VERSION}}`.
       git log {{PREVIOUS_TAG}}..{{CURRENT_TAG}} --merges --pretty=format:"%s" | grep -o "#[0-9]*" | tr -d "#" | xargs -I {} gh pr view {} --json author,reviews --jq '.author.login, .reviews[].author.login' | sort | uniq | grep -v "kcc-release-bot"
       ```
     - **Commit & Push**:
-        - `git add . && git commit -m "Add release notes for {{VERSION}}"`
+        - `git add docs/releasenotes/release-{{MAJOR_MINOR}}.md && git commit -m "Add release notes for {{VERSION}}"`
         - `git push origin draft-notes-{{VERSION}}`
         - `gh pr create --title "Release Notes {{VERSION}}" --body "Automated draft of release notes for version {{VERSION}} comparing {{PREVIOUS_TAG}} to {{CURRENT_TAG}}." --head draft-notes-{{VERSION}}`
