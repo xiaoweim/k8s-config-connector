@@ -1,0 +1,260 @@
+// Copyright 2026 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package mcp
+
+import (
+	"context"
+	"encoding/json"
+	"strings"
+	"testing"
+
+	"github.com/mark3labs/mcp-go/mcp"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/client-go/discovery"
+	dynamicfake "k8s.io/client-go/dynamic/fake"
+)
+
+type mockDiscovery struct {
+	discovery.DiscoveryInterface
+	resources []*metav1.APIResourceList
+}
+
+func (m *mockDiscovery) ServerPreferredResources() ([]*metav1.APIResourceList, error) {
+	return m.resources, nil
+}
+
+func TestHandleListKCCResources(t *testing.T) {
+	scheme := runtime.NewScheme()
+	gvr := schema.GroupVersionResource{Group: "storage.cnrm.cloud.google.com", Version: "v1beta1", Resource: "storagebuckets"}
+	dynamicClient := dynamicfake.NewSimpleDynamicClientWithCustomListKinds(scheme, map[schema.GroupVersionResource]string{
+		gvr: "StorageBucketList",
+	})
+	discoveryClient := &mockDiscovery{
+		resources: []*metav1.APIResourceList{
+			{
+				GroupVersion: "storage.cnrm.cloud.google.com/v1beta1",
+				APIResources: []metav1.APIResource{
+					{Name: "storagebuckets", Kind: "StorageBucket", Namespaced: true},
+				},
+			},
+		},
+	}
+
+	sc := &serverContext{
+		dynamicClient:   dynamicClient,
+		discoveryClient: discoveryClient,
+	}
+
+	// Create a fake resource
+	obj := &unstructured.Unstructured{
+		Object: map[string]interface{}{
+			"apiVersion": "storage.cnrm.cloud.google.com/v1beta1",
+			"kind":       "StorageBucket",
+			"metadata": map[string]interface{}{
+				"name":      "test-bucket",
+				"namespace": "test-ns",
+				"annotations": map[string]interface{}{
+					"cnrm.cloud.google.com/project-id": "test-project",
+				},
+			},
+		},
+	}
+	_, err := dynamicClient.Resource(gvr).Namespace("test-ns").Create(context.Background(), obj, metav1.CreateOptions{})
+	if err != nil {
+		t.Fatalf("failed to create fake resource: %v", err)
+	}
+
+	req := mcp.CallToolRequest{
+		Params: mcp.CallToolParams{
+			Arguments: map[string]interface{}{
+				"kind": "StorageBucket",
+			},
+		},
+	}
+
+	res, err := sc.handleListKCCResources(context.Background(), req)
+	if err != nil {
+		t.Fatalf("handleListKCCResources failed: %v", err)
+	}
+
+	if res.IsError {
+		t.Fatalf("tool returned error: %v", res.Content[0].(mcp.TextContent).Text)
+	}
+
+	text := res.Content[0].(mcp.TextContent).Text
+	if !strings.Contains(text, "test-bucket") {
+		t.Errorf("expected output to contain test-bucket, got %s", text)
+	}
+	if !strings.Contains(text, "test-project") {
+		t.Errorf("expected output to contain test-project, got %s", text)
+	}
+}
+
+func TestHandleGetKCCCRDSchema(t *testing.T) {
+	scheme := runtime.NewScheme()
+	crdGVR := schema.GroupVersionResource{Group: "apiextensions.k8s.io", Version: "v1", Resource: "customresourcedefinitions"}
+	dynamicClient := dynamicfake.NewSimpleDynamicClientWithCustomListKinds(scheme, map[schema.GroupVersionResource]string{
+		crdGVR: "CustomResourceDefinitionList",
+	})
+	sc := &serverContext{
+		dynamicClient: dynamicClient,
+	}
+
+	crd := &unstructured.Unstructured{
+		Object: map[string]interface{}{
+			"apiVersion": "apiextensions.k8s.io/v1",
+			"kind":       "CustomResourceDefinition",
+			"metadata": map[string]interface{}{
+				"name": "storagebuckets.storage.cnrm.cloud.google.com",
+			},
+			"spec": map[string]interface{}{
+				"group": "storage.cnrm.cloud.google.com",
+				"names": map[string]interface{}{
+					"kind": "StorageBucket",
+				},
+				"versions": []interface{}{
+					map[string]interface{}{
+						"name":   "v1beta1",
+						"served": true,
+						"schema": map[string]interface{}{
+							"openAPIV3Schema": map[string]interface{}{
+								"type": "object",
+								"properties": map[string]interface{}{
+									"spec": map[string]interface{}{
+										"type": "object",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	_, err := dynamicClient.Resource(crdGVR).Create(context.Background(), crd, metav1.CreateOptions{})
+	if err != nil {
+		t.Fatalf("failed to create fake CRD: %v", err)
+	}
+
+	req := mcp.CallToolRequest{
+		Params: mcp.CallToolParams{
+			Arguments: map[string]interface{}{
+				"kind": "StorageBucket",
+			},
+		},
+	}
+
+	res, err := sc.handleGetKCCCRDSchema(context.Background(), req)
+	if err != nil {
+		t.Fatalf("handleGetKCCCRDSchema failed: %v", err)
+	}
+
+	if res.IsError {
+		t.Fatalf("tool returned error: %v", res.Content[0].(mcp.TextContent).Text)
+	}
+
+	text := res.Content[0].(mcp.TextContent).Text
+	var schema map[string]interface{}
+	if err := json.Unmarshal([]byte(text), &schema); err != nil {
+		t.Fatalf("failed to unmarshal schema JSON: %v", err)
+	}
+
+	if schema["type"] != "object" {
+		t.Errorf("expected type object, got %v", schema["type"])
+	}
+}
+
+func TestHandleDescribeKCCResource(t *testing.T) {
+	scheme := runtime.NewScheme()
+	gvr := schema.GroupVersionResource{Group: "storage.cnrm.cloud.google.com", Version: "v1beta1", Resource: "storagebuckets"}
+	dynamicClient := dynamicfake.NewSimpleDynamicClientWithCustomListKinds(scheme, map[schema.GroupVersionResource]string{
+		gvr: "StorageBucketList",
+	})
+	discoveryClient := &mockDiscovery{
+		resources: []*metav1.APIResourceList{
+			{
+				GroupVersion: "storage.cnrm.cloud.google.com/v1beta1",
+				APIResources: []metav1.APIResource{
+					{Name: "storagebuckets", Kind: "StorageBucket", Namespaced: true},
+				},
+			},
+		},
+	}
+
+	sc := &serverContext{
+		dynamicClient:   dynamicClient,
+		discoveryClient: discoveryClient,
+	}
+
+	// Create a fake resource with status and conditions
+	obj := &unstructured.Unstructured{
+		Object: map[string]interface{}{
+			"apiVersion": "storage.cnrm.cloud.google.com/v1beta1",
+			"kind":       "StorageBucket",
+			"metadata": map[string]interface{}{
+				"name":      "test-bucket",
+				"namespace": "test-ns",
+			},
+			"status": map[string]interface{}{
+				"conditions": []interface{}{
+					map[string]interface{}{
+						"type":    "Ready",
+						"status":  "True",
+						"reason":  "UpToDate",
+						"message": "Resource is ready",
+					},
+				},
+			},
+		},
+	}
+	_, err := dynamicClient.Resource(gvr).Namespace("test-ns").Create(context.Background(), obj, metav1.CreateOptions{})
+	if err != nil {
+		t.Fatalf("failed to create fake resource: %v", err)
+	}
+
+	req := mcp.CallToolRequest{
+		Params: mcp.CallToolParams{
+			Arguments: map[string]interface{}{
+				"kind":      "StorageBucket",
+				"namespace": "test-ns",
+				"name":      "test-bucket",
+			},
+		},
+	}
+
+	res, err := sc.handleDescribeKCCResource(context.Background(), req)
+	if err != nil {
+		t.Fatalf("handleDescribeKCCResource failed: %v", err)
+	}
+
+	if res.IsError {
+		t.Fatalf("tool returned error: %v", res.Content[0].(mcp.TextContent).Text)
+	}
+
+	text := res.Content[0].(mcp.TextContent).Text
+	if !strings.Contains(text, "test-bucket") {
+		t.Errorf("expected output to contain test-bucket, got %s", text)
+	}
+	if !strings.Contains(text, "UpToDate") {
+		t.Errorf("expected output to contain UpToDate, got %s", text)
+	}
+	if !strings.Contains(text, "Resource is ready") {
+		t.Errorf("expected output to contain 'Resource is ready', got %s", text)
+	}
+}
+

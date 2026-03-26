@@ -18,6 +18,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"strings"
 
 	"github.com/mark3labs/mcp-go/mcp"
@@ -25,7 +26,7 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
-	"sigs.k8s.io/yaml"
+	"k8s.io/apimachinery/pkg/util/yaml"
 )
 
 func (sc *serverContext) handleGetKCCCRDSchema(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
@@ -91,18 +92,20 @@ func (sc *serverContext) handleApplyKCCYAML(ctx context.Context, request mcp.Cal
 		return mcp.NewToolResultError(fmt.Sprintf("Missing yaml: %v", err)), nil
 	}
 
-	// Split YAML in case there are multiple documents
-	docs := strings.Split(yamlStr, "\n---")
+	decoder := yaml.NewYAMLOrJSONDecoder(strings.NewReader(yamlStr), 4096)
 	var results []string
 
-	for _, doc := range docs {
-		if strings.TrimSpace(doc) == "" {
-			continue
+	for {
+		var obj unstructured.Unstructured
+		if err := decoder.Decode(&obj); err != nil {
+			if err == io.EOF {
+				break
+			}
+			return mcp.NewToolResultError(fmt.Sprintf("failed to decode YAML: %v", err)), nil
 		}
 
-		var obj unstructured.Unstructured
-		if err := yaml.Unmarshal([]byte(doc), &obj); err != nil {
-			return mcp.NewToolResultError(fmt.Sprintf("failed to unmarshal YAML: %v", err)), nil
+		if len(obj.Object) == 0 {
+			continue
 		}
 
 		gvk := obj.GroupVersionKind()
@@ -135,6 +138,10 @@ func (sc *serverContext) handleApplyKCCYAML(ctx context.Context, request mcp.Cal
 			appliedObj := res.(*unstructured.Unstructured)
 			results = append(results, fmt.Sprintf("Successfully applied %s/%s (%s), resourceVersion: %s", namespace, name, gvk.Kind, appliedObj.GetResourceVersion()))
 		}
+	}
+
+	if len(results) == 0 {
+		return mcp.NewToolResultText("No resources found in YAML."), nil
 	}
 
 	return mcp.NewToolResultText(strings.Join(results, "\n")), nil
