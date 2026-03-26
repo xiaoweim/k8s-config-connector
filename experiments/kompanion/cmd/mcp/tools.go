@@ -1,0 +1,299 @@
+// Copyright 2026 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package mcp
+
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"strings"
+
+	"github.com/mark3labs/mcp-go/mcp"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/types"
+	"sigs.k8s.io/yaml"
+)
+
+func (sc *serverContext) handleGetKCCCRDSchema(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	kind, err := request.RequireString("kind")
+	if err != nil {
+		return mcp.NewToolResultError(fmt.Sprintf("Missing kind: %v", err)), nil
+	}
+
+	crdGVR := schema.GroupVersionResource{Group: "apiextensions.k8s.io", Version: "v1", Resource: "customresourcedefinitions"}
+	crds, err := sc.dynamicClient.Resource(crdGVR).List(ctx, metav1.ListOptions{})
+	if err != nil {
+		return mcp.NewToolResultError(fmt.Sprintf("failed to list CRDs: %v", err)), nil
+	}
+
+	var targetCRD *unstructured.Unstructured
+	for _, crd := range crds.Items {
+		crdKind, found, _ := unstructured.NestedString(crd.Object, "spec", "names", "kind")
+		if found && crdKind == kind {
+			group, _, _ := unstructured.NestedString(crd.Object, "spec", "group")
+			if strings.HasSuffix(group, ".cnrm.cloud.google.com") {
+				targetCRD = &crd
+				break
+			}
+		}
+	}
+
+	if targetCRD == nil {
+		return mcp.NewToolResultError(fmt.Sprintf("KCC CRD for kind %s not found", kind)), nil
+	}
+
+	versions, found, _ := unstructured.NestedSlice(targetCRD.Object, "spec", "versions")
+	if !found || len(versions) == 0 {
+		return mcp.NewToolResultError(fmt.Sprintf("no versions found for CRD %s", kind)), nil
+	}
+
+	// Find the served version, preferably the latest one
+	var schemaObj interface{}
+	for _, v := range versions {
+		verMap := v.(map[string]interface{})
+		served, _ := verMap["served"].(bool)
+		if served {
+			schemaObj, _, _ = unstructured.NestedFieldNoCopy(verMap, "schema", "openAPIV3Schema")
+			// We take the first served version for now
+			break
+		}
+	}
+
+	if schemaObj == nil {
+		return mcp.NewToolResultError(fmt.Sprintf("no schema found for CRD %s", kind)), nil
+	}
+
+	schemaJSON, err := json.MarshalIndent(schemaObj, "", "  ")
+	if err != nil {
+		return mcp.NewToolResultError(fmt.Sprintf("failed to marshal schema: %v", err)), nil
+	}
+
+	return mcp.NewToolResultText(string(schemaJSON)), nil
+}
+
+func (sc *serverContext) handleApplyKCCYAML(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	yamlStr, err := request.RequireString("yaml")
+	if err != nil {
+		return mcp.NewToolResultError(fmt.Sprintf("Missing yaml: %v", err)), nil
+	}
+
+	// Split YAML in case there are multiple documents
+	docs := strings.Split(yamlStr, "\n---")
+	var results []string
+
+	for _, doc := range docs {
+		if strings.TrimSpace(doc) == "" {
+			continue
+		}
+
+		var obj unstructured.Unstructured
+		if err := yaml.Unmarshal([]byte(doc), &obj); err != nil {
+			return mcp.NewToolResultError(fmt.Sprintf("failed to unmarshal YAML: %v", err)), nil
+		}
+
+		gvk := obj.GroupVersionKind()
+		gvr, err := sc.findGVR(gvk)
+		if err != nil {
+			return mcp.NewToolResultError(fmt.Sprintf("failed to find GVR for %v: %v", gvk, err)), nil
+		}
+
+		namespace := obj.GetNamespace()
+		name := obj.GetName()
+
+		var res interface{}
+		var applyErr error
+
+		// Use Server-Side Apply (Patch with SSA)
+		data, err := json.Marshal(obj.Object)
+		if err != nil {
+			return mcp.NewToolResultError(fmt.Sprintf("failed to marshal object: %v", err)), nil
+		}
+
+		force := true
+		res, applyErr = sc.dynamicClient.Resource(gvr).Namespace(namespace).Patch(ctx, name, types.ApplyPatchType, data, metav1.PatchOptions{
+			FieldManager: "kompanion-mcp",
+			Force:        &force,
+		})
+
+		if applyErr != nil {
+			results = append(results, fmt.Sprintf("Failed to apply %s/%s (%s): %v", namespace, name, gvk.Kind, applyErr))
+		} else {
+			appliedObj := res.(*unstructured.Unstructured)
+			results = append(results, fmt.Sprintf("Successfully applied %s/%s (%s), resourceVersion: %s", namespace, name, gvk.Kind, appliedObj.GetResourceVersion()))
+		}
+	}
+
+	return mcp.NewToolResultText(strings.Join(results, "\n")), nil
+}
+
+func (sc *serverContext) handleDescribeKCCResource(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	kind, err := request.RequireString("kind")
+	if err != nil {
+		return mcp.NewToolResultError(fmt.Sprintf("Missing kind: %v", err)), nil
+	}
+	namespace, err := request.RequireString("namespace")
+	if err != nil {
+		return mcp.NewToolResultError(fmt.Sprintf("Missing namespace: %v", err)), nil
+	}
+	name, err := request.RequireString("name")
+	if err != nil {
+		return mcp.NewToolResultError(fmt.Sprintf("Missing name: %v", err)), nil
+	}
+
+	gvr, err := sc.findGVRByKind(kind)
+	if err != nil {
+		return mcp.NewToolResultError(fmt.Sprintf("failed to find GVR for kind %s: %v", kind, err)), nil
+	}
+
+	obj, err := sc.dynamicClient.Resource(gvr).Namespace(namespace).Get(ctx, name, metav1.GetOptions{})
+	if err != nil {
+		return mcp.NewToolResultError(fmt.Sprintf("failed to get resource: %v", err)), nil
+	}
+
+	status, found, _ := unstructured.NestedMap(obj.Object, "status")
+	if !found {
+		return mcp.NewToolResultText(fmt.Sprintf("Resource %s/%s found but has no status field.", namespace, name)), nil
+	}
+
+	conditions, _, _ := unstructured.NestedSlice(status, "conditions")
+	var sb strings.Builder
+	sb.WriteString(fmt.Sprintf("Resource: %s/%s (%s)\n", namespace, name, kind))
+	if len(conditions) > 0 {
+		sb.WriteString("Conditions:\n")
+		for _, c := range conditions {
+			cond := c.(map[string]interface{})
+			statusVal, _ := cond["status"].(string)
+			reason, _ := cond["reason"].(string)
+			message, _ := cond["message"].(string)
+			typeVal, _ := cond["type"].(string)
+			sb.WriteString(fmt.Sprintf("  - Type: %s, Status: %s, Reason: %s\n", typeVal, statusVal, reason))
+			if message != "" {
+				sb.WriteString(fmt.Sprintf("    Message: %s\n", message))
+			}
+		}
+	} else {
+		sb.WriteString("No conditions found.\n")
+	}
+
+	statusJSON, _ := json.MarshalIndent(status, "", "  ")
+	sb.WriteString("\nFull Status:\n")
+	sb.WriteString(string(statusJSON))
+
+	return mcp.NewToolResultText(sb.String()), nil
+}
+
+func (sc *serverContext) handleListKCCResources(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	kind := request.GetString("kind", "")
+	namespace := request.GetString("namespace", "")
+
+	var gvrs []schema.GroupVersionResource
+	if kind != "" {
+		gvr, err := sc.findGVRByKind(kind)
+		if err != nil {
+			return mcp.NewToolResultError(fmt.Sprintf("failed to find GVR for kind %s: %v", kind, err)), nil
+		}
+		gvrs = append(gvrs, gvr)
+	} else {
+		// List all KCC resources
+		apiResourceLists, err := sc.discoveryClient.ServerPreferredResources()
+		if err != nil {
+			return mcp.NewToolResultError(fmt.Sprintf("failed to get preferred resources: %v", err)), nil
+		}
+		for _, apiResourceList := range apiResourceLists {
+			if !strings.Contains(apiResourceList.GroupVersion, ".cnrm.cloud.google.com/") {
+				continue
+			}
+			gv, _ := schema.ParseGroupVersion(apiResourceList.GroupVersion)
+			for _, apiResource := range apiResourceList.APIResources {
+				if !strings.Contains(apiResource.Name, "/") { // skip subresources
+					gvrs = append(gvrs, schema.GroupVersionResource{
+						Group:    gv.Group,
+						Version:  gv.Version,
+						Resource: apiResource.Name,
+					})
+				}
+			}
+		}
+	}
+
+	var results []string
+	for _, gvr := range gvrs {
+		list, err := sc.dynamicClient.Resource(gvr).Namespace(namespace).List(ctx, metav1.ListOptions{})
+		if err != nil {
+			// Skip errors for individual resource types
+			continue
+		}
+		for _, item := range list.Items {
+			projectID := item.GetAnnotations()["cnrm.cloud.google.com/project-id"]
+			if projectID == "" {
+				projectID = "n/a"
+			}
+			results = append(results, fmt.Sprintf("- Kind: %s, Namespace: %s, Name: %s, ProjectID: %s", item.GetKind(), item.GetNamespace(), item.GetName(), projectID))
+		}
+	}
+
+	if len(results) == 0 {
+		return mcp.NewToolResultText("No KCC resources found."), nil
+	}
+
+	return mcp.NewToolResultText(strings.Join(results, "\n")), nil
+}
+
+func (sc *serverContext) findGVR(gvk schema.GroupVersionKind) (schema.GroupVersionResource, error) {
+	apiResourceLists, err := sc.discoveryClient.ServerPreferredResources()
+	if err != nil {
+		return schema.GroupVersionResource{}, err
+	}
+	for _, apiResourceList := range apiResourceLists {
+		if apiResourceList.GroupVersion != gvk.GroupVersion().String() {
+			continue
+		}
+		for _, apiResource := range apiResourceList.APIResources {
+			if apiResource.Kind == gvk.Kind && !strings.Contains(apiResource.Name, "/") {
+				return schema.GroupVersionResource{
+					Group:    gvk.Group,
+					Version:  gvk.Version,
+					Resource: apiResource.Name,
+				}, nil
+			}
+		}
+	}
+	return schema.GroupVersionResource{}, fmt.Errorf("GVR not found for %v", gvk)
+}
+
+func (sc *serverContext) findGVRByKind(kind string) (schema.GroupVersionResource, error) {
+	apiResourceLists, err := sc.discoveryClient.ServerPreferredResources()
+	if err != nil {
+		return schema.GroupVersionResource{}, err
+	}
+	for _, apiResourceList := range apiResourceLists {
+		if !strings.Contains(apiResourceList.GroupVersion, ".cnrm.cloud.google.com/") {
+			continue
+		}
+		gv, _ := schema.ParseGroupVersion(apiResourceList.GroupVersion)
+		for _, apiResource := range apiResourceList.APIResources {
+			if apiResource.Kind == kind && !strings.Contains(apiResource.Name, "/") {
+				return schema.GroupVersionResource{
+					Group:    gv.Group,
+					Version:  gv.Version,
+					Resource: apiResource.Name,
+				}, nil
+			}
+		}
+	}
+	return schema.GroupVersionResource{}, fmt.Errorf("GVR not found for kind %s", kind)
+}
