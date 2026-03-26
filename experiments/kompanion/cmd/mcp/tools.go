@@ -21,14 +21,17 @@ import (
 	"io"
 	"sort"
 	"strings"
+	"sync"
 
 	"github.com/mark3labs/mcp-go/mcp"
+	"golang.org/x/sync/errgroup"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/yaml"
+	"k8s.io/apimachinery/pkg/version"
 	sigyaml "sigs.k8s.io/yaml"
 )
 
@@ -85,10 +88,10 @@ func (sc *serverContext) handleGetKCCCRDSchema(ctx context.Context, request mcp.
 			continue
 		}
 
-		// Otherwise prefer v1beta1 over v1alpha1, etc.
+		// Otherwise prefer v1 over v1beta1, etc. using Kube-aware version strings
 		bestName, _ := bestVersion["name"].(string)
 		currName, _ := verMap["name"].(string)
-		if strings.Compare(currName, bestName) > 0 {
+		if version.CompareKubeAwareVersionStrings(currName, bestName) > 0 {
 			bestVersion = verMap
 		}
 	}
@@ -160,19 +163,24 @@ func (sc *serverContext) handleApplyKCCYAML(ctx context.Context, request mcp.Cal
 		var res interface{}
 		var applyErr error
 
-		// Use Server-Side Apply (Patch with SSA)
-		data, err := json.Marshal(obj.Object)
-		if err != nil {
-			return mcp.NewToolResultError(fmt.Sprintf("failed to marshal object: %v", err)), nil
+		// Use Server-Side Apply (Patch with SSA) if name is specified.
+		// If name is empty (e.g. generateName is used), fall back to Create.
+		if name != "" {
+			data, err := json.Marshal(obj.Object)
+			if err != nil {
+				return mcp.NewToolResultError(fmt.Sprintf("failed to marshal object: %v", err)), nil
+			}
+
+			force := true
+			res, applyErr = sc.dynamicClient.Resource(gvr).Namespace(namespace).Patch(ctx, name, types.ApplyPatchType, data, metav1.PatchOptions{
+				FieldManager: "kompanion-mcp",
+				Force:        &force,
+			})
+		} else {
+			applyErr = fmt.Errorf("name is required for apply, but it is empty (perhaps generateName is used?)")
 		}
 
-		force := true
-		res, applyErr = sc.dynamicClient.Resource(gvr).Namespace(namespace).Patch(ctx, name, types.ApplyPatchType, data, metav1.PatchOptions{
-			FieldManager: "kompanion-mcp",
-			Force:        &force,
-		})
-
-		if applyErr != nil && (apierrors.IsNotFound(applyErr) || strings.Contains(applyErr.Error(), "not found")) {
+		if applyErr != nil && (name == "" || apierrors.IsNotFound(applyErr) || strings.Contains(applyErr.Error(), "not found")) {
 			res, applyErr = sc.dynamicClient.Resource(gvr).Namespace(namespace).Create(ctx, &obj, metav1.CreateOptions{
 				FieldManager: "kompanion-mcp",
 			})
@@ -202,10 +210,7 @@ func (sc *serverContext) handleDescribeKCCResource(ctx context.Context, request 
 	if err != nil {
 		return mcp.NewToolResultError(fmt.Sprintf("Missing kind: %v", err)), nil
 	}
-	namespace, err := request.RequireString("namespace")
-	if err != nil {
-		return mcp.NewToolResultError(fmt.Sprintf("Missing namespace: %v", err)), nil
-	}
+	namespace := request.GetString("namespace", "")
 	name, err := request.RequireString("name")
 	if err != nil {
 		return mcp.NewToolResultError(fmt.Sprintf("Missing name: %v", err)), nil
@@ -242,7 +247,7 @@ func (sc *serverContext) handleDescribeKCCResource(ctx context.Context, request 
 			typeVal, _ := cond["type"].(string)
 			
 			statusPrefix := ""
-			if (typeVal == "Ready" || typeVal == "ManagementFinished") && statusVal == "False" {
+			if (typeVal == "Ready" || typeVal == "UpToDate" || typeVal == "ManagementFinished") && statusVal == "False" {
 				statusPrefix = "⚠️  "
 			}
 			
@@ -267,10 +272,7 @@ func (sc *serverContext) handleGetKCCResource(ctx context.Context, request mcp.C
 	if err != nil {
 		return mcp.NewToolResultError(fmt.Sprintf("Missing kind: %v", err)), nil
 	}
-	namespace, err := request.RequireString("namespace")
-	if err != nil {
-		return mcp.NewToolResultError(fmt.Sprintf("Missing namespace: %v", err)), nil
-	}
+	namespace := request.GetString("namespace", "")
 	name, err := request.RequireString("name")
 	if err != nil {
 		return mcp.NewToolResultError(fmt.Sprintf("Missing name: %v", err)), nil
@@ -286,6 +288,9 @@ func (sc *serverContext) handleGetKCCResource(ctx context.Context, request mcp.C
 		return mcp.NewToolResultError(fmt.Sprintf("failed to get resource: %v", err)), nil
 	}
 
+	// Remove managedFields to keep the output lean
+	unstructured.RemoveNestedField(obj.Object, "metadata", "managedFields")
+
 	yamlData, err := sigyaml.Marshal(obj.Object)
 	if err != nil {
 		return mcp.NewToolResultError(fmt.Sprintf("failed to marshal resource to YAML: %v", err)), nil
@@ -299,10 +304,7 @@ func (sc *serverContext) handleDeleteKCCResource(ctx context.Context, request mc
 	if err != nil {
 		return mcp.NewToolResultError(fmt.Sprintf("Missing kind: %v", err)), nil
 	}
-	namespace, err := request.RequireString("namespace")
-	if err != nil {
-		return mcp.NewToolResultError(fmt.Sprintf("Missing namespace: %v", err)), nil
-	}
+	namespace := request.GetString("namespace", "")
 	name, err := request.RequireString("name")
 	if err != nil {
 		return mcp.NewToolResultError(fmt.Sprintf("Missing name: %v", err)), nil
@@ -366,40 +368,73 @@ func (sc *serverContext) handleListKCCResources(ctx context.Context, request mcp
 	}
 
 	var results []string
+	var warnings []string
+	var mu sync.Mutex
 	count := 0
+
+	g, ctx := errgroup.WithContext(ctx)
+	// Use a worker pool or just parallelize if there aren't too many GVRs.
+	// KCC has ~150-200 GVRs, so parallelizing all at once might be okay but let's be cautious.
+	// Actually, let's just use goroutines for each GVR.
 	for _, gvr := range gvrs {
-		if count >= int(limit) {
-			break
-		}
-		list, err := sc.dynamicClient.Resource(gvr).Namespace(namespace).List(ctx, metav1.ListOptions{
-			Limit: int64(limit - count),
-		})
-		if err != nil {
-			// Skip errors for individual resource types
-			continue
-		}
-		for _, item := range list.Items {
+		gvr := gvr
+		g.Go(func() error {
+			mu.Lock()
 			if count >= int(limit) {
-				break
+				mu.Unlock()
+				return nil
 			}
-			projectID := item.GetAnnotations()["cnrm.cloud.google.com/project-id"]
-			if projectID == "" {
-				projectID = "n/a"
+			currentLimit := int64(limit - count)
+			mu.Unlock()
+
+			list, err := sc.dynamicClient.Resource(gvr).Namespace(namespace).List(ctx, metav1.ListOptions{
+				Limit: currentLimit,
+			})
+			if err != nil {
+				mu.Lock()
+				warnings = append(warnings, fmt.Sprintf("Warning: failed to list %s: %v", gvr.Resource, err))
+				mu.Unlock()
+				return nil // Continue with other types
 			}
-			
-			statusStr := sc.getResourceStatusShort(&item)
-			results = append(results, fmt.Sprintf("- Kind: %s, Namespace: %s, Name: %s, ProjectID: %s, Status: %s", item.GetKind(), item.GetNamespace(), item.GetName(), projectID, statusStr))
-			count++
-		}
+
+			mu.Lock()
+			defer mu.Unlock()
+			for _, item := range list.Items {
+				if count >= int(limit) {
+					break
+				}
+				projectID := item.GetAnnotations()["cnrm.cloud.google.com/project-id"]
+				if projectID == "" {
+					projectID = "n/a"
+				}
+				
+				statusStr := sc.getResourceStatusShort(&item)
+				results = append(results, fmt.Sprintf("- Kind: %s, Namespace: %s, Name: %s, ProjectID: %s, Status: %s", item.GetKind(), item.GetNamespace(), item.GetName(), projectID, statusStr))
+				count++
+			}
+			return nil
+		})
+	}
+
+	if err := g.Wait(); err != nil {
+		return mcp.NewToolResultError(fmt.Sprintf("failed to list resources: %v", err)), nil
 	}
 
 	if len(results) == 0 {
-		return mcp.NewToolResultText("No KCC resources found."), nil
+		msg := "No KCC resources found."
+		if len(warnings) > 0 {
+			msg += "\n\nWarnings:\n" + strings.Join(warnings, "\n")
+		}
+		return mcp.NewToolResultText(msg), nil
 	}
 
+	sort.Strings(results)
 	output := strings.Join(results, "\n")
 	if count >= int(limit) {
 		output += fmt.Sprintf("\n\n(Note: results truncated to limit of %d)", int(limit))
+	}
+	if len(warnings) > 0 {
+		output += "\n\nWarnings:\n" + strings.Join(warnings, "\n")
 	}
 
 	return mcp.NewToolResultText(output), nil
@@ -410,6 +445,9 @@ func (sc *serverContext) findGVR(gvk schema.GroupVersionKind) (schema.GroupVersi
 	gvr, ok := sc.gvkCache[gvk]
 	sc.mu.RUnlock()
 	if ok {
+		if gvr.Resource == "" {
+			return schema.GroupVersionResource{}, fmt.Errorf("GVR not found for %v (cached failure)", gvk)
+		}
 		return gvr, nil
 	}
 
@@ -420,12 +458,19 @@ func (sc *serverContext) findGVR(gvk schema.GroupVersionKind) (schema.GroupVersi
 		gvr, ok = sc.gvkCache[gvk]
 		sc.mu.RUnlock()
 		if ok {
+			if gvr.Resource == "" {
+				return schema.GroupVersionResource{}, fmt.Errorf("GVR not found for %v (cached failure)", gvk)
+			}
 			return gvr, nil
 		}
 	}
 
 	apiResourceList, err := sc.discoveryClient.ServerResourcesForGroupVersion(gvk.GroupVersion().String())
 	if err != nil {
+		// Cache negative lookup
+		sc.mu.Lock()
+		sc.gvkCache[gvk] = schema.GroupVersionResource{}
+		sc.mu.Unlock()
 		return schema.GroupVersionResource{}, err
 	}
 	for _, apiResource := range apiResourceList.APIResources {
@@ -441,6 +486,11 @@ func (sc *serverContext) findGVR(gvk schema.GroupVersionKind) (schema.GroupVersi
 			return gvr, nil
 		}
 	}
+
+	// Cache negative lookup
+	sc.mu.Lock()
+	sc.gvkCache[gvk] = schema.GroupVersionResource{}
+	sc.mu.Unlock()
 	return schema.GroupVersionResource{}, fmt.Errorf("GVR not found for %v", gvk)
 }
 
@@ -482,7 +532,7 @@ func (sc *serverContext) getResourceStatusShort(obj *unstructured.Unstructured) 
 		statusVal, _ := cond["status"].(string)
 		reason, _ := cond["reason"].(string)
 
-		if typeVal == "Ready" {
+		if typeVal == "Ready" || typeVal == "UpToDate" {
 			if statusVal == "True" {
 				return "Ready"
 			}
@@ -519,7 +569,10 @@ func (sc *serverContext) getKCCGVRs() ([]schema.GroupVersionResource, error) {
 		if !strings.Contains(apiResourceList.GroupVersion, ".cnrm.cloud.google.com/") {
 			continue
 		}
-		gv, _ := schema.ParseGroupVersion(apiResourceList.GroupVersion)
+		gv, err := schema.ParseGroupVersion(apiResourceList.GroupVersion)
+		if err != nil {
+			continue
+		}
 		for _, apiResource := range apiResourceList.APIResources {
 			if !strings.Contains(apiResource.Name, "/") { // skip subresources
 				gvr := schema.GroupVersionResource{

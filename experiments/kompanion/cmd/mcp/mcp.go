@@ -85,7 +85,7 @@ func RunMCP(ctx context.Context, opts *Options) error {
 	// We rely more on server-side rate limiting now, so give it a high client-side QPS
 	if config.QPS == 0 {
 		config.QPS = 100
-		config.Burst = 20
+		config.Burst = 200
 	}
 
 	dynamicClient, err := dynamic.NewForConfig(config)
@@ -128,7 +128,7 @@ func RunMCP(ctx context.Context, opts *Options) error {
 	s.AddTool(mcp.NewTool("describe_kcc_resource",
 		mcp.WithDescription("Get the status and conditions of a KCC resource"),
 		mcp.WithString("kind", mcp.Required(), mcp.Description("The KRM kind (e.g. SQLInstance)")),
-		mcp.WithString("namespace", mcp.Required(), mcp.Description("The namespace of the resource")),
+		mcp.WithString("namespace", mcp.Description("The namespace of the resource (optional for cluster-scoped resources)")),
 		mcp.WithString("name", mcp.Required(), mcp.Description("The name of the resource")),
 	), sc.handleDescribeKCCResource)
 
@@ -144,7 +144,7 @@ func RunMCP(ctx context.Context, opts *Options) error {
 	s.AddTool(mcp.NewTool("get_kcc_resource",
 		mcp.WithDescription("Get the full YAML of a KCC resource"),
 		mcp.WithString("kind", mcp.Required(), mcp.Description("The KRM kind (e.g. SQLInstance)")),
-		mcp.WithString("namespace", mcp.Required(), mcp.Description("The namespace of the resource")),
+		mcp.WithString("namespace", mcp.Description("The namespace of the resource (optional for cluster-scoped resources)")),
 		mcp.WithString("name", mcp.Required(), mcp.Description("The name of the resource")),
 	), sc.handleGetKCCResource)
 
@@ -152,7 +152,7 @@ func RunMCP(ctx context.Context, opts *Options) error {
 	s.AddTool(mcp.NewTool("delete_kcc_resource",
 		mcp.WithDescription("Delete a KCC resource"),
 		mcp.WithString("kind", mcp.Required(), mcp.Description("The KRM kind (e.g. SQLInstance)")),
-		mcp.WithString("namespace", mcp.Required(), mcp.Description("The namespace of the resource")),
+		mcp.WithString("namespace", mcp.Description("The namespace of the resource (optional for cluster-scoped resources)")),
 		mcp.WithString("name", mcp.Required(), mcp.Description("The name of the resource")),
 	), sc.handleDeleteKCCResource)
 

@@ -422,7 +422,7 @@ func TestHandleDescribeKCCResource(t *testing.T) {
 		kindToGVRCache:  make(map[string]schema.GroupVersionResource),
 	}
 
-	// Create a fake resource with status and conditions
+	// Create a fake resource with status and conditions, using UpToDate as type
 	obj := &unstructured.Unstructured{
 		Object: map[string]interface{}{
 			"apiVersion": "storage.cnrm.cloud.google.com/v1beta1",
@@ -434,10 +434,10 @@ func TestHandleDescribeKCCResource(t *testing.T) {
 			"status": map[string]interface{}{
 				"conditions": []interface{}{
 					map[string]interface{}{
-						"type":    "Ready",
+						"type":    "UpToDate",
 						"status":  "True",
 						"reason":  "UpToDate",
-						"message": "Resource is ready",
+						"message": "Resource is up to date",
 					},
 				},
 			},
@@ -474,8 +474,77 @@ func TestHandleDescribeKCCResource(t *testing.T) {
 	if !strings.Contains(text, "UpToDate") {
 		t.Errorf("expected output to contain UpToDate, got %s", text)
 	}
-	if !strings.Contains(text, "Resource is ready") {
-		t.Errorf("expected output to contain 'Resource is ready', got %s", text)
+	if !strings.Contains(text, "Resource is up to date") {
+		t.Errorf("expected output to contain 'Resource is up to date', got %s", text)
+	}
+}
+
+func TestHandleDescribeKCCResourceClusterScoped(t *testing.T) {
+	scheme := runtime.NewScheme()
+	gvr := schema.GroupVersionResource{Group: "core.cnrm.cloud.google.com", Version: "v1beta1", Resource: "configconnectors"}
+	dynamicClient := dynamicfake.NewSimpleDynamicClientWithCustomListKinds(scheme, map[schema.GroupVersionResource]string{
+		gvr: "ConfigConnectorList",
+	})
+	discoveryClient := &mockDiscovery{
+		resources: []*metav1.APIResourceList{
+			{
+				GroupVersion: "core.cnrm.cloud.google.com/v1beta1",
+				APIResources: []metav1.APIResource{
+					{Name: "configconnectors", Kind: "ConfigConnector", Namespaced: false},
+				},
+			},
+		},
+	}
+
+	sc := &serverContext{
+		dynamicClient:   dynamicClient,
+		discoveryClient: discoveryClient,
+		gvrCache:        make(map[string]schema.GroupVersionResource),
+		gvkCache:        make(map[schema.GroupVersionKind]schema.GroupVersionResource),
+		kindToGVRCache:  make(map[string]schema.GroupVersionResource),
+	}
+
+	// Create a fake cluster-scoped resource
+	obj := &unstructured.Unstructured{
+		Object: map[string]interface{}{
+			"apiVersion": "core.cnrm.cloud.google.com/v1beta1",
+			"kind":       "ConfigConnector",
+			"metadata": map[string]interface{}{
+				"name": "configconnector-test",
+			},
+			"status": map[string]interface{}{
+				"conditions": []interface{}{
+					map[string]interface{}{
+						"type":   "Ready",
+						"status": "True",
+						"reason": "UpToDate",
+					},
+				},
+			},
+		},
+	}
+	_, err := dynamicClient.Resource(gvr).Create(context.Background(), obj, metav1.CreateOptions{})
+	if err != nil {
+		t.Fatalf("failed to create fake resource: %v", err)
+	}
+
+	req := mcp.CallToolRequest{
+		Params: mcp.CallToolParams{
+			Arguments: map[string]interface{}{
+				"kind": "ConfigConnector",
+				"name": "configconnector-test",
+			},
+		},
+	}
+
+	res, err := sc.handleDescribeKCCResource(context.Background(), req)
+	if err != nil {
+		t.Fatalf("handleDescribeKCCResource failed: %v", err)
+	}
+
+	text := res.Content[0].(mcp.TextContent).Text
+	if !strings.Contains(text, "configconnector-test") {
+		t.Errorf("expected output to contain configconnector-test, got %s", text)
 	}
 }
 
@@ -590,6 +659,11 @@ func TestHandleGetKCCResource(t *testing.T) {
 			"metadata": map[string]interface{}{
 				"name":      "get-test-bucket",
 				"namespace": "test-ns",
+				"managedFields": []interface{}{
+					map[string]interface{}{
+						"manager": "test",
+					},
+				},
 			},
 			"spec": map[string]interface{}{
 				"location": "US",
@@ -629,6 +703,9 @@ func TestHandleGetKCCResource(t *testing.T) {
 	}
 	if !strings.Contains(text, "location: US") {
 		t.Errorf("expected output to contain location, got %s", text)
+	}
+	if strings.Contains(text, "managedFields") {
+		t.Errorf("expected output NOT to contain managedFields, got %s", text)
 	}
 }
 
