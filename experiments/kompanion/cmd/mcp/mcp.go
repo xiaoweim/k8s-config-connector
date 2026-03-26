@@ -128,6 +128,27 @@ func RunMCP(ctx context.Context, opts *Options) error {
 		mcp.WithString("namespace", mcp.Description("The namespace to filter by (optional)")),
 	), sc.handleListKCCResources)
 
+	// Tool 5: get_kcc_resource
+	s.AddTool(mcp.NewTool("get_kcc_resource",
+		mcp.WithDescription("Get the full YAML of a KCC resource"),
+		mcp.WithString("kind", mcp.Required(), mcp.Description("The KRM kind (e.g. SQLInstance)")),
+		mcp.WithString("namespace", mcp.Required(), mcp.Description("The namespace of the resource")),
+		mcp.WithString("name", mcp.Required(), mcp.Description("The name of the resource")),
+	), sc.handleGetKCCResource)
+
+	// Tool 6: delete_kcc_resource
+	s.AddTool(mcp.NewTool("delete_kcc_resource",
+		mcp.WithDescription("Delete a KCC resource"),
+		mcp.WithString("kind", mcp.Required(), mcp.Description("The KRM kind (e.g. SQLInstance)")),
+		mcp.WithString("namespace", mcp.Required(), mcp.Description("The namespace of the resource")),
+		mcp.WithString("name", mcp.Required(), mcp.Description("The name of the resource")),
+	), sc.handleDeleteKCCResource)
+
+	// Tool 7: list_kcc_kinds
+	s.AddTool(mcp.NewTool("list_kcc_kinds",
+		mcp.WithDescription("List all available KCC CRD kinds"),
+	), sc.handleListKCCKinds)
+
 	log.Printf("Starting MCP server for KCC on stdio...")
 	if err := server.ServeStdio(s); err != nil {
 		return fmt.Errorf("error serving mcp: %w", err)

@@ -258,3 +258,264 @@ func TestHandleDescribeKCCResource(t *testing.T) {
 	}
 }
 
+func TestHandleApplyKCCYAML(t *testing.T) {
+	scheme := runtime.NewScheme()
+	gvr := schema.GroupVersionResource{Group: "storage.cnrm.cloud.google.com", Version: "v1beta1", Resource: "storagebuckets"}
+	dynamicClient := dynamicfake.NewSimpleDynamicClientWithCustomListKinds(scheme, map[schema.GroupVersionResource]string{
+		gvr: "StorageBucketList",
+	})
+	discoveryClient := &mockDiscovery{
+		resources: []*metav1.APIResourceList{
+			{
+				GroupVersion: "storage.cnrm.cloud.google.com/v1beta1",
+				APIResources: []metav1.APIResource{
+					{Name: "storagebuckets", Kind: "StorageBucket", Namespaced: true},
+				},
+			},
+		},
+	}
+
+	sc := &serverContext{
+		dynamicClient:   dynamicClient,
+		discoveryClient: discoveryClient,
+	}
+
+	yamlStr := `
+apiVersion: storage.cnrm.cloud.google.com/v1beta1
+kind: StorageBucket
+metadata:
+  name: apply-test-bucket
+  namespace: test-ns
+spec:
+  location: US
+---
+apiVersion: storage.cnrm.cloud.google.com/v1beta1
+kind: StorageBucket
+metadata:
+  name: apply-test-bucket-2
+  namespace: test-ns
+spec:
+  location: EU
+`
+
+	req := mcp.CallToolRequest{
+		Params: mcp.CallToolParams{
+			Arguments: map[string]interface{}{
+				"yaml": yamlStr,
+			},
+		},
+	}
+
+	res, err := sc.handleApplyKCCYAML(context.Background(), req)
+	if err != nil {
+		t.Fatalf("handleApplyKCCYAML failed: %v", err)
+	}
+
+	if res.IsError {
+		t.Fatalf("tool returned error: %v", res.Content[0].(mcp.TextContent).Text)
+	}
+
+	text := res.Content[0].(mcp.TextContent).Text
+	if !strings.Contains(text, "Successfully applied test-ns/apply-test-bucket (StorageBucket)") {
+		t.Errorf("expected output to contain success message for bucket 1, got %s", text)
+	}
+	if !strings.Contains(text, "Successfully applied test-ns/apply-test-bucket-2 (StorageBucket)") {
+		t.Errorf("expected output to contain success message for bucket 2, got %s", text)
+	}
+
+	// Verify resources were created
+	_, err = dynamicClient.Resource(gvr).Namespace("test-ns").Get(context.Background(), "apply-test-bucket", metav1.GetOptions{})
+	if err != nil {
+		t.Errorf("failed to get apply-test-bucket: %v", err)
+	}
+	_, err = dynamicClient.Resource(gvr).Namespace("test-ns").Get(context.Background(), "apply-test-bucket-2", metav1.GetOptions{})
+	if err != nil {
+		t.Errorf("failed to get apply-test-bucket-2: %v", err)
+	}
+}
+
+func TestHandleGetKCCResource(t *testing.T) {
+	scheme := runtime.NewScheme()
+	gvr := schema.GroupVersionResource{Group: "storage.cnrm.cloud.google.com", Version: "v1beta1", Resource: "storagebuckets"}
+	dynamicClient := dynamicfake.NewSimpleDynamicClientWithCustomListKinds(scheme, map[schema.GroupVersionResource]string{
+		gvr: "StorageBucketList",
+	})
+	discoveryClient := &mockDiscovery{
+		resources: []*metav1.APIResourceList{
+			{
+				GroupVersion: "storage.cnrm.cloud.google.com/v1beta1",
+				APIResources: []metav1.APIResource{
+					{Name: "storagebuckets", Kind: "StorageBucket", Namespaced: true},
+				},
+			},
+		},
+	}
+
+	sc := &serverContext{
+		dynamicClient:   dynamicClient,
+		discoveryClient: discoveryClient,
+	}
+
+	obj := &unstructured.Unstructured{
+		Object: map[string]interface{}{
+			"apiVersion": "storage.cnrm.cloud.google.com/v1beta1",
+			"kind":       "StorageBucket",
+			"metadata": map[string]interface{}{
+				"name":      "get-test-bucket",
+				"namespace": "test-ns",
+			},
+			"spec": map[string]interface{}{
+				"location": "US",
+			},
+		},
+	}
+	_, err := dynamicClient.Resource(gvr).Namespace("test-ns").Create(context.Background(), obj, metav1.CreateOptions{})
+	if err != nil {
+		t.Fatalf("failed to create fake resource: %v", err)
+	}
+
+	req := mcp.CallToolRequest{
+		Params: mcp.CallToolParams{
+			Arguments: map[string]interface{}{
+				"kind":      "StorageBucket",
+				"namespace": "test-ns",
+				"name":      "get-test-bucket",
+			},
+		},
+	}
+
+	res, err := sc.handleGetKCCResource(context.Background(), req)
+	if err != nil {
+		t.Fatalf("handleGetKCCResource failed: %v", err)
+	}
+
+	if res.IsError {
+		t.Fatalf("tool returned error: %v", res.Content[0].(mcp.TextContent).Text)
+	}
+
+	text := res.Content[0].(mcp.TextContent).Text
+	if !strings.Contains(text, "kind: StorageBucket") {
+		t.Errorf("expected output to contain kind, got %s", text)
+	}
+	if !strings.Contains(text, "name: get-test-bucket") {
+		t.Errorf("expected output to contain name, got %s", text)
+	}
+	if !strings.Contains(text, "location: US") {
+		t.Errorf("expected output to contain location, got %s", text)
+	}
+}
+
+func TestHandleDeleteKCCResource(t *testing.T) {
+	scheme := runtime.NewScheme()
+	gvr := schema.GroupVersionResource{Group: "storage.cnrm.cloud.google.com", Version: "v1beta1", Resource: "storagebuckets"}
+	dynamicClient := dynamicfake.NewSimpleDynamicClientWithCustomListKinds(scheme, map[schema.GroupVersionResource]string{
+		gvr: "StorageBucketList",
+	})
+	discoveryClient := &mockDiscovery{
+		resources: []*metav1.APIResourceList{
+			{
+				GroupVersion: "storage.cnrm.cloud.google.com/v1beta1",
+				APIResources: []metav1.APIResource{
+					{Name: "storagebuckets", Kind: "StorageBucket", Namespaced: true},
+				},
+			},
+		},
+	}
+
+	sc := &serverContext{
+		dynamicClient:   dynamicClient,
+		discoveryClient: discoveryClient,
+	}
+
+	obj := &unstructured.Unstructured{
+		Object: map[string]interface{}{
+			"apiVersion": "storage.cnrm.cloud.google.com/v1beta1",
+			"kind":       "StorageBucket",
+			"metadata": map[string]interface{}{
+				"name":      "delete-test-bucket",
+				"namespace": "test-ns",
+			},
+		},
+	}
+	_, err := dynamicClient.Resource(gvr).Namespace("test-ns").Create(context.Background(), obj, metav1.CreateOptions{})
+	if err != nil {
+		t.Fatalf("failed to create fake resource: %v", err)
+	}
+
+	req := mcp.CallToolRequest{
+		Params: mcp.CallToolParams{
+			Arguments: map[string]interface{}{
+				"kind":      "StorageBucket",
+				"namespace": "test-ns",
+				"name":      "delete-test-bucket",
+			},
+		},
+	}
+
+	res, err := sc.handleDeleteKCCResource(context.Background(), req)
+	if err != nil {
+		t.Fatalf("handleDeleteKCCResource failed: %v", err)
+	}
+
+	if res.IsError {
+		t.Fatalf("tool returned error: %v", res.Content[0].(mcp.TextContent).Text)
+	}
+
+	text := res.Content[0].(mcp.TextContent).Text
+	if !strings.Contains(text, "Successfully deleted test-ns/delete-test-bucket (StorageBucket)") {
+		t.Errorf("expected success message, got %s", text)
+	}
+
+	// Verify resource was deleted
+	_, err = dynamicClient.Resource(gvr).Namespace("test-ns").Get(context.Background(), "delete-test-bucket", metav1.GetOptions{})
+	if err == nil {
+		t.Errorf("expected resource to be deleted, but it still exists")
+	}
+}
+
+func TestHandleListKCCKinds(t *testing.T) {
+	scheme := runtime.NewScheme()
+	crdGVR := schema.GroupVersionResource{Group: "apiextensions.k8s.io", Version: "v1", Resource: "customresourcedefinitions"}
+	dynamicClient := dynamicfake.NewSimpleDynamicClientWithCustomListKinds(scheme, map[schema.GroupVersionResource]string{
+		crdGVR: "CustomResourceDefinitionList",
+	})
+	sc := &serverContext{
+		dynamicClient: dynamicClient,
+	}
+
+	crd := &unstructured.Unstructured{
+		Object: map[string]interface{}{
+			"apiVersion": "apiextensions.k8s.io/v1",
+			"kind":       "CustomResourceDefinition",
+			"metadata": map[string]interface{}{
+				"name": "storagebuckets.storage.cnrm.cloud.google.com",
+			},
+			"spec": map[string]interface{}{
+				"group": "storage.cnrm.cloud.google.com",
+				"names": map[string]interface{}{
+					"kind": "StorageBucket",
+				},
+			},
+		},
+	}
+	_, err := dynamicClient.Resource(crdGVR).Create(context.Background(), crd, metav1.CreateOptions{})
+	if err != nil {
+		t.Fatalf("failed to create fake CRD: %v", err)
+	}
+
+	req := mcp.CallToolRequest{}
+	res, err := sc.handleListKCCKinds(context.Background(), req)
+	if err != nil {
+		t.Fatalf("handleListKCCKinds failed: %v", err)
+	}
+
+	if res.IsError {
+		t.Fatalf("tool returned error: %v", res.Content[0].(mcp.TextContent).Text)
+	}
+
+	text := res.Content[0].(mcp.TextContent).Text
+	if !strings.Contains(text, "StorageBucket") {
+		t.Errorf("expected output to contain StorageBucket, got %s", text)
+	}
+}
+

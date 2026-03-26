@@ -22,11 +22,13 @@ import (
 	"strings"
 
 	"github.com/mark3labs/mcp-go/mcp"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/yaml"
+	sigyaml "sigs.k8s.io/yaml"
 )
 
 func (sc *serverContext) handleGetKCCCRDSchema(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
@@ -132,6 +134,12 @@ func (sc *serverContext) handleApplyKCCYAML(ctx context.Context, request mcp.Cal
 			Force:        &force,
 		})
 
+		if applyErr != nil && (apierrors.IsNotFound(applyErr) || strings.Contains(applyErr.Error(), "not found")) {
+			res, applyErr = sc.dynamicClient.Resource(gvr).Namespace(namespace).Create(ctx, &obj, metav1.CreateOptions{
+				FieldManager: "kompanion-mcp",
+			})
+		}
+
 		if applyErr != nil {
 			results = append(results, fmt.Sprintf("Failed to apply %s/%s (%s): %v", namespace, name, gvk.Kind, applyErr))
 		} else {
@@ -201,6 +209,88 @@ func (sc *serverContext) handleDescribeKCCResource(ctx context.Context, request 
 	sb.WriteString(string(statusJSON))
 
 	return mcp.NewToolResultText(sb.String()), nil
+}
+
+func (sc *serverContext) handleGetKCCResource(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	kind, err := request.RequireString("kind")
+	if err != nil {
+		return mcp.NewToolResultError(fmt.Sprintf("Missing kind: %v", err)), nil
+	}
+	namespace, err := request.RequireString("namespace")
+	if err != nil {
+		return mcp.NewToolResultError(fmt.Sprintf("Missing namespace: %v", err)), nil
+	}
+	name, err := request.RequireString("name")
+	if err != nil {
+		return mcp.NewToolResultError(fmt.Sprintf("Missing name: %v", err)), nil
+	}
+
+	gvr, err := sc.findGVRByKind(kind)
+	if err != nil {
+		return mcp.NewToolResultError(fmt.Sprintf("failed to find GVR for kind %s: %v", kind, err)), nil
+	}
+
+	obj, err := sc.dynamicClient.Resource(gvr).Namespace(namespace).Get(ctx, name, metav1.GetOptions{})
+	if err != nil {
+		return mcp.NewToolResultError(fmt.Sprintf("failed to get resource: %v", err)), nil
+	}
+
+	yamlData, err := sigyaml.Marshal(obj.Object)
+	if err != nil {
+		return mcp.NewToolResultError(fmt.Sprintf("failed to marshal resource to YAML: %v", err)), nil
+	}
+
+	return mcp.NewToolResultText(string(yamlData)), nil
+}
+
+func (sc *serverContext) handleDeleteKCCResource(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	kind, err := request.RequireString("kind")
+	if err != nil {
+		return mcp.NewToolResultError(fmt.Sprintf("Missing kind: %v", err)), nil
+	}
+	namespace, err := request.RequireString("namespace")
+	if err != nil {
+		return mcp.NewToolResultError(fmt.Sprintf("Missing namespace: %v", err)), nil
+	}
+	name, err := request.RequireString("name")
+	if err != nil {
+		return mcp.NewToolResultError(fmt.Sprintf("Missing name: %v", err)), nil
+	}
+
+	gvr, err := sc.findGVRByKind(kind)
+	if err != nil {
+		return mcp.NewToolResultError(fmt.Sprintf("failed to find GVR for kind %s: %v", kind, err)), nil
+	}
+
+	err = sc.dynamicClient.Resource(gvr).Namespace(namespace).Delete(ctx, name, metav1.DeleteOptions{})
+	if err != nil {
+		return mcp.NewToolResultError(fmt.Sprintf("failed to delete resource: %v", err)), nil
+	}
+
+	return mcp.NewToolResultText(fmt.Sprintf("Successfully deleted %s/%s (%s)", namespace, name, kind)), nil
+}
+
+func (sc *serverContext) handleListKCCKinds(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	crdGVR := schema.GroupVersionResource{Group: "apiextensions.k8s.io", Version: "v1", Resource: "customresourcedefinitions"}
+	crds, err := sc.dynamicClient.Resource(crdGVR).List(ctx, metav1.ListOptions{})
+	if err != nil {
+		return mcp.NewToolResultError(fmt.Sprintf("failed to list CRDs: %v", err)), nil
+	}
+
+	var kinds []string
+	for _, crd := range crds.Items {
+		group, found, _ := unstructured.NestedString(crd.Object, "spec", "group")
+		if found && strings.HasSuffix(group, ".cnrm.cloud.google.com") {
+			kind, _, _ := unstructured.NestedString(crd.Object, "spec", "names", "kind")
+			kinds = append(kinds, fmt.Sprintf("- %s (%s)", kind, group))
+		}
+	}
+
+	if len(kinds) == 0 {
+		return mcp.NewToolResultText("No KCC CRDs found."), nil
+	}
+
+	return mcp.NewToolResultText("Available KCC Kinds:\n" + strings.Join(kinds, "\n")), nil
 }
 
 func (sc *serverContext) handleListKCCResources(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
