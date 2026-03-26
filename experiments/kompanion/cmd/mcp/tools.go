@@ -78,8 +78,6 @@ func (sc *serverContext) handleGetKCCCRDSchema(ctx context.Context, request mcp.
 			break
 		}
 	}
-		}
-	}
 
 	if schemaObj == nil {
 		return mcp.NewToolResultError(fmt.Sprintf("no schema found for CRD %s", kind)), nil
@@ -164,8 +162,12 @@ func (sc *serverContext) handleApplyKCCYAML(ctx context.Context, request mcp.Cal
 		if applyErr != nil {
 			results = append(results, fmt.Sprintf("Failed to apply %s/%s (%s): %v", namespace, name, gvk.Kind, applyErr))
 		} else {
-			appliedObj := res.(*unstructured.Unstructured)
-			results = append(results, fmt.Sprintf("Successfully applied %s/%s (%s), resourceVersion: %s", namespace, name, gvk.Kind, appliedObj.GetResourceVersion()))
+			appliedObj, ok := res.(*unstructured.Unstructured)
+			if ok {
+				results = append(results, fmt.Sprintf("Successfully applied %s/%s (%s), resourceVersion: %s", namespace, name, gvk.Kind, appliedObj.GetResourceVersion()))
+			} else {
+				results = append(results, fmt.Sprintf("Successfully applied %s/%s (%s), but failed to get resource version", namespace, name, gvk.Kind))
+			}
 		}
 	}
 
