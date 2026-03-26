@@ -64,19 +64,40 @@ func (sc *serverContext) handleGetKCCCRDSchema(ctx context.Context, request mcp.
 		return mcp.NewToolResultError(fmt.Sprintf("no versions found for CRD %s", kind)), nil
 	}
 
-	// Find the served version, preferably the latest one
+	// Find the served version, preferably the latest one or the storage version
 	var schemaObj interface{}
+	var bestVersion map[string]interface{}
 	for _, v := range versions {
 		verMap, ok := v.(map[string]interface{})
 		if !ok {
 			continue
 		}
 		served, _ := verMap["served"].(bool)
-		if served {
-			schemaObj, _, _ = unstructured.NestedFieldNoCopy(verMap, "schema", "openAPIV3Schema")
-			// We take the first served version for now
-			break
+		if !served {
+			continue
 		}
+
+		if bestVersion == nil {
+			bestVersion = verMap
+			continue
+		}
+
+		// Prefer storage version
+		if storage, _ := verMap["storage"].(bool); storage {
+			bestVersion = verMap
+			continue
+		}
+
+		// Otherwise prefer v1beta1 over v1alpha1, etc.
+		bestName, _ := bestVersion["name"].(string)
+		currName, _ := verMap["name"].(string)
+		if strings.Compare(currName, bestName) > 0 {
+			bestVersion = verMap
+		}
+	}
+
+	if bestVersion != nil {
+		schemaObj, _, _ = unstructured.NestedFieldNoCopy(bestVersion, "schema", "openAPIV3Schema")
 	}
 
 	if schemaObj == nil {
@@ -132,7 +153,8 @@ func (sc *serverContext) handleApplyKCCYAML(ctx context.Context, request mcp.Cal
 		gvk := obj.GroupVersionKind()
 		gvr, err := sc.findGVR(gvk)
 		if err != nil {
-			return mcp.NewToolResultError(fmt.Sprintf("failed to find GVR for %v: %v", gvk, err)), nil
+			results = append(results, fmt.Sprintf("Failed to apply (%s/%s): failed to find GVR for %v: %v", obj.GetNamespace(), obj.GetName(), gvk, err))
+			continue
 		}
 
 		namespace := obj.GetNamespace()
@@ -394,22 +416,17 @@ func (sc *serverContext) handleListKCCResources(ctx context.Context, request mcp
 }
 
 func (sc *serverContext) findGVR(gvk schema.GroupVersionKind) (schema.GroupVersionResource, error) {
-	apiResourceLists, err := sc.discoveryClient.ServerPreferredResources()
+	apiResourceList, err := sc.discoveryClient.ServerResourcesForGroupVersion(gvk.GroupVersion().String())
 	if err != nil {
 		return schema.GroupVersionResource{}, err
 	}
-	for _, apiResourceList := range apiResourceLists {
-		if apiResourceList.GroupVersion != gvk.GroupVersion().String() {
-			continue
-		}
-		for _, apiResource := range apiResourceList.APIResources {
-			if apiResource.Kind == gvk.Kind && !strings.Contains(apiResource.Name, "/") {
-				return schema.GroupVersionResource{
-					Group:    gvk.Group,
-					Version:  gvk.Version,
-					Resource: apiResource.Name,
-				}, nil
-			}
+	for _, apiResource := range apiResourceList.APIResources {
+		if apiResource.Kind == gvk.Kind && !strings.Contains(apiResource.Name, "/") {
+			return schema.GroupVersionResource{
+				Group:    gvk.Group,
+				Version:  gvk.Version,
+				Resource: apiResource.Name,
+			}, nil
 		}
 	}
 	return schema.GroupVersionResource{}, fmt.Errorf("GVR not found for %v", gvk)

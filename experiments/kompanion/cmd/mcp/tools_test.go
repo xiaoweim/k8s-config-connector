@@ -39,6 +39,15 @@ func (m *mockDiscovery) ServerPreferredResources() ([]*metav1.APIResourceList, e
 	return m.resources, nil
 }
 
+func (m *mockDiscovery) ServerResourcesForGroupVersion(groupVersion string) (*metav1.APIResourceList, error) {
+	for _, res := range m.resources {
+		if res.GroupVersion == groupVersion {
+			return res, nil
+		}
+	}
+	return nil, fmt.Errorf("resources not found for group version %s", groupVersion)
+}
+
 func TestHandleListKCCResources(t *testing.T) {
 	scheme := runtime.NewScheme()
 	gvr := schema.GroupVersionResource{Group: "storage.cnrm.cloud.google.com", Version: "v1beta1", Resource: "storagebuckets"}
