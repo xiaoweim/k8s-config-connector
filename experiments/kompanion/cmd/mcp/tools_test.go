@@ -17,6 +17,7 @@ package mcp
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"strings"
 	"testing"
 
@@ -105,6 +106,83 @@ func TestHandleListKCCResources(t *testing.T) {
 	}
 }
 
+func TestHandleListKCCResourcesWithLimit(t *testing.T) {
+	scheme := runtime.NewScheme()
+	gvr := schema.GroupVersionResource{Group: "storage.cnrm.cloud.google.com", Version: "v1beta1", Resource: "storagebuckets"}
+	dynamicClient := dynamicfake.NewSimpleDynamicClientWithCustomListKinds(scheme, map[schema.GroupVersionResource]string{
+		gvr: "StorageBucketList",
+	})
+	discoveryClient := &mockDiscovery{
+		resources: []*metav1.APIResourceList{
+			{
+				GroupVersion: "storage.cnrm.cloud.google.com/v1beta1",
+				APIResources: []metav1.APIResource{
+					{Name: "storagebuckets", Kind: "StorageBucket", Namespaced: true},
+				},
+			},
+		},
+	}
+
+	sc := &serverContext{
+		dynamicClient:   dynamicClient,
+		discoveryClient: discoveryClient,
+	}
+
+	// Create 3 fake resources
+	for i := 1; i <= 3; i++ {
+		obj := &unstructured.Unstructured{
+			Object: map[string]interface{}{
+				"apiVersion": "storage.cnrm.cloud.google.com/v1beta1",
+				"kind":       "StorageBucket",
+				"metadata": map[string]interface{}{
+					"name":      fmt.Sprintf("test-bucket-%d", i),
+					"namespace": "test-ns",
+				},
+			},
+		}
+		_, err := dynamicClient.Resource(gvr).Namespace("test-ns").Create(context.Background(), obj, metav1.CreateOptions{})
+		if err != nil {
+			t.Fatalf("failed to create fake resource: %v", err)
+		}
+	}
+
+	req := mcp.CallToolRequest{
+		Params: mcp.CallToolParams{
+			Arguments: map[string]interface{}{
+				"kind":  "StorageBucket",
+				"limit": 2.0, // mcp-go uses float64 for numbers
+			},
+		},
+	}
+
+	res, err := sc.handleListKCCResources(context.Background(), req)
+	if err != nil {
+		t.Fatalf("handleListKCCResources failed: %v", err)
+	}
+
+	text := res.Content[0].(mcp.TextContent).Text
+	lines := strings.Split(strings.TrimSpace(text), "\n")
+	// Expected: 2 resource lines + 2 empty lines (one between resources if any, but currently join with \n)
+	// Actually:
+	// - Kind: StorageBucket, Namespace: test-ns, Name: test-bucket-1, ProjectID: n/a
+	// - Kind: StorageBucket, Namespace: test-ns, Name: test-bucket-2, ProjectID: n/a
+	//
+	// (Note: results truncated to limit of 2)
+	
+	count := 0
+	for _, line := range lines {
+		if strings.HasPrefix(line, "- Kind:") {
+			count++
+		}
+	}
+	if count != 2 {
+		t.Errorf("expected 2 resources, got %d. Output: %s", count, text)
+	}
+	if !strings.Contains(text, "truncated to limit of 2") {
+		t.Errorf("expected output to contain truncation note, got %s", text)
+	}
+}
+
 func TestHandleGetKCCCRDSchema(t *testing.T) {
 	scheme := runtime.NewScheme()
 	crdGVR := schema.GroupVersionResource{Group: "apiextensions.k8s.io", Version: "v1", Resource: "customresourcedefinitions"}
@@ -169,13 +247,16 @@ func TestHandleGetKCCCRDSchema(t *testing.T) {
 	}
 
 	text := res.Content[0].(mcp.TextContent).Text
-	var schema map[string]interface{}
-	if err := json.Unmarshal([]byte(text), &schema); err != nil {
+	var resSchema map[string]interface{}
+	if err := json.Unmarshal([]byte(text), &resSchema); err != nil {
 		t.Fatalf("failed to unmarshal schema JSON: %v", err)
 	}
 
-	if schema["type"] != "object" {
-		t.Errorf("expected type object, got %v", schema["type"])
+	if _, ok := resSchema["spec"]; !ok {
+		t.Errorf("expected spec to be in the lean schema")
+	}
+	if _, ok := resSchema["type"]; ok {
+		t.Errorf("expected type property to be removed in the lean schema")
 	}
 }
 

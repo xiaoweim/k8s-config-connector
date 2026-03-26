@@ -126,6 +126,7 @@ func RunMCP(ctx context.Context, opts *Options) error {
 		mcp.WithDescription("List KCC resources"),
 		mcp.WithString("kind", mcp.Description("The KRM kind to filter by (optional)")),
 		mcp.WithString("namespace", mcp.Description("The namespace to filter by (optional)")),
+		mcp.WithNumber("limit", mcp.Description("Maximum number of resources to return (optional, default: 100)")),
 	), sc.handleListKCCResources)
 
 	// Tool 5: get_kcc_resource

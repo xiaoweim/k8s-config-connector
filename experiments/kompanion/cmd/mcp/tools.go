@@ -80,6 +80,19 @@ func (sc *serverContext) handleGetKCCCRDSchema(ctx context.Context, request mcp.
 		return mcp.NewToolResultError(fmt.Sprintf("no schema found for CRD %s", kind)), nil
 	}
 
+	// Keep it lean: extract only spec and status properties
+	properties, found, _ := unstructured.NestedMap(schemaObj.(map[string]interface{}), "properties")
+	if found {
+		leanSchema := make(map[string]interface{})
+		if spec, ok := properties["spec"]; ok {
+			leanSchema["spec"] = spec
+		}
+		if status, ok := properties["status"]; ok {
+			leanSchema["status"] = status
+		}
+		schemaObj = leanSchema
+	}
+
 	schemaJSON, err := json.MarshalIndent(schemaObj, "", "  ")
 	if err != nil {
 		return mcp.NewToolResultError(fmt.Sprintf("failed to marshal schema: %v", err)), nil
@@ -296,6 +309,10 @@ func (sc *serverContext) handleListKCCKinds(ctx context.Context, request mcp.Cal
 func (sc *serverContext) handleListKCCResources(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	kind := request.GetString("kind", "")
 	namespace := request.GetString("namespace", "")
+	limit := request.GetInt("limit", 100)
+	if limit <= 0 {
+		limit = 100
+	}
 
 	var gvrs []schema.GroupVersionResource
 	if kind != "" {
@@ -328,18 +345,26 @@ func (sc *serverContext) handleListKCCResources(ctx context.Context, request mcp
 	}
 
 	var results []string
+	count := 0
 	for _, gvr := range gvrs {
+		if count >= int(limit) {
+			break
+		}
 		list, err := sc.dynamicClient.Resource(gvr).Namespace(namespace).List(ctx, metav1.ListOptions{})
 		if err != nil {
 			// Skip errors for individual resource types
 			continue
 		}
 		for _, item := range list.Items {
+			if count >= int(limit) {
+				break
+			}
 			projectID := item.GetAnnotations()["cnrm.cloud.google.com/project-id"]
 			if projectID == "" {
 				projectID = "n/a"
 			}
 			results = append(results, fmt.Sprintf("- Kind: %s, Namespace: %s, Name: %s, ProjectID: %s", item.GetKind(), item.GetNamespace(), item.GetName(), projectID))
+			count++
 		}
 	}
 
@@ -347,7 +372,12 @@ func (sc *serverContext) handleListKCCResources(ctx context.Context, request mcp
 		return mcp.NewToolResultText("No KCC resources found."), nil
 	}
 
-	return mcp.NewToolResultText(strings.Join(results, "\n")), nil
+	output := strings.Join(results, "\n")
+	if count >= int(limit) {
+		output += fmt.Sprintf("\n\n(Note: results truncated to limit of %d)", int(limit))
+	}
+
+	return mcp.NewToolResultText(output), nil
 }
 
 func (sc *serverContext) findGVR(gvk schema.GroupVersionKind) (schema.GroupVersionResource, error) {
