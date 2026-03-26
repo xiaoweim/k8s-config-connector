@@ -344,6 +344,13 @@ func (in *CloudDeployTargetSpec) DeepCopyInto(out *CloudDeployTargetSpec) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.Annotations != nil {
+		in, out := &in.Annotations, &out.Annotations
+		*out = make(map[string]string, len(*in))
+		for key, val := range *in {
+			(*out)[key] = val
+		}
+	}
 	if in.RequireApproval != nil {
 		in, out := &in.RequireApproval, &out.RequireApproval
 		*out = new(bool)
