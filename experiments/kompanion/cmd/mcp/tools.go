@@ -82,9 +82,15 @@ func (sc *serverContext) handleGetKCCCRDSchema(ctx context.Context, request mcp.
 			continue
 		}
 
-		// Prefer storage version
-		if storage, _ := verMap["storage"].(bool); storage {
+		isStorage, _ := verMap["storage"].(bool)
+		bestIsStorage, _ := bestVersion["storage"].(bool)
+
+		if isStorage && !bestIsStorage {
 			bestVersion = verMap
+			continue
+		}
+
+		if !isStorage && bestIsStorage {
 			continue
 		}
 

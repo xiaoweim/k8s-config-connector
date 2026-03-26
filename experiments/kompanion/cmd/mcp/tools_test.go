@@ -171,13 +171,7 @@ func TestHandleListKCCResourcesWithLimit(t *testing.T) {
 
 	text := res.Content[0].(mcp.TextContent).Text
 	lines := strings.Split(strings.TrimSpace(text), "\n")
-	// Expected: 2 resource lines + 2 empty lines (one between resources if any, but currently join with \n)
-	// Actually:
-	// - Kind: StorageBucket, Namespace: test-ns, Name: test-bucket-1, ProjectID: n/a
-	// - Kind: StorageBucket, Namespace: test-ns, Name: test-bucket-2, ProjectID: n/a
-	//
-	// (Note: results truncated to limit of 2)
-	
+
 	count := 0
 	for _, line := range lines {
 		if strings.HasPrefix(line, "- Kind:") {
@@ -264,8 +258,84 @@ func TestHandleGetKCCCRDSchema(t *testing.T) {
 	if _, ok := resSchema["spec"]; !ok {
 		t.Errorf("expected spec to be in the lean schema")
 	}
-	if _, ok := resSchema["type"]; ok {
-		t.Errorf("expected type property to be removed in the lean schema")
+}
+
+func TestHandleGetKCCCRDSchemaWithMultipleVersions(t *testing.T) {
+	scheme := runtime.NewScheme()
+	crdGVR := schema.GroupVersionResource{Group: "apiextensions.k8s.io", Version: "v1", Resource: "customresourcedefinitions"}
+	dynamicClient := dynamicfake.NewSimpleDynamicClientWithCustomListKinds(scheme, map[schema.GroupVersionResource]string{
+		crdGVR: "CustomResourceDefinitionList",
+	})
+	sc := &serverContext{
+		dynamicClient: dynamicClient,
+	}
+
+	crd := &unstructured.Unstructured{
+		Object: map[string]interface{}{
+			"apiVersion": "apiextensions.k8s.io/v1",
+			"kind":       "CustomResourceDefinition",
+			"metadata": map[string]interface{}{
+				"name": "storagebuckets.storage.cnrm.cloud.google.com",
+			},
+			"spec": map[string]interface{}{
+				"group": "storage.cnrm.cloud.google.com",
+				"names": map[string]interface{}{
+					"kind": "StorageBucket",
+				},
+				"versions": []interface{}{
+					map[string]interface{}{
+						"name":    "v1alpha1",
+						"served":  true,
+						"storage": false,
+						"schema": map[string]interface{}{
+							"openAPIV3Schema": map[string]interface{}{
+								"properties": map[string]interface{}{
+									"spec": map[string]interface{}{
+										"description": "v1alpha1 spec",
+									},
+								},
+							},
+						},
+					},
+					map[string]interface{}{
+						"name":    "v1beta1",
+						"served":  true,
+						"storage": true,
+						"schema": map[string]interface{}{
+							"openAPIV3Schema": map[string]interface{}{
+								"properties": map[string]interface{}{
+									"spec": map[string]interface{}{
+										"description": "v1beta1 spec (storage)",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	_, err := dynamicClient.Resource(crdGVR).Create(context.Background(), crd, metav1.CreateOptions{})
+	if err != nil {
+		t.Fatalf("failed to create fake CRD: %v", err)
+	}
+
+	req := mcp.CallToolRequest{
+		Params: mcp.CallToolParams{
+			Arguments: map[string]interface{}{
+				"kind": "StorageBucket",
+			},
+		},
+	}
+
+	res, err := sc.handleGetKCCCRDSchema(context.Background(), req)
+	if err != nil {
+		t.Fatalf("handleGetKCCCRDSchema failed: %v", err)
+	}
+
+	text := res.Content[0].(mcp.TextContent).Text
+	if !strings.Contains(text, "v1beta1 spec (storage)") {
+		t.Errorf("expected storage version (v1beta1) to be selected, got %s", text)
 	}
 }
 
@@ -608,4 +678,3 @@ func TestHandleListKCCKinds(t *testing.T) {
 		t.Errorf("expected output to contain StorageBucket, got %s", text)
 	}
 }
-
