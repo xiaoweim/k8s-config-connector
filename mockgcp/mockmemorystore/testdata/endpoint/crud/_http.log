@@ -214,6 +214,34 @@ X-Xss-Protection: 0
       {
         "connections": [
           {
+            "pscAutoConnection": {
+              "connectionType": "CONNECTION_TYPE_PRIMARY",
+              "forwardingRule": "https://www.googleapis.com/compute/v1/projects/${projectId}/regions/us-central1/forwardingRules/sca-auto-fr-112210f47de98115",
+              "ipAddress": "10.128.0.21",
+              "network": "projects/${projectId}/global/networks/default",
+              "port": 6379,
+              "projectId": "${projectId}",
+              "pscConnectionId": "1234567890123456789",
+              "serviceAttachment": "projects/tp-test-instance-${uniqueId}/regions/us-central1/serviceAttachments/sa-test-instance-${uniqueId}"
+            }
+          },
+          {
+            "pscAutoConnection": {
+              "connectionType": "CONNECTION_TYPE_READER",
+              "forwardingRule": "https://www.googleapis.com/compute/v1/projects/${projectId}/regions/us-central1/forwardingRules/sca-auto-fr-112210f47de98116",
+              "ipAddress": "10.128.0.22",
+              "network": "projects/${projectId}/global/networks/default",
+              "port": 6379,
+              "projectId": "${projectId}",
+              "pscConnectionId": "1234567890123456790",
+              "serviceAttachment": "projects/tp-test-instance-${uniqueId}/regions/us-central1/serviceAttachments/sa-test-instance-${uniqueId}-2"
+            }
+          }
+        ]
+      },
+      {
+        "connections": [
+          {
             "pscConnection": {
               "connectionType": "CONNECTION_TYPE_PRIMARY",
               "forwardingRule": "projects/${projectId}/regions/us-central1/forwardingRules/test-fwdrule-1-${uniqueId}",
@@ -298,6 +326,34 @@ X-Xss-Protection: 0
   "createTime": "2024-04-01T12:34:56.123456Z",
   "deletionProtectionEnabled": false,
   "endpoints": [
+    {
+      "connections": [
+        {
+          "pscAutoConnection": {
+            "connectionType": "CONNECTION_TYPE_PRIMARY",
+            "forwardingRule": "https://www.googleapis.com/compute/v1/projects/${projectId}/regions/us-central1/forwardingRules/sca-auto-fr-112210f47de98115",
+            "ipAddress": "10.128.0.21",
+            "network": "projects/${projectId}/global/networks/default",
+            "port": 6379,
+            "projectId": "${projectId}",
+            "pscConnectionId": "1234567890123456789",
+            "serviceAttachment": "projects/tp-test-instance-${uniqueId}/regions/us-central1/serviceAttachments/sa-test-instance-${uniqueId}"
+          }
+        },
+        {
+          "pscAutoConnection": {
+            "connectionType": "CONNECTION_TYPE_READER",
+            "forwardingRule": "https://www.googleapis.com/compute/v1/projects/${projectId}/regions/us-central1/forwardingRules/sca-auto-fr-112210f47de98116",
+            "ipAddress": "10.128.0.22",
+            "network": "projects/${projectId}/global/networks/default",
+            "port": 6379,
+            "projectId": "${projectId}",
+            "pscConnectionId": "1234567890123456790",
+            "serviceAttachment": "projects/tp-test-instance-${uniqueId}/regions/us-central1/serviceAttachments/sa-test-instance-${uniqueId}-2"
+          }
+        }
+      ]
+    },
     {
       "connections": [
         {
@@ -463,6 +519,36 @@ X-Xss-Protection: 0
     },
     "createTime": "2024-04-01T12:34:56.123456Z",
     "deletionProtectionEnabled": false,
+    "endpoints": [
+      {
+        "connections": [
+          {
+            "pscAutoConnection": {
+              "connectionType": "CONNECTION_TYPE_PRIMARY",
+              "forwardingRule": "https://www.googleapis.com/compute/v1/projects/${projectId}/regions/us-central1/forwardingRules/sca-auto-fr-112210f47de98115",
+              "ipAddress": "10.128.0.21",
+              "network": "projects/${projectId}/global/networks/default",
+              "port": 6379,
+              "projectId": "${projectId}",
+              "pscConnectionId": "1234567890123456789",
+              "serviceAttachment": "projects/tp-test-instance-${uniqueId}/regions/us-central1/serviceAttachments/sa-test-instance-${uniqueId}"
+            }
+          },
+          {
+            "pscAutoConnection": {
+              "connectionType": "CONNECTION_TYPE_READER",
+              "forwardingRule": "https://www.googleapis.com/compute/v1/projects/${projectId}/regions/us-central1/forwardingRules/sca-auto-fr-112210f47de98116",
+              "ipAddress": "10.128.0.22",
+              "network": "projects/${projectId}/global/networks/default",
+              "port": 6379,
+              "projectId": "${projectId}",
+              "pscConnectionId": "1234567890123456790",
+              "serviceAttachment": "projects/tp-test-instance-${uniqueId}/regions/us-central1/serviceAttachments/sa-test-instance-${uniqueId}-2"
+            }
+          }
+        ]
+      }
+    ],
     "engineVersion": "VALKEY_7_2",
     "mode": "CLUSTER_DISABLED",
     "name": "projects/${projectId}/locations/us-central1/instances/test-instance-${uniqueId}",
@@ -520,6 +606,36 @@ X-Xss-Protection: 0
   },
   "createTime": "2024-04-01T12:34:56.123456Z",
   "deletionProtectionEnabled": false,
+  "endpoints": [
+    {
+      "connections": [
+        {
+          "pscAutoConnection": {
+            "connectionType": "CONNECTION_TYPE_PRIMARY",
+            "forwardingRule": "https://www.googleapis.com/compute/v1/projects/${projectId}/regions/us-central1/forwardingRules/sca-auto-fr-112210f47de98115",
+            "ipAddress": "10.128.0.21",
+            "network": "projects/${projectId}/global/networks/default",
+            "port": 6379,
+            "projectId": "${projectId}",
+            "pscConnectionId": "1234567890123456789",
+            "serviceAttachment": "projects/tp-test-instance-${uniqueId}/regions/us-central1/serviceAttachments/sa-test-instance-${uniqueId}"
+          }
+        },
+        {
+          "pscAutoConnection": {
+            "connectionType": "CONNECTION_TYPE_READER",
+            "forwardingRule": "https://www.googleapis.com/compute/v1/projects/${projectId}/regions/us-central1/forwardingRules/sca-auto-fr-112210f47de98116",
+            "ipAddress": "10.128.0.22",
+            "network": "projects/${projectId}/global/networks/default",
+            "port": 6379,
+            "projectId": "${projectId}",
+            "pscConnectionId": "1234567890123456790",
+            "serviceAttachment": "projects/tp-test-instance-${uniqueId}/regions/us-central1/serviceAttachments/sa-test-instance-${uniqueId}-2"
+          }
+        }
+      ]
+    }
+  ],
   "engineVersion": "VALKEY_7_2",
   "mode": "CLUSTER_DISABLED",
   "name": "projects/${projectId}/locations/us-central1/instances/test-instance-${uniqueId}",
