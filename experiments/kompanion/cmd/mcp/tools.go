@@ -81,16 +81,19 @@ func (sc *serverContext) handleGetKCCCRDSchema(ctx context.Context, request mcp.
 	}
 
 	// Keep it lean: extract only spec and status properties
-	properties, found, _ := unstructured.NestedMap(schemaObj.(map[string]interface{}), "properties")
-	if found {
-		leanSchema := make(map[string]interface{})
-		if spec, ok := properties["spec"]; ok {
-			leanSchema["spec"] = spec
+	schemaMap, ok := schemaObj.(map[string]interface{})
+	if ok {
+		properties, found, _ := unstructured.NestedMap(schemaMap, "properties")
+		if found {
+			leanSchema := make(map[string]interface{})
+			if spec, ok := properties["spec"]; ok {
+				leanSchema["spec"] = spec
+			}
+			if status, ok := properties["status"]; ok {
+				leanSchema["status"] = status
+			}
+			schemaObj = leanSchema
 		}
-		if status, ok := properties["status"]; ok {
-			leanSchema["status"] = status
-		}
-		schemaObj = leanSchema
 	}
 
 	schemaJSON, err := json.MarshalIndent(schemaObj, "", "  ")
