@@ -322,28 +322,17 @@ func (sc *serverContext) handleDeleteKCCResource(ctx context.Context, request mc
 }
 
 func (sc *serverContext) handleListKCCKinds(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	gvrs, err := sc.getKCCGVRs()
+	_, err := sc.getKCCGVRs()
 	if err != nil {
 		return mcp.NewToolResultError(fmt.Sprintf("failed to get KCC GVRs: %v", err)), nil
 	}
 
-	kindsMap := make(map[string]string)
-	for _, gvr := range gvrs {
-		apiResourceList, err := sc.discoveryClient.ServerResourcesForGroupVersion(gvr.GroupVersion().String())
-		if err != nil {
-			continue
-		}
-		for _, apiResource := range apiResourceList.APIResources {
-			if !strings.Contains(apiResource.Name, "/") {
-				kindsMap[apiResource.Kind] = gvr.Group
-			}
-		}
-	}
-
+	sc.mu.RLock()
 	var kinds []string
-	for kind, group := range kindsMap {
-		kinds = append(kinds, fmt.Sprintf("- %s (%s)", kind, group))
+	for kind, gvr := range sc.kindToGVRCache {
+		kinds = append(kinds, fmt.Sprintf("- %s (%s)", kind, gvr.Group))
 	}
+	sc.mu.RUnlock()
 	sort.Strings(kinds)
 
 	if len(kinds) == 0 {
@@ -424,6 +413,17 @@ func (sc *serverContext) findGVR(gvk schema.GroupVersionKind) (schema.GroupVersi
 		return gvr, nil
 	}
 
+	// Try loading KCC GVRs if it looks like a KCC resource
+	if strings.HasSuffix(gvk.Group, ".cnrm.cloud.google.com") {
+		_, _ = sc.getKCCGVRs() // Ignore error, we will try direct discovery if it fails
+		sc.mu.RLock()
+		gvr, ok = sc.gvkCache[gvk]
+		sc.mu.RUnlock()
+		if ok {
+			return gvr, nil
+		}
+	}
+
 	apiResourceList, err := sc.discoveryClient.ServerResourcesForGroupVersion(gvk.GroupVersion().String())
 	if err != nil {
 		return schema.GroupVersionResource{}, err
@@ -446,35 +446,22 @@ func (sc *serverContext) findGVR(gvk schema.GroupVersionKind) (schema.GroupVersi
 
 func (sc *serverContext) findGVRByKind(kind string) (schema.GroupVersionResource, error) {
 	sc.mu.RLock()
-	gvr, ok := sc.gvrCache[kind]
+	gvr, ok := sc.kindToGVRCache[kind]
 	sc.mu.RUnlock()
 	if ok {
 		return gvr, nil
 	}
 
-	gvrs, err := sc.getKCCGVRs()
+	_, err := sc.getKCCGVRs()
 	if err != nil {
 		return schema.GroupVersionResource{}, err
 	}
 
-	for _, r := range gvrs {
-		apiResourceList, err := sc.discoveryClient.ServerResourcesForGroupVersion(r.GroupVersion().String())
-		if err != nil {
-			continue
-		}
-		for _, apiResource := range apiResourceList.APIResources {
-			if apiResource.Kind == kind && !strings.Contains(apiResource.Name, "/") {
-				gvr = schema.GroupVersionResource{
-					Group:    r.Group,
-					Version:  r.Version,
-					Resource: apiResource.Name,
-				}
-				sc.mu.Lock()
-				sc.gvrCache[kind] = gvr
-				sc.mu.Unlock()
-				return gvr, nil
-			}
-		}
+	sc.mu.RLock()
+	gvr, ok = sc.kindToGVRCache[kind]
+	sc.mu.RUnlock()
+	if ok {
+		return gvr, nil
 	}
 
 	return schema.GroupVersionResource{}, fmt.Errorf("GVR not found for kind %s", kind)
@@ -535,11 +522,18 @@ func (sc *serverContext) getKCCGVRs() ([]schema.GroupVersionResource, error) {
 		gv, _ := schema.ParseGroupVersion(apiResourceList.GroupVersion)
 		for _, apiResource := range apiResourceList.APIResources {
 			if !strings.Contains(apiResource.Name, "/") { // skip subresources
-				gvrs = append(gvrs, schema.GroupVersionResource{
+				gvr := schema.GroupVersionResource{
 					Group:    gv.Group,
 					Version:  gv.Version,
 					Resource: apiResource.Name,
-				})
+				}
+				gvrs = append(gvrs, gvr)
+				sc.kindToGVRCache[apiResource.Kind] = gvr
+				sc.gvkCache[schema.GroupVersionKind{
+					Group:   gv.Group,
+					Version: gv.Version,
+					Kind:    apiResource.Kind,
+				}] = gvr
 			}
 		}
 	}

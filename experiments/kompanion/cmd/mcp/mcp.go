@@ -69,10 +69,11 @@ type serverContext struct {
 	dynamicClient   dynamic.Interface
 	discoveryClient discovery.DiscoveryInterface
 
-	mu       sync.RWMutex
-	gvrCache map[string]schema.GroupVersionResource
-	gvkCache map[schema.GroupVersionKind]schema.GroupVersionResource
-	kccGVRs  []schema.GroupVersionResource
+	mu              sync.RWMutex
+	gvrCache        map[string]schema.GroupVersionResource
+	gvkCache        map[schema.GroupVersionKind]schema.GroupVersionResource
+	kindToGVRCache  map[string]schema.GroupVersionResource
+	kccGVRs         []schema.GroupVersionResource
 }
 
 func RunMCP(ctx context.Context, opts *Options) error {
@@ -102,6 +103,7 @@ func RunMCP(ctx context.Context, opts *Options) error {
 		discoveryClient: discoveryClient,
 		gvrCache:        make(map[string]schema.GroupVersionResource),
 		gvkCache:        make(map[schema.GroupVersionKind]schema.GroupVersionResource),
+		kindToGVRCache:  make(map[string]schema.GroupVersionResource),
 	}
 
 	s := server.NewMCPServer(
