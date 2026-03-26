@@ -67,12 +67,17 @@ func (sc *serverContext) handleGetKCCCRDSchema(ctx context.Context, request mcp.
 	// Find the served version, preferably the latest one
 	var schemaObj interface{}
 	for _, v := range versions {
-		verMap := v.(map[string]interface{})
+		verMap, ok := v.(map[string]interface{})
+		if !ok {
+			continue
+		}
 		served, _ := verMap["served"].(bool)
 		if served {
 			schemaObj, _, _ = unstructured.NestedFieldNoCopy(verMap, "schema", "openAPIV3Schema")
 			// We take the first served version for now
 			break
+		}
+	}
 		}
 	}
 
@@ -206,7 +211,10 @@ func (sc *serverContext) handleDescribeKCCResource(ctx context.Context, request 
 	if len(conditions) > 0 {
 		sb.WriteString("Conditions:\n")
 		for _, c := range conditions {
-			cond := c.(map[string]interface{})
+			cond, ok := c.(map[string]interface{})
+			if !ok {
+				continue
+			}
 			statusVal, _ := cond["status"].(string)
 			reason, _ := cond["reason"].(string)
 			message, _ := cond["message"].(string)
