@@ -18,11 +18,13 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"sync"
 
 	"github.com/GoogleCloudPlatform/k8s-config-connector/experiments/kompanion/pkg/version"
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/mark3labs/mcp-go/server"
 	"github.com/spf13/cobra"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/discovery"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/rest"
@@ -66,6 +68,9 @@ func getRESTConfig(opts *Options) (*rest.Config, error) {
 type serverContext struct {
 	dynamicClient   dynamic.Interface
 	discoveryClient discovery.DiscoveryInterface
+
+	mu       sync.RWMutex
+	gvrCache map[string]schema.GroupVersionResource
 }
 
 func RunMCP(ctx context.Context, opts *Options) error {
@@ -93,6 +98,7 @@ func RunMCP(ctx context.Context, opts *Options) error {
 	sc := &serverContext{
 		dynamicClient:   dynamicClient,
 		discoveryClient: discoveryClient,
+		gvrCache:        make(map[string]schema.GroupVersionResource),
 	}
 
 	s := server.NewMCPServer(

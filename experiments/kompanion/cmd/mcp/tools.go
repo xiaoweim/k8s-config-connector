@@ -441,6 +441,13 @@ func (sc *serverContext) findGVR(gvk schema.GroupVersionKind) (schema.GroupVersi
 }
 
 func (sc *serverContext) findGVRByKind(kind string) (schema.GroupVersionResource, error) {
+	sc.mu.RLock()
+	gvr, ok := sc.gvrCache[kind]
+	sc.mu.RUnlock()
+	if ok {
+		return gvr, nil
+	}
+
 	apiResourceLists, err := sc.discoveryClient.ServerPreferredResources()
 	if err != nil {
 		return schema.GroupVersionResource{}, err
@@ -452,11 +459,15 @@ func (sc *serverContext) findGVRByKind(kind string) (schema.GroupVersionResource
 		gv, _ := schema.ParseGroupVersion(apiResourceList.GroupVersion)
 		for _, apiResource := range apiResourceList.APIResources {
 			if apiResource.Kind == kind && !strings.Contains(apiResource.Name, "/") {
-				return schema.GroupVersionResource{
+				gvr = schema.GroupVersionResource{
 					Group:    gv.Group,
 					Version:  gv.Version,
 					Resource: apiResource.Name,
-				}, nil
+				}
+				sc.mu.Lock()
+				sc.gvrCache[kind] = gvr
+				sc.mu.Unlock()
+				return gvr, nil
 			}
 		}
 	}
