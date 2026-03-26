@@ -249,7 +249,13 @@ func (sc *serverContext) handleDescribeKCCResource(ctx context.Context, request 
 			reason, _ := cond["reason"].(string)
 			message, _ := cond["message"].(string)
 			typeVal, _ := cond["type"].(string)
-			sb.WriteString(fmt.Sprintf("  - Type: %s, Status: %s, Reason: %s\n", typeVal, statusVal, reason))
+			
+			statusPrefix := ""
+			if (typeVal == "Ready" || typeVal == "ManagementFinished") && statusVal == "False" {
+				statusPrefix = "⚠️  "
+			}
+			
+			sb.WriteString(fmt.Sprintf("  - %sType: %s, Status: %s, Reason: %s\n", statusPrefix, typeVal, statusVal, reason))
 			if message != "" {
 				sb.WriteString(fmt.Sprintf("    Message: %s\n", message))
 			}
