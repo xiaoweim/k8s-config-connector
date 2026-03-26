@@ -69,6 +69,7 @@ func TestHandleListKCCResources(t *testing.T) {
 		dynamicClient:   dynamicClient,
 		discoveryClient: discoveryClient,
 		gvrCache:        make(map[string]schema.GroupVersionResource),
+		gvkCache:        make(map[schema.GroupVersionKind]schema.GroupVersionResource),
 	}
 
 	// Create a fake resource
@@ -137,6 +138,7 @@ func TestHandleListKCCResourcesWithLimit(t *testing.T) {
 		dynamicClient:   dynamicClient,
 		discoveryClient: discoveryClient,
 		gvrCache:        make(map[string]schema.GroupVersionResource),
+		gvkCache:        make(map[schema.GroupVersionKind]schema.GroupVersionResource),
 	}
 
 	// Create 3 fake resources
@@ -197,6 +199,7 @@ func TestHandleGetKCCCRDSchema(t *testing.T) {
 	sc := &serverContext{
 		dynamicClient: dynamicClient,
 		gvrCache:      make(map[string]schema.GroupVersionResource),
+		gvkCache:      make(map[schema.GroupVersionKind]schema.GroupVersionResource),
 	}
 
 	crd := &unstructured.Unstructured{
@@ -272,6 +275,7 @@ func TestHandleGetKCCCRDSchemaWithMultipleVersions(t *testing.T) {
 	sc := &serverContext{
 		dynamicClient: dynamicClient,
 		gvrCache:      make(map[string]schema.GroupVersionResource),
+		gvkCache:      make(map[schema.GroupVersionKind]schema.GroupVersionResource),
 	}
 
 	crd := &unstructured.Unstructured{
@@ -364,6 +368,7 @@ func TestHandleDescribeKCCResource(t *testing.T) {
 		dynamicClient:   dynamicClient,
 		discoveryClient: discoveryClient,
 		gvrCache:        make(map[string]schema.GroupVersionResource),
+		gvkCache:        make(map[schema.GroupVersionKind]schema.GroupVersionResource),
 	}
 
 	// Create a fake resource with status and conditions
@@ -444,6 +449,7 @@ func TestHandleApplyKCCYAML(t *testing.T) {
 		dynamicClient:   dynamicClient,
 		discoveryClient: discoveryClient,
 		gvrCache:        make(map[string]schema.GroupVersionResource),
+		gvkCache:        make(map[schema.GroupVersionKind]schema.GroupVersionResource),
 	}
 
 	yamlStr := `
@@ -521,6 +527,7 @@ func TestHandleGetKCCResource(t *testing.T) {
 		dynamicClient:   dynamicClient,
 		discoveryClient: discoveryClient,
 		gvrCache:        make(map[string]schema.GroupVersionResource),
+		gvkCache:        make(map[schema.GroupVersionKind]schema.GroupVersionResource),
 	}
 
 	obj := &unstructured.Unstructured{
@@ -593,6 +600,7 @@ func TestHandleDeleteKCCResource(t *testing.T) {
 		dynamicClient:   dynamicClient,
 		discoveryClient: discoveryClient,
 		gvrCache:        make(map[string]schema.GroupVersionResource),
+		gvkCache:        make(map[schema.GroupVersionKind]schema.GroupVersionResource),
 	}
 
 	obj := &unstructured.Unstructured{
@@ -650,6 +658,7 @@ func TestHandleListKCCKinds(t *testing.T) {
 	sc := &serverContext{
 		dynamicClient: dynamicClient,
 		gvrCache:      make(map[string]schema.GroupVersionResource),
+		gvkCache:      make(map[schema.GroupVersionKind]schema.GroupVersionResource),
 	}
 
 	crd := &unstructured.Unstructured{

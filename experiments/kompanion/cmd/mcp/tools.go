@@ -424,17 +424,28 @@ func (sc *serverContext) handleListKCCResources(ctx context.Context, request mcp
 }
 
 func (sc *serverContext) findGVR(gvk schema.GroupVersionKind) (schema.GroupVersionResource, error) {
+	sc.mu.RLock()
+	gvr, ok := sc.gvkCache[gvk]
+	sc.mu.RUnlock()
+	if ok {
+		return gvr, nil
+	}
+
 	apiResourceList, err := sc.discoveryClient.ServerResourcesForGroupVersion(gvk.GroupVersion().String())
 	if err != nil {
 		return schema.GroupVersionResource{}, err
 	}
 	for _, apiResource := range apiResourceList.APIResources {
 		if apiResource.Kind == gvk.Kind && !strings.Contains(apiResource.Name, "/") {
-			return schema.GroupVersionResource{
+			gvr = schema.GroupVersionResource{
 				Group:    gvk.Group,
 				Version:  gvk.Version,
 				Resource: apiResource.Name,
-			}, nil
+			}
+			sc.mu.Lock()
+			sc.gvkCache[gvk] = gvr
+			sc.mu.Unlock()
+			return gvr, nil
 		}
 	}
 	return schema.GroupVersionResource{}, fmt.Errorf("GVR not found for %v", gvk)

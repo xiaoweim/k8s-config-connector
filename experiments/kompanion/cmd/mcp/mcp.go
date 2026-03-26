@@ -71,6 +71,7 @@ type serverContext struct {
 
 	mu       sync.RWMutex
 	gvrCache map[string]schema.GroupVersionResource
+	gvkCache map[schema.GroupVersionKind]schema.GroupVersionResource
 }
 
 func RunMCP(ctx context.Context, opts *Options) error {
@@ -99,6 +100,7 @@ func RunMCP(ctx context.Context, opts *Options) error {
 		dynamicClient:   dynamicClient,
 		discoveryClient: discoveryClient,
 		gvrCache:        make(map[string]schema.GroupVersionResource),
+		gvkCache:        make(map[schema.GroupVersionKind]schema.GroupVersionResource),
 	}
 
 	s := server.NewMCPServer(
