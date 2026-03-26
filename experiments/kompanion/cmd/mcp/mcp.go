@@ -72,6 +72,7 @@ type serverContext struct {
 	mu       sync.RWMutex
 	gvrCache map[string]schema.GroupVersionResource
 	gvkCache map[schema.GroupVersionKind]schema.GroupVersionResource
+	kccGVRs  []schema.GroupVersionResource
 }
 
 func RunMCP(ctx context.Context, opts *Options) error {

@@ -84,6 +84,15 @@ func TestHandleListKCCResources(t *testing.T) {
 					"cnrm.cloud.google.com/project-id": "test-project",
 				},
 			},
+			"status": map[string]interface{}{
+				"conditions": []interface{}{
+					map[string]interface{}{
+						"type":   "Ready",
+						"status": "True",
+						"reason": "UpToDate",
+					},
+				},
+			},
 		},
 	}
 	_, err := dynamicClient.Resource(gvr).Namespace("test-ns").Create(context.Background(), obj, metav1.CreateOptions{})
@@ -114,6 +123,9 @@ func TestHandleListKCCResources(t *testing.T) {
 	}
 	if !strings.Contains(text, "test-project") {
 		t.Errorf("expected output to contain test-project, got %s", text)
+	}
+	if !strings.Contains(text, "Status: Ready") {
+		t.Errorf("expected output to contain Status: Ready, got %s", text)
 	}
 }
 
@@ -151,6 +163,15 @@ func TestHandleListKCCResourcesWithLimit(t *testing.T) {
 					"name":      fmt.Sprintf("test-bucket-%d", i),
 					"namespace": "test-ns",
 				},
+				"status": map[string]interface{}{
+					"conditions": []interface{}{
+						map[string]interface{}{
+							"type":   "Ready",
+							"status": "True",
+							"reason": "UpToDate",
+						},
+					},
+				},
 			},
 		}
 		_, err := dynamicClient.Resource(gvr).Namespace("test-ns").Create(context.Background(), obj, metav1.CreateOptions{})
@@ -185,6 +206,9 @@ func TestHandleListKCCResourcesWithLimit(t *testing.T) {
 	if count != 2 {
 		t.Errorf("expected 2 resources, got %d. Output: %s", count, text)
 	}
+	if !strings.Contains(text, "Status: Ready") {
+		t.Errorf("expected output to contain Status: Ready, got %s", text)
+	}
 	if !strings.Contains(text, "truncated to limit of 2") {
 		t.Errorf("expected output to contain truncation note, got %s", text)
 	}
@@ -196,10 +220,21 @@ func TestHandleGetKCCCRDSchema(t *testing.T) {
 	dynamicClient := dynamicfake.NewSimpleDynamicClientWithCustomListKinds(scheme, map[schema.GroupVersionResource]string{
 		crdGVR: "CustomResourceDefinitionList",
 	})
+	discoveryClient := &mockDiscovery{
+		resources: []*metav1.APIResourceList{
+			{
+				GroupVersion: "storage.cnrm.cloud.google.com/v1beta1",
+				APIResources: []metav1.APIResource{
+					{Name: "storagebuckets", Kind: "StorageBucket", Namespaced: true},
+				},
+			},
+		},
+	}
 	sc := &serverContext{
-		dynamicClient: dynamicClient,
-		gvrCache:      make(map[string]schema.GroupVersionResource),
-		gvkCache:      make(map[schema.GroupVersionKind]schema.GroupVersionResource),
+		dynamicClient:   dynamicClient,
+		discoveryClient: discoveryClient,
+		gvrCache:        make(map[string]schema.GroupVersionResource),
+		gvkCache:        make(map[schema.GroupVersionKind]schema.GroupVersionResource),
 	}
 
 	crd := &unstructured.Unstructured{
@@ -272,10 +307,21 @@ func TestHandleGetKCCCRDSchemaWithMultipleVersions(t *testing.T) {
 	dynamicClient := dynamicfake.NewSimpleDynamicClientWithCustomListKinds(scheme, map[schema.GroupVersionResource]string{
 		crdGVR: "CustomResourceDefinitionList",
 	})
+	discoveryClient := &mockDiscovery{
+		resources: []*metav1.APIResourceList{
+			{
+				GroupVersion: "storage.cnrm.cloud.google.com/v1beta1",
+				APIResources: []metav1.APIResource{
+					{Name: "storagebuckets", Kind: "StorageBucket", Namespaced: true},
+				},
+			},
+		},
+	}
 	sc := &serverContext{
-		dynamicClient: dynamicClient,
-		gvrCache:      make(map[string]schema.GroupVersionResource),
-		gvkCache:      make(map[schema.GroupVersionKind]schema.GroupVersionResource),
+		dynamicClient:   dynamicClient,
+		discoveryClient: discoveryClient,
+		gvrCache:        make(map[string]schema.GroupVersionResource),
+		gvkCache:        make(map[schema.GroupVersionKind]schema.GroupVersionResource),
 	}
 
 	crd := &unstructured.Unstructured{
@@ -650,35 +696,26 @@ func TestHandleDeleteKCCResource(t *testing.T) {
 }
 
 func TestHandleListKCCKinds(t *testing.T) {
-	scheme := runtime.NewScheme()
-	crdGVR := schema.GroupVersionResource{Group: "apiextensions.k8s.io", Version: "v1", Resource: "customresourcedefinitions"}
-	dynamicClient := dynamicfake.NewSimpleDynamicClientWithCustomListKinds(scheme, map[schema.GroupVersionResource]string{
-		crdGVR: "CustomResourceDefinitionList",
-	})
-	sc := &serverContext{
-		dynamicClient: dynamicClient,
-		gvrCache:      make(map[string]schema.GroupVersionResource),
-		gvkCache:      make(map[schema.GroupVersionKind]schema.GroupVersionResource),
-	}
-
-	crd := &unstructured.Unstructured{
-		Object: map[string]interface{}{
-			"apiVersion": "apiextensions.k8s.io/v1",
-			"kind":       "CustomResourceDefinition",
-			"metadata": map[string]interface{}{
-				"name": "storagebuckets.storage.cnrm.cloud.google.com",
+	discoveryClient := &mockDiscovery{
+		resources: []*metav1.APIResourceList{
+			{
+				GroupVersion: "storage.cnrm.cloud.google.com/v1beta1",
+				APIResources: []metav1.APIResource{
+					{Name: "storagebuckets", Kind: "StorageBucket", Namespaced: true},
+				},
 			},
-			"spec": map[string]interface{}{
-				"group": "storage.cnrm.cloud.google.com",
-				"names": map[string]interface{}{
-					"kind": "StorageBucket",
+			{
+				GroupVersion: "compute.cnrm.cloud.google.com/v1beta1",
+				APIResources: []metav1.APIResource{
+					{Name: "computeinstances", Kind: "ComputeInstance", Namespaced: true},
 				},
 			},
 		},
 	}
-	_, err := dynamicClient.Resource(crdGVR).Create(context.Background(), crd, metav1.CreateOptions{})
-	if err != nil {
-		t.Fatalf("failed to create fake CRD: %v", err)
+	sc := &serverContext{
+		discoveryClient: discoveryClient,
+		gvrCache:        make(map[string]schema.GroupVersionResource),
+		gvkCache:        make(map[schema.GroupVersionKind]schema.GroupVersionResource),
 	}
 
 	req := mcp.CallToolRequest{}
@@ -694,5 +731,20 @@ func TestHandleListKCCKinds(t *testing.T) {
 	text := res.Content[0].(mcp.TextContent).Text
 	if !strings.Contains(text, "StorageBucket") {
 		t.Errorf("expected output to contain StorageBucket, got %s", text)
+	}
+	if !strings.Contains(text, "ComputeInstance") {
+		t.Errorf("expected output to contain ComputeInstance, got %s", text)
+	}
+	
+	// Verify sorting
+	lines := strings.Split(text, "\n")
+	if len(lines) < 3 {
+		t.Fatalf("expected at least 3 lines, got %d", len(lines))
+	}
+	// Available KCC Kinds:
+	// - ComputeInstance (compute.cnrm.cloud.google.com)
+	// - StorageBucket (storage.cnrm.cloud.google.com)
+	if !strings.Contains(lines[1], "ComputeInstance") {
+		t.Errorf("expected first kind to be ComputeInstance (alphabetical), got %s", lines[1])
 	}
 }
