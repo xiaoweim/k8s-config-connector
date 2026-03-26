@@ -19,11 +19,11 @@ X-Xss-Protection: 0
     "errors": [
       {
         "domain": "global",
-        "message": "target \"projects/${projectId}/locations/us-central1/targets/clouddeploytarget-${uniqueId}\" not found",
+        "message": "Resource 'projects/${projectId}/locations/us-central1/targets/clouddeploytarget-${uniqueId}' was not found",
         "reason": "notFound"
       }
     ],
-    "message": "target \"projects/${projectId}/locations/us-central1/targets/clouddeploytarget-${uniqueId}\" not found",
+    "message": "Resource 'projects/${projectId}/locations/us-central1/targets/clouddeploytarget-${uniqueId}' was not found",
     "status": "NOT_FOUND"
   }
 }

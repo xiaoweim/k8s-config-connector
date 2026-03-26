@@ -31,6 +31,8 @@ import (
 	clouddeploypb "cloud.google.com/go/deploy/apiv1/deploypb"
 
 	"google.golang.org/api/option"
+	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/reflect/protoreflect"
 	"google.golang.org/protobuf/types/known/fieldmaskpb"
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -131,7 +133,7 @@ var _ directbase.Adapter = &TargetAdapter{}
 // Return a non-nil error requeues the requests.
 func (a *TargetAdapter) Find(ctx context.Context) (bool, error) {
 	log := klog.FromContext(ctx)
-	log.V(2).Info("getting Target", "name", a.id)
+	log.V(2).Info("getting Target", "name", a.id.String())
 
 	req := &clouddeploypb.GetTargetRequest{Name: a.id.String()}
 	targetpb, err := a.gcpClient.GetTarget(ctx, req)
@@ -139,7 +141,7 @@ func (a *TargetAdapter) Find(ctx context.Context) (bool, error) {
 		if direct.IsNotFound(err) {
 			return false, nil
 		}
-		return false, fmt.Errorf("getting Target %q: %w", a.id, err)
+		return false, fmt.Errorf("getting Target %q: %w", a.id.String(), err)
 	}
 
 	a.actual = targetpb
@@ -149,7 +151,7 @@ func (a *TargetAdapter) Find(ctx context.Context) (bool, error) {
 // Create creates the resource in GCP based on `spec` and update the Config Connector object `status` based on the GCP response.
 func (a *TargetAdapter) Create(ctx context.Context, createOp *directbase.CreateOperation) error {
 	log := klog.FromContext(ctx)
-	log.V(2).Info("creating Target", "name", a.id)
+	log.V(2).Info("creating Target", "name", a.id.String())
 	mapCtx := &direct.MapContext{}
 
 	req := &clouddeploypb.CreateTargetRequest{
@@ -159,13 +161,13 @@ func (a *TargetAdapter) Create(ctx context.Context, createOp *directbase.CreateO
 	}
 	op, err := a.gcpClient.CreateTarget(ctx, req)
 	if err != nil {
-		return fmt.Errorf("creating Target %s: %w", a.id, err)
+		return fmt.Errorf("creating Target %s: %w", a.id.String(), err)
 	}
 	created, err := op.Wait(ctx)
 	if err != nil {
-		return fmt.Errorf("Target %s waiting creation: %w", a.id, err)
+		return fmt.Errorf("Target %s waiting creation: %w", a.id.String(), err)
 	}
-	log.V(2).Info("successfully created Target", "name", a.id)
+	log.V(2).Info("successfully created Target", "name", a.id.String())
 
 	status := &krm.CloudDeployTargetStatus{}
 	status.ObservedState = CloudDeployTargetObservedState_FromProto(mapCtx, created)
@@ -179,57 +181,59 @@ func (a *TargetAdapter) Create(ctx context.Context, createOp *directbase.CreateO
 // Update updates the resource in GCP based on `spec` and update the Config Connector object `status` based on the GCP response.
 func (a *TargetAdapter) Update(ctx context.Context, updateOp *directbase.UpdateOperation) error {
 	log := klog.FromContext(ctx)
-	log.V(2).Info("updating Target", "name", a.id)
+	log.V(2).Info("updating Target", "name", a.id.String())
 	mapCtx := &direct.MapContext{}
 
 	a.desiredPb.Name = a.id.String()
 
-	paths := make(sets.Set[string])
-	var err error
-
-	// etag and executionConfigs are server-generated and not in KCC spec.
-	// We zero them out to avoid unnecessary drift.
-	// TODO: We should probably handle executionConfigs better if they are actually in the spec
-	a.actual.Etag = ""
-	a.actual.ExecutionConfigs = nil
-
-	paths, err = common.CompareProtoMessage(a.desiredPb, a.actual, common.BasicDiff)
+	// etag and execution_configs are server-generated and not in KCC spec.
+	// We skip the diff when they show up in path to avoid unnecessary drift.
+	// This also ensures we don't send them in the PATCH request body if they are not in our spec.
+	paths, err := common.CompareProtoMessage(a.desiredPb, a.actual, func(fieldName protoreflect.Name, a, b proto.Message) (bool, error) {
+		if fieldName == "etag" || fieldName == "execution_configs" {
+			return false, nil
+		}
+		return common.BasicDiff(fieldName, a, b)
+	})
 	if err != nil {
 		return err
 	}
-	if len(paths) == 0 {
-		log.V(2).Info("no field needs update", "name", a.id)
-		return nil
-	}
-	report := &structuredreporting.Diff{Object: updateOp.GetUnstructured()}
-	for path := range paths {
-		report.AddField(path, nil, nil)
-	}
-	structuredreporting.ReportDiff(ctx, report)
 
-	updateMask := &fieldmaskpb.FieldMask{
-		Paths: sets.List(paths),
-	}
+	updated := a.actual
+	if len(paths) != 0 {
+		report := &structuredreporting.Diff{Object: updateOp.GetUnstructured()}
+		for path := range paths {
+			report.AddField(path, nil, nil)
+		}
+		structuredreporting.ReportDiff(ctx, report)
 
-	req := &clouddeploypb.UpdateTargetRequest{
-		UpdateMask: updateMask,
-		Target:     a.desiredPb,
+		updateMask := &fieldmaskpb.FieldMask{
+			Paths: sets.List(paths),
+		}
+
+		req := &clouddeploypb.UpdateTargetRequest{
+			UpdateMask: updateMask,
+			Target:     a.desiredPb,
+		}
+		op, err := a.gcpClient.UpdateTarget(ctx, req)
+		if err != nil {
+			return fmt.Errorf("updating Target %s: %w", a.id.String(), err)
+		}
+		updated, err = op.Wait(ctx)
+		if err != nil {
+			return fmt.Errorf("Target %s waiting update: %w", a.id.String(), err)
+		}
+		log.V(2).Info("successfully updated Target", "name", a.id.String())
+	} else {
+		log.V(2).Info("no field needs update", "name", a.id.String())
 	}
-	op, err := a.gcpClient.UpdateTarget(ctx, req)
-	if err != nil {
-		return fmt.Errorf("updating Target %s: %w", a.id, err)
-	}
-	updated, err := op.Wait(ctx)
-	if err != nil {
-		return fmt.Errorf("Target %s waiting update: %w", a.id, err)
-	}
-	log.V(2).Info("successfully updated Target", "name", a.id)
 
 	status := &krm.CloudDeployTargetStatus{}
 	status.ObservedState = CloudDeployTargetObservedState_FromProto(mapCtx, updated)
 	if mapCtx.Err() != nil {
 		return mapCtx.Err()
 	}
+	status.ExternalRef = direct.LazyPtr(a.id.String())
 	return updateOp.UpdateStatus(ctx, status, nil)
 }
 
@@ -263,23 +267,23 @@ func (a *TargetAdapter) Export(ctx context.Context) (*unstructured.Unstructured,
 // Delete the resource from GCP service when the corresponding Config Connector resource is deleted.
 func (a *TargetAdapter) Delete(ctx context.Context, deleteOp *directbase.DeleteOperation) (bool, error) {
 	log := klog.FromContext(ctx)
-	log.V(2).Info("deleting Target", "name", a.id)
+	log.V(2).Info("deleting Target", "name", a.id.String())
 
 	req := &clouddeploypb.DeleteTargetRequest{Name: a.id.String()}
 	op, err := a.gcpClient.DeleteTarget(ctx, req)
 	if err != nil {
 		if direct.IsNotFound(err) {
 			// Return success if not found (assume it was already deleted).
-			log.V(2).Info("skipping delete for non-existent Target, assuming it was already deleted", "name", a.id)
+			log.V(2).Info("skipping delete for non-existent Target, assuming it was already deleted", "name", a.id.String())
 			return true, nil
 		}
-		return false, fmt.Errorf("deleting Target %s: %w", a.id, err)
+		return false, fmt.Errorf("deleting Target %s: %w", a.id.String(), err)
 	}
-	log.V(2).Info("successfully deleted Target", "name", a.id)
 
 	err = op.Wait(ctx)
 	if err != nil {
-		return false, fmt.Errorf("waiting delete Target %s: %w", a.id, err)
+		return false, fmt.Errorf("waiting delete Target %s: %w", a.id.String(), err)
 	}
+	log.V(2).Info("successfully deleted Target", "name", a.id.String())
 	return true, nil
 }
