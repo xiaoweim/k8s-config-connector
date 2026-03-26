@@ -391,7 +391,9 @@ func (sc *serverContext) handleListKCCResources(ctx context.Context, request mcp
 		if count >= int(limit) {
 			break
 		}
-		list, err := sc.dynamicClient.Resource(gvr).Namespace(namespace).List(ctx, metav1.ListOptions{})
+		list, err := sc.dynamicClient.Resource(gvr).Namespace(namespace).List(ctx, metav1.ListOptions{
+			Limit: int64(limit - count),
+		})
 		if err != nil {
 			// Skip errors for individual resource types
 			continue
