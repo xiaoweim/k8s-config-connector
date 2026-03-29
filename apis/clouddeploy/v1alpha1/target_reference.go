@@ -84,6 +84,9 @@ func (r *CloudDeployTargetRef) Build(ctx context.Context, reader client.Reader, 
 }
 
 func (r *CloudDeployTargetRef) ParseExternalToIdentity() (identity.Identity, error) {
+	if r.External == "" {
+		return nil, nil
+	}
 	actualIdentity := &CloudDeployTargetIdentity{}
 	if err := actualIdentity.FromExternal(r.External); err != nil {
 		return nil, err

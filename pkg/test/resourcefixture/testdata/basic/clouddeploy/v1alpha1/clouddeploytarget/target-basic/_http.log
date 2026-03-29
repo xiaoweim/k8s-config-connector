@@ -16,13 +16,6 @@ X-Xss-Protection: 0
 {
   "error": {
     "code": 404,
-    "errors": [
-      {
-        "domain": "global",
-        "message": "Resource 'projects/${projectId}/locations/us-central1/targets/clouddeploytarget-${uniqueId}' was not found",
-        "reason": "notFound"
-      }
-    ],
     "message": "Resource 'projects/${projectId}/locations/us-central1/targets/clouddeploytarget-${uniqueId}' was not found",
     "status": "NOT_FOUND"
   }
@@ -193,6 +186,7 @@ X-Goog-Request-Params: target.name=projects%2F${projectId}%2Flocations%2Fus-cent
 
 {
   "description": "Updated Basic Cloud Run Target",
+  "etag": "abcdef0123A=",
   "labels": {
     "cnrm-test": "true",
     "managed-by-cnrm": "true"

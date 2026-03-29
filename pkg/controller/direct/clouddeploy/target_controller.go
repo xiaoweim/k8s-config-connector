@@ -17,13 +17,16 @@ package clouddeploy
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	krm "github.com/GoogleCloudPlatform/k8s-config-connector/apis/clouddeploy/v1alpha1"
+	refsv1beta1 "github.com/GoogleCloudPlatform/k8s-config-connector/apis/refs/v1beta1"
 	"github.com/GoogleCloudPlatform/k8s-config-connector/pkg/config"
 	"github.com/GoogleCloudPlatform/k8s-config-connector/pkg/controller/direct"
 	"github.com/GoogleCloudPlatform/k8s-config-connector/pkg/controller/direct/common"
 	"github.com/GoogleCloudPlatform/k8s-config-connector/pkg/controller/direct/directbase"
 	"github.com/GoogleCloudPlatform/k8s-config-connector/pkg/controller/direct/registry"
+	"github.com/GoogleCloudPlatform/k8s-config-connector/pkg/k8s"
 	"github.com/GoogleCloudPlatform/k8s-config-connector/pkg/label"
 	"github.com/GoogleCloudPlatform/k8s-config-connector/pkg/structuredreporting"
 
@@ -52,10 +55,14 @@ func NewTargetModel(ctx context.Context, config *config.ControllerConfig) (direc
 var _ directbase.Model = &modelTarget{}
 
 type modelTarget struct {
-	config config.ControllerConfig
+	config    config.ControllerConfig
+	gcpClient *gcp.CloudDeployClient
 }
 
 func (m *modelTarget) client(ctx context.Context) (*gcp.CloudDeployClient, error) {
+	if m.gcpClient != nil {
+		return m.gcpClient, nil
+	}
 	var opts []option.ClientOption
 	opts, err := m.config.RESTClientOptions()
 	if err != nil {
@@ -65,7 +72,8 @@ func (m *modelTarget) client(ctx context.Context) (*gcp.CloudDeployClient, error
 	if err != nil {
 		return nil, fmt.Errorf("building Target client: %w", err)
 	}
-	return gcpClient, err
+	m.gcpClient = gcpClient
+	return m.gcpClient, err
 }
 
 func (m *modelTarget) AdapterForObject(ctx context.Context, op *directbase.AdapterForObjectOperation) (directbase.Adapter, error) {
@@ -79,6 +87,60 @@ func (m *modelTarget) AdapterForObject(ctx context.Context, op *directbase.Adapt
 	id, err := obj.GetIdentity(ctx, reader)
 	if err != nil {
 		return nil, err
+	}
+
+	// Normalize all reference fields
+	if obj.Spec.Gke != nil && obj.Spec.Gke.ClusterRef != nil {
+		if _, err := obj.Spec.Gke.ClusterRef.NormalizedExternal(ctx, reader, obj.Namespace); err != nil {
+			return nil, err
+		}
+	}
+	if obj.Spec.AnthosCluster != nil && obj.Spec.AnthosCluster.MembershipRef != nil {
+		if err := obj.Spec.AnthosCluster.MembershipRef.Normalize(ctx, reader, obj.Namespace); err != nil {
+			return nil, err
+		}
+	}
+	if obj.Spec.MultiTarget != nil {
+		for i := range obj.Spec.MultiTarget.TargetRefs {
+			if err := obj.Spec.MultiTarget.TargetRefs[i].Normalize(ctx, reader, obj.Namespace); err != nil {
+				return nil, err
+			}
+		}
+	}
+	if obj.Spec.CustomTarget != nil && obj.Spec.CustomTarget.CustomTargetTypeRef != nil {
+		if _, err := obj.Spec.CustomTarget.CustomTargetTypeRef.NormalizedExternal(ctx, reader, obj.Namespace); err != nil {
+			return nil, err
+		}
+	}
+	for i := range obj.Spec.ExecutionConfigs {
+		ec := &obj.Spec.ExecutionConfigs[i]
+		if ec.DefaultPool != nil && ec.DefaultPool.ServiceAccountRef != nil {
+			if err := ec.DefaultPool.ServiceAccountRef.Resolve(ctx, reader, obj); err != nil {
+				return nil, err
+			}
+		}
+		if ec.PrivatePool != nil {
+			if ec.PrivatePool.ServiceAccountRef != nil {
+				if err := ec.PrivatePool.ServiceAccountRef.Resolve(ctx, reader, obj); err != nil {
+					return nil, err
+				}
+			}
+			if ec.PrivatePool.WorkerPoolRef != nil {
+				if err := refsv1beta1.Normalize(ctx, reader, ec.PrivatePool.WorkerPoolRef, obj.Namespace); err != nil {
+					return nil, err
+				}
+			}
+		}
+		if ec.WorkerPoolRef != nil {
+			if err := refsv1beta1.Normalize(ctx, reader, ec.WorkerPoolRef, obj.Namespace); err != nil {
+				return nil, err
+			}
+		}
+		if ec.ServiceAccountRef != nil {
+			if err := ec.ServiceAccountRef.Resolve(ctx, reader, obj); err != nil {
+				return nil, err
+			}
+		}
 	}
 
 	// Get clouddeploy GCP client
@@ -160,7 +222,7 @@ func (a *TargetAdapter) Create(ctx context.Context, createOp *directbase.CreateO
 	status := &krm.CloudDeployTargetStatus{}
 	status.ObservedState = CloudDeployTargetObservedState_FromProto(mapCtx, created)
 	if mapCtx.Err() != nil {
-		return mapCtx.Err()
+		log.Error(mapCtx.Err(), "error mapping Target status")
 	}
 	status.ExternalRef = direct.LazyPtr(a.id.String())
 	return createOp.UpdateStatus(ctx, status, nil)
@@ -174,12 +236,30 @@ func (a *TargetAdapter) Update(ctx context.Context, updateOp *directbase.UpdateO
 
 	a.desiredPb.Name = a.id.String()
 
-	// etag and execution_configs are server-generated and not in KCC spec.
+	// Preserve system labels (goog- or go-)
+	if a.actual.Labels != nil {
+		if a.desiredPb.Labels == nil {
+			a.desiredPb.Labels = make(map[string]string)
+		}
+		for k, v := range a.actual.Labels {
+			if strings.HasPrefix(k, "goog-") || strings.HasPrefix(k, "go-") {
+				a.desiredPb.Labels[k] = v
+			}
+		}
+	}
+
+	// etag, execution_configs, uid, create_time, update_time, and target_id are server-generated.
 	// We skip the diff when they show up in path to avoid unnecessary drift.
-	// This also ensures we don't send them in the PATCH request body if they are not in our spec.
 	paths, err := common.CompareProtoMessage(a.desiredPb, a.actual, func(fieldName protoreflect.Name, a, b proto.Message) (bool, error) {
-		if fieldName == "etag" || fieldName == "execution_configs" {
+		if fieldName == "etag" || fieldName == "uid" || fieldName == "create_time" || fieldName == "update_time" || fieldName == "target_id" {
 			return false, nil
+		}
+		// Compare execution_configs if it's specified in the desired state
+		if fieldName == "execution_configs" {
+			desired := a.(*clouddeploypb.Target)
+			if len(desired.ExecutionConfigs) == 0 {
+				return false, nil
+			}
 		}
 		return common.BasicDiff(fieldName, a, b)
 	})
@@ -198,6 +278,9 @@ func (a *TargetAdapter) Update(ctx context.Context, updateOp *directbase.UpdateO
 		updateMask := &fieldmaskpb.FieldMask{
 			Paths: sets.List(paths),
 		}
+
+		// Inject the latest etag for optimistic concurrency
+		a.desiredPb.Etag = a.actual.Etag
 
 		req := &clouddeploypb.UpdateTargetRequest{
 			UpdateMask: updateMask,
@@ -219,7 +302,7 @@ func (a *TargetAdapter) Update(ctx context.Context, updateOp *directbase.UpdateO
 	status := &krm.CloudDeployTargetStatus{}
 	status.ObservedState = CloudDeployTargetObservedState_FromProto(mapCtx, updated)
 	if mapCtx.Err() != nil {
-		return mapCtx.Err()
+		log.Error(mapCtx.Err(), "error mapping Target status")
 	}
 	status.ExternalRef = direct.LazyPtr(a.id.String())
 	return updateOp.UpdateStatus(ctx, status, nil)
@@ -238,14 +321,16 @@ func (a *TargetAdapter) Export(ctx context.Context) (*unstructured.Unstructured,
 	if mapCtx.Err() != nil {
 		return nil, mapCtx.Err()
 	}
-	// TODO: Handle Labels in Export if needed (it is usually handled by the generic exporter)
+
+	obj.Spec.ProjectRef = &refsv1beta1.ProjectRef{External: a.id.Parent().ProjectID}
+	obj.Spec.Location = direct.LazyPtr(a.id.Parent().Location)
 
 	uObj, err := runtime.DefaultUnstructuredConverter.ToUnstructured(obj)
 	if err != nil {
 		return nil, err
 	}
 
-	u.SetName(a.id.ID())
+	u.SetName(k8s.ValueToDNSSubdomainName(a.id.ID()))
 	u.SetGroupVersionKind(krm.CloudDeployTargetGVK)
 
 	u.Object = uObj
@@ -270,6 +355,11 @@ func (a *TargetAdapter) Delete(ctx context.Context, deleteOp *directbase.DeleteO
 
 	err = op.Wait(ctx)
 	if err != nil {
+		if direct.IsNotFound(err) {
+			// Return success if not found (assume it was already deleted).
+			log.V(2).Info("skipping delete wait for non-existent Target, assuming it was already deleted", "name", a.id.String())
+			return true, nil
+		}
 		return false, fmt.Errorf("waiting delete Target %s: %w", a.id.String(), err)
 	}
 	log.V(2).Info("successfully deleted Target", "name", a.id.String())
