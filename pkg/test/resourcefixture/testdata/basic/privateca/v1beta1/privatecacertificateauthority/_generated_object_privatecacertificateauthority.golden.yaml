@@ -45,7 +45,7 @@ spec:
 status:
   caCertificateDescriptions:
   - authorityKeyId:
-      keyId: 0123456789abcdef
+      keyId: 0123456789abcdef0123456789abcdef01234567
     certFingerprint:
       sha256Hash: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
     publicKey:
@@ -62,7 +62,7 @@ status:
         dnsNames:
         - example.com
     subjectKeyId:
-      keyId: 0123456789abcdef
+      keyId: 0123456789abcdef0123456789abcdef01234567
     x509Description:
       caOptions:
         isCa: true

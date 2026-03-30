@@ -507,7 +507,7 @@ X-Xss-Protection: 0
     "caCertificateDescriptions": [
       {
         "authorityKeyId": {
-          "keyId": "0123456789abcdef"
+          "keyId": "0123456789abcdef0123456789abcdef01234567"
         },
         "certFingerprint": {
           "sha256Hash": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
@@ -531,7 +531,7 @@ X-Xss-Protection: 0
           }
         },
         "subjectKeyId": {
-          "keyId": "0123456789abcdef"
+          "keyId": "0123456789abcdef0123456789abcdef01234567"
         },
         "tbsCertificateDigest": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
         "x509Description": {
@@ -619,7 +619,7 @@ X-Xss-Protection: 0
   "caCertificateDescriptions": [
     {
       "authorityKeyId": {
-        "keyId": "0123456789abcdef"
+        "keyId": "0123456789abcdef0123456789abcdef01234567"
       },
       "certFingerprint": {
         "sha256Hash": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
@@ -643,7 +643,7 @@ X-Xss-Protection: 0
         }
       },
       "subjectKeyId": {
-        "keyId": "0123456789abcdef"
+        "keyId": "0123456789abcdef0123456789abcdef01234567"
       },
       "tbsCertificateDigest": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
       "x509Description": {
@@ -769,7 +769,7 @@ X-Xss-Protection: 0
     "caCertificateDescriptions": [
       {
         "authorityKeyId": {
-          "keyId": "0123456789abcdef"
+          "keyId": "0123456789abcdef0123456789abcdef01234567"
         },
         "certFingerprint": {
           "sha256Hash": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
@@ -793,7 +793,7 @@ X-Xss-Protection: 0
           }
         },
         "subjectKeyId": {
-          "keyId": "0123456789abcdef"
+          "keyId": "0123456789abcdef0123456789abcdef01234567"
         },
         "tbsCertificateDigest": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
         "x509Description": {
