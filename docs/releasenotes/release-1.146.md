@@ -17,13 +17,7 @@ for the future release **
 
 *   [`ContainerCluster`](https://cloud.google.com/config-connector/docs/reference/resource-docs/container/containercluster)
     *   Made `spec.clusterAutoscaling.autoProvisioningDefaults.bootDiskKMSKeyRef` mutable.
-
-*   `NetworkServicesWasmPlugin`
-    *   Introduced identity and reference.
-
-*   Added structured reporting diff to numerous direct controllers to enhance diff visibility.
-
-*   Added foundational API and mapper for `CloudDeployTarget` and `NetworkServicesLBRouteExtension`.
+*   Added structured reporting diff to numerous direct controllers. Resource diffs between desired and actual state are now directly accessible in controller logs.
 
 ## Bug Fixes:
 
@@ -32,12 +26,5 @@ for the future release **
     *   Added `replicaConfiguration` as an unmanageable field.
     *   Controller now correctly defaults the field `enablePrivatePathForGoogleCloudServices` to `false`.
 
-*   [`CertificateManagerDnsAuthorization`](https://cloud.google.com/config-connector/docs/reference/resource-docs/certificatemanager/certificatemanagerdnsauthorization)
+*   [`CertificateManagerDNSAuthorization`](https://cloud.google.com/config-connector/docs/reference/resource-docs/certificatemanager/certificatemanagerdnsauthorization)
     *   Sanitized Kubernetes labels to avoid 400 errors from invalid characters.
-
-*   `ConfigConnector` Core
-    *   `preview` now performs an early exit when no resources are found to reconcile.
-    *   Fixed CRD field description for shared parent.
-    *   Fixed incorrect exit status in lint filter.
-    *   Updated `mockgcp` to improve compute regional resource mocks and defaults.
-  
