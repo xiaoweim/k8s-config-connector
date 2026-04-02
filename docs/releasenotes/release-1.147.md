@@ -5,11 +5,6 @@
 *   `CloudDeployCustomTargetType`
     *   The `DeployCustomTargetType` (v1alpha1) resource is no longer supported and has been replaced by the new `CloudDeployCustomTargetType` (v1alpha1) resource. Please remove any instances of the `DeployCustomTargetType` resource.
 
-## New Fields
-
-*   [`CloudDeployTarget`](https://cloud.google.com/config-connector/docs/reference/resource-docs/clouddeploy/clouddeploytarget)
-    *   Updated the `targetIds` field to be a resource reference.
-
 ## Reconciliation Improvements
 
 *   Improved structured reporting diffs to provide better visibility into what changed during reconciliation for the following resources:
@@ -31,5 +26,3 @@
 ## Bug Fixes
 
 *   Added CRD filtering for the preview recorder to skip non-CNRM objects.
-*   Fixed a typo in `StorageDefaultObjectAccessControl` documentation.
-*   Added missing reference documentation and samples for various resources.
