@@ -184,11 +184,13 @@ func (s *instanceServer) populateDefaultsForInstance(name *instanceName, obj *pb
 					userConnection.ProjectId = network.Project.ID
 					userConnection.PscConnectionStatus = pb.PscConnectionStatus_ACTIVE
 					userConnection.ConnectionType = attachmentDetails.ConnectionType
+					userConnection.PscConnectionId = fmt.Sprintf("%d", pscConnectionID)
 					if userConnection.Ports == nil && userConnection.ConnectionType != pb.ConnectionType_CONNECTION_TYPE_UNSPECIFIED {
 						userConnection.Ports = &pb.PscConnection_Port{
 							Port: 6379,
 						}
 					}
+					pscConnectionID++
 				}
 			}
 		}
