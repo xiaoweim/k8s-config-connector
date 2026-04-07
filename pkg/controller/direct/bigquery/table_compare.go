@@ -35,24 +35,39 @@ func checkFieldValid(fields []*bigquery.TableFieldSchema) error {
 	return nil
 }
 
-func policyTagsEqual(a, b *bigquery.TableFieldSchemaPolicyTags) bool {
-	if a == nil && b == nil {
+func categoriesEqual(a, b *bigquery.TableFieldSchemaCategories) bool {
+	aEmpty := (a == nil || len(a.Names) == 0)
+	bEmpty := (b == nil || len(b.Names) == 0)
+	if aEmpty && bEmpty {
 		return true
 	}
-	if a == nil || b == nil {
+	if aEmpty || bEmpty {
 		return false
 	}
-	if a.Names == nil && b.Names == nil {
-		return true
+
+	if len(a.Names) != len(b.Names) {
+		return false
 	}
-	// If one of a.Names or b.Names is nil.
-	if a.Names == nil || b.Names == nil {
-		// Suppress nil string and emptry string different.
-		if len(a.Names) == len(b.Names) {
-			return true
+	sort.Strings(a.Names)
+	sort.Strings(b.Names)
+	for i := range a.Names {
+		if a.Names[i] != b.Names[i] {
+			return false
 		}
+	}
+	return true
+}
+
+func policyTagsEqual(a, b *bigquery.TableFieldSchemaPolicyTags) bool {
+	aEmpty := (a == nil || len(a.Names) == 0)
+	bEmpty := (b == nil || len(b.Names) == 0)
+	if aEmpty && bEmpty {
+		return true
+	}
+	if aEmpty || bEmpty {
 		return false
 	}
+
 	if len(a.Names) != len(b.Names) {
 		return false
 	}
@@ -95,7 +110,7 @@ func tableFieldsSchemaEqual(desired, actual []*bigquery.TableFieldSchema, prefix
 	for i := range desired {
 		fieldName := desired[i].Name
 		fieldPrefix := fmt.Sprintf("%s[%s]", prefix, fieldName)
-		if !reflect.DeepEqual(desired[i].Categories, actual[i].Categories) {
+		if !categoriesEqual(desired[i].Categories, actual[i].Categories) {
 			diff.AddField(fieldPrefix+".categories", desired[i].Categories, actual[i].Categories)
 			return false, nil
 		}
