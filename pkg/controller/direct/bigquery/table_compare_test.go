@@ -52,6 +52,12 @@ func TestPolicyTagsEqual(t *testing.T) {
 			want: true,
 		},
 		{
+			name: "one with nil names, one with empty names",
+			a:    &bigquery.TableFieldSchemaPolicyTags{Names: nil},
+			b:    &bigquery.TableFieldSchemaPolicyTags{Names: []string{}},
+			want: true,
+		},
+		{
 			name: "one with names, one nil",
 			a:    &bigquery.TableFieldSchemaPolicyTags{Names: []string{"tag1"}},
 			b:    nil,
@@ -109,6 +115,12 @@ func TestCategoriesEqual(t *testing.T) {
 			name: "both empty",
 			a:    &bigquery.TableFieldSchemaCategories{},
 			b:    &bigquery.TableFieldSchemaCategories{},
+			want: true,
+		},
+		{
+			name: "one with nil names, one with empty names",
+			a:    &bigquery.TableFieldSchemaCategories{Names: nil},
+			b:    &bigquery.TableFieldSchemaCategories{Names: []string{}},
 			want: true,
 		},
 		{
