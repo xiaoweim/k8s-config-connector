@@ -35,29 +35,6 @@ func checkFieldValid(fields []*bigquery.TableFieldSchema) error {
 	return nil
 }
 
-func categoriesEqual(a, b *bigquery.TableFieldSchemaCategories) bool {
-	aEmpty := (a == nil || len(a.Names) == 0)
-	bEmpty := (b == nil || len(b.Names) == 0)
-	if aEmpty && bEmpty {
-		return true
-	}
-	if aEmpty || bEmpty {
-		return false
-	}
-
-	if len(a.Names) != len(b.Names) {
-		return false
-	}
-	sort.Strings(a.Names)
-	sort.Strings(b.Names)
-	for i := range a.Names {
-		if a.Names[i] != b.Names[i] {
-			return false
-		}
-	}
-	return true
-}
-
 func policyTagsEqual(a, b *bigquery.TableFieldSchemaPolicyTags) bool {
 	aEmpty := (a == nil || len(a.Names) == 0)
 	bEmpty := (b == nil || len(b.Names) == 0)
@@ -110,7 +87,7 @@ func tableFieldsSchemaEqual(desired, actual []*bigquery.TableFieldSchema, prefix
 	for i := range desired {
 		fieldName := desired[i].Name
 		fieldPrefix := fmt.Sprintf("%s[%s]", prefix, fieldName)
-		if !categoriesEqual(desired[i].Categories, actual[i].Categories) {
+		if !reflect.DeepEqual(desired[i].Categories, actual[i].Categories) {
 			diff.AddField(fieldPrefix+".categories", desired[i].Categories, actual[i].Categories)
 			return false, nil
 		}
