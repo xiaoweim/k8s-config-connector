@@ -4,7 +4,6 @@ toolchain go1.26.1
 
 use (
 	.
-	./dev/tools/controllerbuilder
 	./experiments/kompanion
 	./experiments/kubectl-plan
 	./experiments/tools/licensescan
