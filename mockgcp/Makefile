@@ -55,6 +55,7 @@ gen-proto-no-fixup:
 		./apis/mockgcp/cloud/servicenetworking/v1/*.proto \
 		./apis/mockgcp/cloud/resourcemanager/v1/*.proto \
 		./apis/mockgcp/storage/v1/*.proto \
+		./apis/mockgcp/cloud/kms/v1/*.proto \
 		./third_party/googleapis/mockgcp/api/apikeys/v2/*.proto \
 		./third_party/googleapis/mockgcp/api/serviceusage/v1/*.proto \
 		./third_party/googleapis/mockgcp/api/serviceusage/v1beta1/*.proto \
@@ -131,7 +132,6 @@ gen-proto-no-fixup:
 		./third_party/googleapis/mockgcp/cloud/gkehub/v1beta/multiclusteringress/*.proto \
 		./third_party/googleapis/mockgcp/cloud/gkehub/v1beta1/membership.proto \
 		./third_party/googleapis/mockgcp/cloud/gkemulticloud/v1/*.proto \
-		./third_party/googleapis/mockgcp/cloud/kms/v1/*.proto \
 		./third_party/googleapis/mockgcp/cloud/deploy/v1/*.proto \
 		./third_party/googleapis/mockgcp/cloud/memorystore/v1/*.proto \
 		./third_party/googleapis/mockgcp/cloud/orgpolicy/v2/*.proto \
@@ -177,7 +177,6 @@ gen-proto-no-fixup:
 		./third_party/googleapis/mockgcp/cloud/networkmanagement/v1/*.proto \
 		./third_party/googleapis/mockgcp/cloud/netapp/v1/*.proto \
 		./third_party/googleapis/mockgcp/cloud/vmwareengine/v1/*.proto \
-		./third_party/googleapis/mockgcp/cloud/kms/v1/resources.proto \
 		./third_party/googleapis/mockgcp/cloud/datastream/v1/*.proto \
 		./third_party/googleapis/mockgcp/cloud/modelarmor/v1/service.proto \
 		./third_party/googleapis/mockgcp/cloud/gkebackup/v1/*.proto \
@@ -252,7 +251,7 @@ generate-protos-from-openapi:
 
 	wget -O temp/kms-api-v1.json https://raw.githubusercontent.com/googleapis/google-api-go-client/main/cloudkms/v1/cloudkms-api.json
 	mkdir -p apis/mockgcp/cloud/kms/v1/
-	cd tools/gapic; go run . --proto-version=2 --proto-package mockgcp.cloud.kms.v1 ../../temp/kms-api-v1.json > ../../apis/mockgcp/cloud/kms/v1/service.proto
+	cd tools/gapic; go run . --proto-version=2 --proto-package mockgcp.cloud.kms.v1 ../../temp/kms-api-v1.json > ../../apis/mockgcp/cloud/kms/v1/api.proto
 
 	wget -O temp/apigee-v1.json https://raw.githubusercontent.com/googleapis/google-api-go-client/refs/heads/main/apigee/v1/apigee-api.json
 	mkdir -p apis/mockgcp/cloud/apigee/v1/

@@ -34,8 +34,8 @@ import (
 	"github.com/GoogleCloudPlatform/k8s-config-connector/mockgcp/pkg/storage"
 )
 
-func (r *kmsServer) GetCryptoKeyVersion(ctx context.Context, req *pb.GetCryptoKeyVersionRequest) (*pb.CryptoKeyVersion, error) {
-	name, err := r.parseCryptoKeyVersionName(req.Name)
+func (r *kmsServer) GetProjectsLocationsKeyRingsCryptoKeysCryptoKeyVersion(ctx context.Context, req *pb.GetProjectsLocationsKeyRingsCryptoKeysCryptoKeyVersionRequest) (*pb.CryptoKeyVersion, error) {
+	name, err := r.parseCryptoKeyVersionName(req.GetName())
 	if err != nil {
 		return nil, err
 	}
@@ -53,7 +53,7 @@ func (r *kmsServer) GetCryptoKeyVersion(ctx context.Context, req *pb.GetCryptoKe
 	return obj, nil
 }
 
-func (r *kmsServer) ListCryptoKeyVersions(ctx context.Context, req *pb.ListCryptoKeyVersionsRequest) (*pb.ListCryptoKeyVersionsResponse, error) {
+func (r *kmsServer) ListProjectsLocationsKeyRingsCryptoKeysCryptoKeyVersions(ctx context.Context, req *pb.ListProjectsLocationsKeyRingsCryptoKeysCryptoKeyVersionsRequest) (*pb.ListCryptoKeyVersionsResponse, error) {
 	parentName, err := r.parseCryptoKeyName(req.GetParent())
 	if err != nil {
 		return nil, err
@@ -85,12 +85,12 @@ func (r *kmsServer) listCryptoKeyVersions(ctx context.Context, parentFQN string)
 	}); err != nil {
 		return nil, err
 	}
-	response.TotalSize = int32(len(response.CryptoKeyVersions))
+	response.TotalSize = PtrTo(int32(len(response.CryptoKeyVersions)))
 
 	return response, nil
 }
 
-func (r *kmsServer) CreateCryptoKeyVersion(ctx context.Context, req *pb.CreateCryptoKeyVersionRequest) (*pb.CryptoKeyVersion, error) {
+func (r *kmsServer) CreateProjectsLocationsKeyRingsCryptoKeysCryptoKeyVersion(ctx context.Context, req *pb.CreateProjectsLocationsKeyRingsCryptoKeysCryptoKeyVersionRequest) (*pb.CryptoKeyVersion, error) {
 
 	versions, err := r.listCryptoKeyVersions(ctx, req.GetParent())
 	if err != nil {
@@ -121,13 +121,13 @@ func (r *kmsServer) CreateCryptoKeyVersion(ctx context.Context, req *pb.CreateCr
 	now := time.Now()
 
 	var obj *pb.CryptoKeyVersion
-	obj = proto.Clone(req.GetCryptoKeyVersion()).(*pb.CryptoKeyVersion)
-	obj.Name = fqn
+	obj = proto.Clone(req.GetProjectsLocationsKeyRingsCryptoKeysCryptoKeyVersion()).(*pb.CryptoKeyVersion)
+	obj.Name = &fqn
 	obj.CreateTime = timestamppb.New(now)
 	obj.GenerateTime = timestamppb.New(now)
-	obj.State = pb.CryptoKeyVersion_ENABLED
-	obj.Algorithm = req.CryptoKeyVersion.GetAlgorithm()
-	obj.ProtectionLevel = req.CryptoKeyVersion.GetProtectionLevel()
+	obj.State = pb.CryptoKeyVersion_ENABLED.Enum()
+	obj.Algorithm = req.GetProjectsLocationsKeyRingsCryptoKeysCryptoKeyVersion().Algorithm
+	obj.ProtectionLevel = req.GetProjectsLocationsKeyRingsCryptoKeysCryptoKeyVersion().ProtectionLevel
 
 	if err := r.storage.Create(ctx, fqn, obj); err != nil {
 		return nil, err
@@ -136,8 +136,8 @@ func (r *kmsServer) CreateCryptoKeyVersion(ctx context.Context, req *pb.CreateCr
 	return obj, nil
 }
 
-func (r *kmsServer) UpdateCryptoKeyVersion(ctx context.Context, req *pb.UpdateCryptoKeyVersionRequest) (*pb.CryptoKeyVersion, error) {
-	name, err := r.parseCryptoKeyVersionName(req.GetCryptoKeyVersion().GetName())
+func (r *kmsServer) PatchProjectsLocationsKeyRingsCryptoKeysCryptoKeyVersion(ctx context.Context, req *pb.PatchProjectsLocationsKeyRingsCryptoKeysCryptoKeyVersionRequest) (*pb.CryptoKeyVersion, error) {
+	name, err := r.parseCryptoKeyVersionName(req.GetProjectsLocationsKeyRingsCryptoKeysCryptoKeyVersion().GetName())
 	if err != nil {
 		return nil, err
 	}
@@ -146,14 +146,14 @@ func (r *kmsServer) UpdateCryptoKeyVersion(ctx context.Context, req *pb.UpdateCr
 	if err := r.storage.Get(ctx, fqn, obj); err != nil {
 		return nil, err
 	}
-	proto.Merge(obj, req.GetCryptoKeyVersion())
+	proto.Merge(obj, req.GetProjectsLocationsKeyRingsCryptoKeysCryptoKeyVersion())
 	if err := r.storage.Update(ctx, fqn, obj); err != nil {
 		return nil, err
 	}
 	return obj, nil
 }
 
-func (r *kmsServer) DestroyCryptoKeyVersion(ctx context.Context, req *pb.DestroyCryptoKeyVersionRequest) (*pb.CryptoKeyVersion, error) {
+func (r *kmsServer) DestroyProjectsLocationsKeyRingsCryptoKeysCryptoKeyVersion(ctx context.Context, req *pb.DestroyProjectsLocationsKeyRingsCryptoKeysCryptoKeyVersionRequest) (*pb.CryptoKeyVersion, error) {
 	name, err := r.parseCryptoKeyVersionName(req.GetName())
 	if err != nil {
 		return nil, err
@@ -169,10 +169,10 @@ func (r *kmsServer) DestroyCryptoKeyVersion(ctx context.Context, req *pb.Destroy
 
 	var parent *pb.CryptoKey
 	{
-		get := &pb.GetCryptoKeyRequest{
-			Name: name.CryptoKeyName.String(),
+		get := &pb.GetProjectsLocationsKeyRingsCryptoKeyRequest{
+			Name: PtrTo(name.CryptoKeyName.String()),
 		}
-		cryptoKey, err := r.GetCryptoKey(ctx, get)
+		cryptoKey, err := r.GetProjectsLocationsKeyRingsCryptoKey(ctx, get)
 		if err != nil {
 			return nil, err
 		}
@@ -181,7 +181,7 @@ func (r *kmsServer) DestroyCryptoKeyVersion(ctx context.Context, req *pb.Destroy
 
 	destroyScheuledDuration := parent.GetDestroyScheduledDuration().AsDuration()
 
-	obj.State = pb.CryptoKeyVersion_DESTROY_SCHEDULED
+	obj.State = pb.CryptoKeyVersion_DESTROY_SCHEDULED.Enum()
 	obj.DestroyTime = timestamppb.New(now.Add(destroyScheuledDuration))
 
 	if err := r.storage.Update(ctx, fqn, obj); err != nil {
@@ -191,7 +191,7 @@ func (r *kmsServer) DestroyCryptoKeyVersion(ctx context.Context, req *pb.Destroy
 	return obj, nil
 }
 
-func (r *kmsServer) RestoreCryptoKeyVersion(ctx context.Context, req *pb.RestoreCryptoKeyVersionRequest) (*pb.CryptoKeyVersion, error) {
+func (r *kmsServer) RestoreProjectsLocationsKeyRingsCryptoKeysCryptoKeyVersion(ctx context.Context, req *pb.RestoreProjectsLocationsKeyRingsCryptoKeysCryptoKeyVersionRequest) (*pb.CryptoKeyVersion, error) {
 	name, err := r.parseCryptoKeyVersionName(req.GetName())
 	if err != nil {
 		return nil, err

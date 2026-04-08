@@ -150,7 +150,7 @@ service ProjectsLocationsServer {
     };
   };
 
-  // Lists information about the supported locations for this service. This method can be called in two ways: * **List all public locations:** Use the path `GET /v1/locations`. * **List project-visible locations:** Use the path `GET /v1/projects/{project_id}/locations`. This may include public locations as well as private or other locations specifically visible to the project.
+  // Lists information about the supported locations for this service. This method lists locations based on the resource scope provided in the [ListLocationsRequest.name] field: * **Global locations**: If `name` is empty, the method lists the public locations available to all projects. * **Project-specific locations**: If `name` follows the format `projects/{project}`, the method lists locations visible to that specific project. This includes public, private, or other project-specific locations enabled for the project. For gRPC and client library implementations, the resource name is passed as the `name` field. For direct service calls, the resource name is incorporated into the request path based on the specific service implementation and version.
   rpc ListProjectsLocations(ListProjectsLocationsRequest) returns (ListLocationsResponse) {
     option (google.api.http) = {
       get: "/v1/{name=projects/*}/locations"
@@ -649,16 +649,18 @@ message AuditLogConfig {
 
 // Cloud KMS Autokey configuration for a folder.
 message AutokeyConfig {
-  // Optional. A checksum computed by the server based on the value of other fields. This may be sent on update requests to ensure that the client has an up-to-date value before proceeding. The request will be rejected with an ABORTED error on a mismatched etag.
+  enum AutokeyConfigState {
+    AUTOKEY_CONFIG_STATE_UNSPECIFIED = 0;
+    ACTIVE = 1;
+    KEY_PROJECT_DELETED = 2;
+    UNINITIALIZED = 3;
+  }
   optional string etag = 1 [json_name="etag"];
-  // Optional. Name of the key project, e.g. `projects/{PROJECT_ID}` or `projects/{PROJECT_NUMBER}`, where Cloud KMS Autokey will provision a new CryptoKey when a KeyHandle is created. On UpdateAutokeyConfig, the caller will require `cloudkms.cryptoKeys.setIamPolicy` permission on this key project. Once configured, for Cloud KMS Autokey to function properly, this key project must have the Cloud KMS API activated and the Cloud KMS Service Agent for this key project must be granted the `cloudkms.admin` role (or pertinent permissions). A request with an empty key project field will clear the configuration.
   optional string key_project = 2 [json_name="keyProject"];
-  // Optional. KeyProjectResolutionMode for the AutokeyConfig. Valid values are `DEDICATED_KEY_PROJECT`, `RESOURCE_PROJECT`, or `DISABLED`.
   optional string key_project_resolution_mode = 3 [json_name="keyProjectResolutionMode"];
-  // Identifier. Name of the AutokeyConfig resource, e.g. `folders/{FOLDER_NUMBER}/autokeyConfig` or `projects/{PROJECT_NUMBER}/autokeyConfig`.
   optional string name = 4 [json_name="name"];
-  // Output only. The state for the AutokeyConfig.
-  optional string state = 5 [json_name="state"];
+  optional AutokeyConfigState state = 5 [json_name="state"];
+
 }
 
 // Associates `members`, or principals, with a `role`.
@@ -729,74 +731,106 @@ message ChecksummedData {
 
 // A CryptoKey represents a logical key that can be used for cryptographic operations. A CryptoKey is made up of zero or more versions, which represent the actual key material used in cryptographic operations.
 message CryptoKey {
-  // Output only. The time at which this CryptoKey was created.
-  optional .google.protobuf.Timestamp create_time = 1 [json_name="createTime"];
-  // Immutable. The resource name of the backend environment where the key material for all CryptoKeyVersions associated with this CryptoKey reside and where all related cryptographic operations are performed. Only applicable if CryptoKeyVersions have a ProtectionLevel of EXTERNAL_VPC, with the resource name in the format `projects/*/locations/*/ekmConnections/*`. Only applicable if CryptoKeyVersions have a ProtectionLevel of HSM_SINGLE_TENANT, with the resource name in the format `projects/*/locations/*/singleTenantHsmInstances/*`. Note, this list is non-exhaustive and may apply to additional ProtectionLevels in the future.
-  optional string crypto_key_backend = 2 [json_name="cryptoKeyBackend"];
-  // Immutable. The period of time that versions of this key spend in the DESTROY_SCHEDULED state before transitioning to DESTROYED. If not specified at creation time, the default duration is 30 days.
-  optional .google.protobuf.Duration destroy_scheduled_duration = 3 [json_name="destroyScheduledDuration"];
-  // Immutable. Whether this key may contain imported versions only.
-  optional bool import_only = 4 [json_name="importOnly"];
-  // Optional. The policy used for Key Access Justifications Policy Enforcement. If this field is present and this key is enrolled in Key Access Justifications Policy Enforcement, the policy will be evaluated in encrypt, decrypt, and sign operations, and the operation will fail if rejected by the policy. The policy is defined by specifying zero or more allowed justification codes. https://cloud.google.com/assured-workloads/key-access-justifications/docs/justification-codes By default, this field is absent, and all justification codes are allowed.
-  optional KeyAccessJustificationsPolicy key_access_justifications_policy = 5 [json_name="keyAccessJustificationsPolicy"];
-  // Labels with user-defined metadata. For more information, see [Labeling Keys](https://cloud.google.com/kms/docs/labeling-keys).
-  map<string, string> labels = 6 [json_name="labels"];
-  // Output only. The resource name for this CryptoKey in the format `projects/*/locations/*/keyRings/*/cryptoKeys/*`.
-  optional string name = 7 [json_name="name"];
-  // At next_rotation_time, the Key Management Service will automatically: 1. Create a new version of this CryptoKey. 2. Mark the new version as primary. Key rotations performed manually via CreateCryptoKeyVersion and UpdateCryptoKeyPrimaryVersion do not affect next_rotation_time. Keys with purpose ENCRYPT_DECRYPT support automatic rotation. For other keys, this field must be omitted.
-  optional .google.protobuf.Timestamp next_rotation_time = 8 [json_name="nextRotationTime"];
-  // Output only. A copy of the "primary" CryptoKeyVersion that will be used by Encrypt when this CryptoKey is given in EncryptRequest.name. The CryptoKey's primary version can be updated via UpdateCryptoKeyPrimaryVersion. Keys with purpose ENCRYPT_DECRYPT may have a primary. For other keys, this field will be omitted.
-  optional CryptoKeyVersion primary = 9 [json_name="primary"];
-  // Immutable. The immutable purpose of this CryptoKey.
-  optional string purpose = 10 [json_name="purpose"];
-  // next_rotation_time will be advanced by this period when the service automatically rotates a key. Must be at least 24 hours and at most 876,000 hours. If rotation_period is set, next_rotation_time must also be set. Keys with purpose ENCRYPT_DECRYPT support automatic rotation. For other keys, this field must be omitted.
-  optional .google.protobuf.Duration rotation_period = 11 [json_name="rotationPeriod"];
-  // A template describing settings for new CryptoKeyVersion instances. The properties of new CryptoKeyVersion instances created by either CreateCryptoKeyVersion or auto-rotation are controlled by this template.
-  optional CryptoKeyVersionTemplate version_template = 12 [json_name="versionTemplate"];
+  enum CryptoKeyPurpose {
+    CRYPTO_KEY_PURPOSE_UNSPECIFIED = 0;
+    ENCRYPT_DECRYPT = 1;
+    ASYMMETRIC_SIGN = 5;
+    ASYMMETRIC_DECRYPT = 6;
+    RAW_ENCRYPT_DECRYPT = 7;
+    MAC = 9;
+  }
+  optional string name = 1 [json_name="name"];
+  optional CryptoKeyVersion primary = 2 [json_name="primary"];
+  optional CryptoKeyPurpose purpose = 3 [json_name="purpose"];
+  optional .google.protobuf.Timestamp create_time = 5 [json_name="createTime"];
+  optional .google.protobuf.Timestamp next_rotation_time = 7 [json_name="nextRotationTime"];
+  optional .google.protobuf.Duration rotation_period = 8 [json_name="rotationPeriod"];
+  optional CryptoKeyVersionTemplate version_template = 11 [json_name="versionTemplate"];
+  map<string, string> labels = 12 [json_name="labels"];
+  optional bool import_only = 13 [json_name="importOnly"];
+  optional .google.protobuf.Duration destroy_scheduled_duration = 14 [json_name="destroyScheduledDuration"];
+  optional string crypto_key_backend = 15 [json_name="cryptoKeyBackend"];
+  optional KeyAccessJustificationsPolicy key_access_justifications_policy = 17 [json_name="keyAccessJustificationsPolicy"];
+
 }
 
 // A CryptoKeyVersion represents an individual cryptographic key, and the associated key material. An ENABLED version can be used for cryptographic operations. For security reasons, the raw cryptographic key material represented by a CryptoKeyVersion can never be viewed or exported. It can only be used to encrypt, decrypt, or sign data when an authorized user or application invokes Cloud KMS.
 message CryptoKeyVersion {
-  // Output only. The CryptoKeyVersionAlgorithm that this CryptoKeyVersion supports.
-  optional string algorithm = 1 [json_name="algorithm"];
-  // Output only. Statement that was generated and signed by the HSM at key creation time. Use this statement to verify attributes of the key as stored on the HSM, independently of Google. Only provided for key versions with protection_level HSM.
-  optional KeyOperationAttestation attestation = 2 [json_name="attestation"];
-  // Output only. The time at which this CryptoKeyVersion was created.
-  optional .google.protobuf.Timestamp create_time = 3 [json_name="createTime"];
-  // Output only. The time this CryptoKeyVersion's key material was destroyed. Only present if state is DESTROYED.
-  optional .google.protobuf.Timestamp destroy_event_time = 4 [json_name="destroyEventTime"];
-  // Output only. The time this CryptoKeyVersion's key material is scheduled for destruction. Only present if state is DESTROY_SCHEDULED.
+  enum CryptoKeyVersionAlgorithm {
+    CRYPTO_KEY_VERSION_ALGORITHM_UNSPECIFIED = 0;
+    GOOGLE_SYMMETRIC_ENCRYPTION = 1;
+    RSA_SIGN_PSS_2048_SHA256 = 2;
+    RSA_SIGN_PSS_3072_SHA256 = 3;
+    RSA_SIGN_PSS_4096_SHA256 = 4;
+    RSA_SIGN_PSS_4096_SHA512 = 15;
+    RSA_SIGN_PKCS1_2048_SHA256 = 5;
+    RSA_SIGN_PKCS1_3072_SHA256 = 6;
+    RSA_SIGN_PKCS1_4096_SHA256 = 7;
+    RSA_SIGN_PKCS1_4096_SHA512 = 16;
+    RSA_SIGN_RAW_PKCS1_2048 = 28;
+    RSA_SIGN_RAW_PKCS1_3072 = 29;
+    RSA_SIGN_RAW_PKCS1_4096 = 30;
+    RSA_DECRYPT_OAEP_2048_SHA256 = 8;
+    RSA_DECRYPT_OAEP_3072_SHA256 = 9;
+    RSA_DECRYPT_OAEP_4096_SHA256 = 10;
+    RSA_DECRYPT_OAEP_4096_SHA512 = 17;
+    RSA_DECRYPT_OAEP_2048_SHA1 = 37;
+    RSA_DECRYPT_OAEP_3072_SHA1 = 38;
+    RSA_DECRYPT_OAEP_4096_SHA1 = 39;
+    EC_SIGN_P256_SHA256 = 12;
+    EC_SIGN_P384_SHA384 = 13;
+    EC_SIGN_SECP256K1_SHA256 = 31;
+    HMAC_SHA256 = 32;
+    HMAC_SHA1 = 33;
+    HMAC_SHA384 = 34;
+    HMAC_SHA512 = 35;
+    HMAC_SHA224 = 36;
+    EXTERNAL_SYMMETRIC_ENCRYPTION = 18;
+  }
+  enum CryptoKeyVersionState {
+    CRYPTO_KEY_VERSION_STATE_UNSPECIFIED = 0;
+    ENABLED = 1;
+    DISABLED = 2;
+    DESTROYED = 3;
+    DESTROY_SCHEDULED = 4;
+    PENDING_GENERATION = 5;
+    PENDING_IMPORT = 6;
+    IMPORT_FAILED = 7;
+    GENERATION_FAILED = 8;
+    PENDING_EXTERNAL_DESTRUCTION = 9;
+    EXTERNAL_DESTRUCTION_FAILED = 10;
+  }
+  enum ProtectionLevel {
+    PROTECTION_LEVEL_UNSPECIFIED = 0;
+    SOFTWARE = 1;
+    HSM = 2;
+    EXTERNAL = 3;
+    EXTERNAL_VPC = 4;
+  }
+  optional string name = 1 [json_name="name"];
+  optional CryptoKeyVersionState state = 3 [json_name="state"];
+  optional .google.protobuf.Timestamp create_time = 4 [json_name="createTime"];
   optional .google.protobuf.Timestamp destroy_time = 5 [json_name="destroyTime"];
-  // Output only. The root cause of the most recent external destruction failure. Only present if state is EXTERNAL_DESTRUCTION_FAILED.
-  optional string external_destruction_failure_reason = 6 [json_name="externalDestructionFailureReason"];
-  // ExternalProtectionLevelOptions stores a group of additional fields for configuring a CryptoKeyVersion that are specific to the EXTERNAL protection level and EXTERNAL_VPC protection levels.
-  optional ExternalProtectionLevelOptions external_protection_level_options = 7 [json_name="externalProtectionLevelOptions"];
-  // Output only. The time this CryptoKeyVersion's key material was generated.
-  optional .google.protobuf.Timestamp generate_time = 8 [json_name="generateTime"];
-  // Output only. The root cause of the most recent generation failure. Only present if state is GENERATION_FAILED.
-  optional string generation_failure_reason = 9 [json_name="generationFailureReason"];
-  // Output only. The root cause of the most recent import failure. Only present if state is IMPORT_FAILED.
-  optional string import_failure_reason = 10 [json_name="importFailureReason"];
-  // Output only. The name of the ImportJob used in the most recent import of this CryptoKeyVersion. Only present if the underlying key material was imported.
-  optional string import_job = 11 [json_name="importJob"];
-  // Output only. The time at which this CryptoKeyVersion's key material was most recently imported.
-  optional .google.protobuf.Timestamp import_time = 12 [json_name="importTime"];
-  // Output only. The resource name for this CryptoKeyVersion in the format `projects/*/locations/*/keyRings/*/cryptoKeys/*/cryptoKeyVersions/*`.
-  optional string name = 13 [json_name="name"];
-  // Output only. The ProtectionLevel describing how crypto operations are performed with this CryptoKeyVersion.
-  optional string protection_level = 14 [json_name="protectionLevel"];
-  // Output only. Whether or not this key version is eligible for reimport, by being specified as a target in ImportCryptoKeyVersionRequest.crypto_key_version.
-  optional bool reimport_eligible = 15 [json_name="reimportEligible"];
-  // The current state of the CryptoKeyVersion.
-  optional string state = 16 [json_name="state"];
+  optional .google.protobuf.Timestamp destroy_event_time = 6 [json_name="destroyEventTime"];
+  optional ProtectionLevel protection_level = 7 [json_name="protectionLevel"];
+  optional KeyOperationAttestation attestation = 8 [json_name="attestation"];
+  optional CryptoKeyVersionAlgorithm algorithm = 10 [json_name="algorithm"];
+  optional .google.protobuf.Timestamp generate_time = 11 [json_name="generateTime"];
+  optional string import_job = 14 [json_name="importJob"];
+  optional .google.protobuf.Timestamp import_time = 15 [json_name="importTime"];
+  optional string import_failure_reason = 16 [json_name="importFailureReason"];
+  optional string generation_failure_reason = 19 [json_name="generationFailureReason"];
+  optional .google.protobuf.Timestamp external_destruction_time = 20 [json_name="externalDestructionTime"];
+  optional .google.protobuf.Timestamp external_destruction_event_time = 21 [json_name="externalDestructionEventTime"];
+  optional bool reimport_eligible = 24 [json_name="reimportEligible"];
+
 }
 
 // A CryptoKeyVersionTemplate specifies the properties to use when creating a new CryptoKeyVersion, either manually with CreateCryptoKeyVersion or automatically as a result of auto-rotation.
 message CryptoKeyVersionTemplate {
-  // Required. Algorithm to use when creating a CryptoKeyVersion based on this template. For backwards compatibility, GOOGLE_SYMMETRIC_ENCRYPTION is implied if both this field is omitted and CryptoKey.purpose is ENCRYPT_DECRYPT.
-  optional string algorithm = 1 [json_name="algorithm"];
-  // ProtectionLevel to use when creating a CryptoKeyVersion based on this template. Immutable. Defaults to SOFTWARE.
-  optional string protection_level = 2 [json_name="protectionLevel"];
+  optional .mockgcp.cloud.kms.v1.CryptoKeyVersion.CryptoKeyVersionAlgorithm algorithm = 1 [json_name="algorithm"];
+  optional .mockgcp.cloud.kms.v1.CryptoKeyVersion.ProtectionLevel protection_level = 2 [json_name="protectionLevel"];
+
 }
 
 // Request message for KeyManagementService.Decapsulate.
@@ -985,78 +1019,85 @@ message ImportCryptoKeyVersionRequest {
 
 // An ImportJob can be used to create CryptoKeys and CryptoKeyVersions using pre-existing key material, generated outside of Cloud KMS. When an ImportJob is created, Cloud KMS will generate a "wrapping key", which is a public/private key pair. You use the wrapping key to encrypt (also known as wrap) the pre-existing key material to protect it during the import process. The nature of the wrapping key depends on the choice of import_method. When the wrapping key generation is complete, the state will be set to ACTIVE and the public_key can be fetched. The fetched public key can then be used to wrap your pre-existing key material. Once the key material is wrapped, it can be imported into a new CryptoKeyVersion in an existing CryptoKey by calling ImportCryptoKeyVersion. Multiple CryptoKeyVersions can be imported with a single ImportJob. Cloud KMS uses the private key portion of the wrapping key to unwrap the key material. Only Cloud KMS has access to the private key. An ImportJob expires 3 days after it is created. Once expired, Cloud KMS will no longer be able to import or unwrap any key material that was wrapped with the ImportJob's public key. For more information, see [Importing a key](https://cloud.google.com/kms/docs/importing-a-key).
 message ImportJob {
-  // Output only. Statement that was generated and signed by the key creator (for example, an HSM) at key creation time. Use this statement to verify attributes of the key as stored on the HSM, independently of Google. Only present if the chosen ImportMethod is one with a protection level of HSM.
-  optional KeyOperationAttestation attestation = 1 [json_name="attestation"];
-  // Output only. The time at which this ImportJob was created.
-  optional .google.protobuf.Timestamp create_time = 2 [json_name="createTime"];
-  // Immutable. The resource name of the backend environment where the key material for the wrapping key resides and where all related cryptographic operations are performed. Currently, this field is only populated for keys stored in HSM_SINGLE_TENANT. Note, this list is non-exhaustive and may apply to additional ProtectionLevels in the future. Supported resources: * `"projects/*/locations/*/singleTenantHsmInstances/*"`
-  optional string crypto_key_backend = 3 [json_name="cryptoKeyBackend"];
-  // Output only. The time this ImportJob expired. Only present if state is EXPIRED.
-  optional .google.protobuf.Timestamp expire_event_time = 4 [json_name="expireEventTime"];
-  // Output only. The time at which this ImportJob is scheduled for expiration and can no longer be used to import key material.
-  optional .google.protobuf.Timestamp expire_time = 5 [json_name="expireTime"];
-  // Output only. The time this ImportJob's key material was generated.
-  optional .google.protobuf.Timestamp generate_time = 6 [json_name="generateTime"];
-  // Required. Immutable. The wrapping method to be used for incoming key material.
-  optional string import_method = 7 [json_name="importMethod"];
-  // Output only. The resource name for this ImportJob in the format `projects/*/locations/*/keyRings/*/importJobs/*`.
-  optional string name = 8 [json_name="name"];
-  // Required. Immutable. The protection level of the ImportJob. This must match the protection_level of the version_template on the CryptoKey you attempt to import into.
-  optional string protection_level = 9 [json_name="protectionLevel"];
-  // Output only. The public key with which to wrap key material prior to import. Only returned if state is ACTIVE.
+  enum ImportMethod {
+    IMPORT_METHOD_UNSPECIFIED = 0;
+    RSA_OAEP_3072_SHA1_AES_256 = 1;
+    RSA_OAEP_4096_SHA1_AES_256 = 2;
+    RSA_OAEP_3072_SHA256_AES_256 = 3;
+    RSA_OAEP_4096_SHA256_AES_256 = 4;
+    RSA_OAEP_3072_SHA256 = 5;
+    RSA_OAEP_4096_SHA256 = 6;
+  }
+  enum ImportJobState {
+    IMPORT_JOB_STATE_UNSPECIFIED = 0;
+    PENDING_GENERATION = 1;
+    ACTIVE = 2;
+    EXPIRED = 3;
+  }
+  optional string name = 1 [json_name="name"];
+  optional ImportMethod import_method = 2 [json_name="importMethod"];
+  optional .mockgcp.cloud.kms.v1.CryptoKeyVersion.ProtectionLevel protection_level = 3 [json_name="protectionLevel"];
+  optional .google.protobuf.Timestamp create_time = 4 [json_name="createTime"];
+  optional .google.protobuf.Timestamp generate_time = 5 [json_name="generateTime"];
+  optional ImportJobState state = 6 [json_name="state"];
+  optional .google.protobuf.Timestamp expire_time = 7 [json_name="expireTime"];
+  optional .google.protobuf.Timestamp expire_event_time = 8 [json_name="expireEventTime"];
+  optional KeyOperationAttestation attestation = 9 [json_name="attestation"];
   optional WrappingPublicKey public_key = 10 [json_name="publicKey"];
-  // Output only. The current state of the ImportJob, indicating if it can be used.
-  optional string state = 11 [json_name="state"];
+  optional string crypto_key_backend = 11 [json_name="cryptoKeyBackend"];
+
 }
 
-// The configuration of a protection level for a project's Key Access Justifications enrollment.
+// Represents the configuration of a protection level for a project's Key Access Justifications enrollment.
 message KeyAccessJustificationsEnrollmentConfig {
-  // Whether the project has KAJ logging enabled.
+  // Indicates whether the project has KAJ logging enabled.
   optional bool audit_logging = 1 [json_name="auditLogging"];
-  // Whether the project is enrolled in KAJ policy enforcement.
+  // Indicates whether the project is enrolled in KAJ policy enforcement.
   optional bool policy_enforcement = 2 [json_name="policyEnforcement"];
 }
 
-// A KeyAccessJustificationsPolicy specifies zero or more allowed AccessReason values for encrypt, decrypt, and sign operations on a CryptoKey.
+// A KeyAccessJustificationsPolicy specifies zero or more allowed AccessReason values for encrypt, decrypt, and sign operations on a CryptoKey or KeyAccessJustificationsPolicyConfig (the default Key Access Justifications policy).
 message KeyAccessJustificationsPolicy {
-  // The list of allowed reasons for access to a CryptoKey. Zero allowed access reasons means all encrypt, decrypt, and sign operations for the CryptoKey associated with this policy will fail.
+  // The list of allowed reasons for access to a CryptoKey. Note that empty allowed_access_reasons has a different meaning depending on where this message appears. If this is under KeyAccessJustificationsPolicyConfig, it means allow-all. If this is under CryptoKey, it means deny-all.
   repeated string allowed_access_reasons = 1 [json_name="allowedAccessReasons"];
 }
 
-// A singleton configuration for Key Access Justifications policies.
+// Represents a singleton configuration for Key Access Justifications policies.
 message KeyAccessJustificationsPolicyConfig {
-  // Optional. The default key access justification policy used when a CryptoKey is created in this folder. This is only used when a Key Access Justifications policy is not provided in the CreateCryptoKeyRequest. This overrides any default policies in its ancestry.
+  // Optional. Specifies the default key access justifications (KAJ) policy used when a CryptoKey is created in this folder. This is only used when a Key Access Justifications policy is not provided in the CreateCryptoKeyRequest. This overrides any default policies in its ancestry. If this field is unset, or is set but contains an empty allowed_access_reasons list, no default Key Access Justifications (KAJ) policy configuration is active. In this scenario, all newly created keys will default to an "allow-all" policy.
   optional KeyAccessJustificationsPolicy default_key_access_justification_policy = 1 [json_name="defaultKeyAccessJustificationPolicy"];
-  // Identifier. The resource name for this KeyAccessJustificationsPolicyConfig in the format of "{organizations|folders|projects}/*/kajPolicyConfig".
-  optional string name = 2 [json_name="name"];
+  // Output only. Indicates whether this parent resource is available to default policy feature. Please consult [the prerequisite of default policy feature](https://cloud.google.com/assured-workloads/key-access-justifications/docs/set-default-policy#before) for more details.
+  optional bool default_policy_available = 2 [json_name="defaultPolicyAvailable"];
+  // Identifier. Represents the resource name for this KeyAccessJustificationsPolicyConfig in the format of "{organizations|folders|projects}/*/kajPolicyConfig".
+  optional string name = 3 [json_name="name"];
 }
 
 // Resource-oriented representation of a request to Cloud KMS Autokey and the resulting provisioning of a CryptoKey.
 message KeyHandle {
-  // Output only. Name of a CryptoKey that has been provisioned for Customer Managed Encryption Key (CMEK) use in the KeyHandle project and location for the requested resource type. The CryptoKey project will reflect the value configured in the AutokeyConfig on the resource project's ancestor folder at the time of the KeyHandle creation. If more than one ancestor folder has a configured AutokeyConfig, the nearest of these configurations is used.
-  optional string kms_key = 1 [json_name="kmsKey"];
-  // Identifier. Name of the KeyHandle resource, e.g. `projects/{PROJECT_ID}/locations/{LOCATION}/keyHandles/{KEY_HANDLE_ID}`.
-  optional string name = 2 [json_name="name"];
-  // Required. Indicates the resource type that the resulting CryptoKey is meant to protect, e.g. `{SERVICE}.googleapis.com/{TYPE}`. See documentation for supported resource types.
-  optional string resource_type_selector = 3 [json_name="resourceTypeSelector"];
+  optional string name = 1 [json_name="name"];
+  optional string kms_key = 3 [json_name="kmsKey"];
+  optional string resource_type_selector = 4 [json_name="resourceTypeSelector"];
+
 }
 
 // Contains an HSM-generated attestation about a key operation. For more information, see [Verifying attestations] (https://cloud.google.com/kms/docs/attest-key).
 message KeyOperationAttestation {
-  // Output only. The certificate chains needed to validate the attestation
-  optional CertificateChains cert_chains = 1 [json_name="certChains"];
-  // Output only. The attestation data provided by the HSM when the key operation was performed.
-  optional bytes content = 2 [json_name="content"];
-  // Output only. The format of the attestation data.
-  optional string format = 3 [json_name="format"];
+  enum AttestationFormat {
+    ATTESTATION_FORMAT_UNSPECIFIED = 0;
+    CAVIUM_V1_COMPRESSED = 3;
+    CAVIUM_V2_COMPRESSED = 4;
+  }
+  optional AttestationFormat format = 4 [json_name="format"];
+  optional bytes content = 5 [json_name="content"];
+  optional CertificateChains cert_chains = 6 [json_name="certChains"];
+
 }
 
 // A KeyRing is a toplevel logical grouping of CryptoKeys.
 message KeyRing {
-  // Output only. The time at which this KeyRing was created.
-  optional .google.protobuf.Timestamp create_time = 1 [json_name="createTime"];
-  // Output only. The resource name for the KeyRing in the format `projects/*/locations/*/keyRings/*`.
-  optional string name = 2 [json_name="name"];
+  optional string name = 1 [json_name="name"];
+  optional .google.protobuf.Timestamp create_time = 2 [json_name="createTime"];
+
 }
 
 // Response message for KeyManagementService.ListCryptoKeyVersions.
@@ -1439,19 +1480,19 @@ message ShowEffectiveAutokeyConfigResponse {
   optional string key_project = 1 [json_name="keyProject"];
 }
 
-// Response message for KeyAccessJustificationsConfig.ShowEffectiveKeyAccessJustificationsEnrollmentConfig
+// Represents a response message for KeyAccessJustificationsConfig.ShowEffectiveKeyAccessJustificationsEnrollmentConfig
 message ShowEffectiveKeyAccessJustificationsEnrollmentConfigResponse {
-  // The effective KeyAccessJustificationsEnrollmentConfig for external keys.
+  // Contains the effective KeyAccessJustificationsEnrollmentConfig for external keys.
   optional KeyAccessJustificationsEnrollmentConfig external_config = 1 [json_name="externalConfig"];
-  // The effective KeyAccessJustificationsEnrollmentConfig for hardware keys.
+  // Contains the effective KeyAccessJustificationsEnrollmentConfig for hardware keys.
   optional KeyAccessJustificationsEnrollmentConfig hardware_config = 2 [json_name="hardwareConfig"];
-  // The effective KeyAccessJustificationsEnrollmentConfig for software keys.
+  // Contains the effective KeyAccessJustificationsEnrollmentConfig for software keys.
   optional KeyAccessJustificationsEnrollmentConfig software_config = 3 [json_name="softwareConfig"];
 }
 
-// Response message for KeyAccessJustificationsConfig.ShowEffectiveKeyAccessJustificationsPolicyConfig.
+// Represents a response message for KeyAccessJustificationsConfig.ShowEffectiveKeyAccessJustificationsPolicyConfig.
 message ShowEffectiveKeyAccessJustificationsPolicyConfigResponse {
-  // The effective KeyAccessJustificationsPolicyConfig.
+  // Contains the effective KeyAccessJustificationsPolicyConfig.
   optional KeyAccessJustificationsPolicyConfig effective_kaj_policy = 1 [json_name="effectiveKajPolicy"];
 }
 
@@ -1592,11 +1633,13 @@ message ShowEffectiveAutokeyConfigProjectRequest {
 }
 
 message ShowEffectiveKeyAccessJustificationsEnrollmentConfigProjectRequest {
-  optional string name = 1;
+  optional string project = 1;
+
 }
 
 message ShowEffectiveKeyAccessJustificationsPolicyConfigProjectRequest {
-  optional string name = 1;
+  optional string project = 1;
+
 }
 
 message UpdateAutokeyConfigProjectRequest {
@@ -1907,4 +1950,6 @@ message ListProjectsLocationsSingleTenantHsmInstancesProposalsRequest {
   optional string page_token = 4;
   optional string parent = 5;
   optional bool show_deleted = 6;
+}
+message CreateKeyHandleMetadata {
 }

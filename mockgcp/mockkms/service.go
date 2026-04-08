@@ -54,16 +54,37 @@ func (s *MockService) ExpectedHosts() []string {
 }
 
 func (s *MockService) Register(grpcServer *grpc.Server) {
-	pb.RegisterKeyManagementServiceServer(grpcServer, &kmsServer{MockService: s})
-	pb.RegisterAutokeyAdminServer(grpcServer, s.v1AutokeyAdminServer)
-	pb.RegisterAutokeyServer(grpcServer, s.v1AutokeyServer)
+	kms := &kmsServer{MockService: s}
+	pb.RegisterFoldersServerServer(grpcServer, s.v1AutokeyAdminServer)
+	pb.RegisterOrganizationsServerServer(grpcServer, s.v1AutokeyAdminServer)
+	pb.RegisterProjectsServerServer(grpcServer, s.v1AutokeyAdminServer)
+	pb.RegisterProjectsLocationsKeyHandlesServerServer(grpcServer, s.v1AutokeyServer)
+	pb.RegisterProjectsLocationsKeyRingsServerServer(grpcServer, kms)
+	pb.RegisterProjectsLocationsKeyRingsCryptoKeysServerServer(grpcServer, kms)
+	pb.RegisterProjectsLocationsKeyRingsCryptoKeysCryptoKeyVersionsServerServer(grpcServer, kms)
+	pb.RegisterProjectsLocationsKeyRingsImportJobsServerServer(grpcServer, kms)
+	pb.RegisterProjectsLocationsServerServer(grpcServer, kms)
+	pb.RegisterProjectsLocationsEkmConnectionsServerServer(grpcServer, kms)
+	pb.RegisterProjectsLocationsRetiredResourcesServerServer(grpcServer, kms)
+	pb.RegisterProjectsLocationsSingleTenantHsmInstancesServerServer(grpcServer, kms)
+	pb.RegisterProjectsLocationsSingleTenantHsmInstancesProposalsServerServer(grpcServer, kms)
 }
 
 func (s *MockService) NewHTTPMux(ctx context.Context, conn *grpc.ClientConn) (http.Handler, error) {
 	mux, err := httpmux.NewServeMux(ctx, conn, httpmux.Options{},
-		pb.RegisterKeyManagementServiceHandler,
-		pb.RegisterAutokeyAdminHandler,
-		pb.RegisterAutokeyHandler,
+		pb.RegisterFoldersServerHandler,
+		pb.RegisterOrganizationsServerHandler,
+		pb.RegisterProjectsServerHandler,
+		pb.RegisterProjectsLocationsKeyHandlesServerHandler,
+		pb.RegisterProjectsLocationsKeyRingsServerHandler,
+		pb.RegisterProjectsLocationsKeyRingsCryptoKeysServerHandler,
+		pb.RegisterProjectsLocationsKeyRingsCryptoKeysCryptoKeyVersionsServerHandler,
+		pb.RegisterProjectsLocationsKeyRingsImportJobsServerHandler,
+		pb.RegisterProjectsLocationsServerHandler,
+		pb.RegisterProjectsLocationsEkmConnectionsServerHandler,
+		pb.RegisterProjectsLocationsRetiredResourcesServerHandler,
+		pb.RegisterProjectsLocationsSingleTenantHsmInstancesServerHandler,
+		pb.RegisterProjectsLocationsSingleTenantHsmInstancesProposalsServerHandler,
 		s.operations.RegisterOperationsPath("/v1/{prefix=**}/operations/{name}"),
 	)
 	if err != nil {

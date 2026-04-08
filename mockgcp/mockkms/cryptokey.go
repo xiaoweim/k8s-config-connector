@@ -33,8 +33,8 @@ import (
 	pb "github.com/GoogleCloudPlatform/k8s-config-connector/mockgcp/generated/mockgcp/cloud/kms/v1"
 )
 
-func (r *kmsServer) GetCryptoKey(ctx context.Context, req *pb.GetCryptoKeyRequest) (*pb.CryptoKey, error) {
-	name, err := r.parseCryptoKeyName(req.Name)
+func (r *kmsServer) GetProjectsLocationsKeyRingsCryptoKey(ctx context.Context, req *pb.GetProjectsLocationsKeyRingsCryptoKeyRequest) (*pb.CryptoKey, error) {
+	name, err := r.parseCryptoKeyName(req.GetName())
 	if err != nil {
 		return nil, err
 	}
@@ -52,7 +52,7 @@ func (r *kmsServer) GetCryptoKey(ctx context.Context, req *pb.GetCryptoKeyReques
 	return obj, nil
 }
 
-func (r *kmsServer) CreateCryptoKey(ctx context.Context, req *pb.CreateCryptoKeyRequest) (*pb.CryptoKey, error) {
+func (r *kmsServer) CreateProjectsLocationsKeyRingsCryptoKey(ctx context.Context, req *pb.CreateProjectsLocationsKeyRingsCryptoKeyRequest) (*pb.CryptoKey, error) {
 	reqName := fmt.Sprintf("%s/cryptoKeys/%s", req.GetParent(), req.GetCryptoKeyId())
 	name, err := r.parseCryptoKeyName(reqName)
 	if err != nil {
@@ -63,44 +63,45 @@ func (r *kmsServer) CreateCryptoKey(ctx context.Context, req *pb.CreateCryptoKey
 
 	now := time.Now()
 
-	obj := proto.Clone(req.GetCryptoKey()).(*pb.CryptoKey)
-	obj.Name = fqn
+	obj := proto.Clone(req.GetProjectsLocationsKeyRingsCryptoKey()).(*pb.CryptoKey)
+	obj.Name = &fqn
 	obj.CreateTime = timestamppb.New(now)
 
 	r.populateDefaultsForCryptoKey(name, obj)
 
-	if !req.SkipInitialVersionCreation {
+	if !req.GetSkipInitialVersionCreation() {
 		var primary *pb.CryptoKeyVersion
 
 		if obj.VersionTemplate != nil {
 			primary = &pb.CryptoKeyVersion{
-				Algorithm:       obj.VersionTemplate.Algorithm,
-				ProtectionLevel: obj.VersionTemplate.ProtectionLevel,
+				Algorithm:       pb.CryptoKeyVersion_CryptoKeyVersionAlgorithm(int32(obj.VersionTemplate.GetAlgorithm())).Enum(),
+				ProtectionLevel: pb.CryptoKeyVersion_ProtectionLevel(int32(obj.VersionTemplate.GetProtectionLevel())).Enum(),
 			}
-		} else if req.GetCryptoKey().Purpose == pb.CryptoKey_ENCRYPT_DECRYPT {
+		} else if req.GetProjectsLocationsKeyRingsCryptoKey().GetPurpose() == pb.CryptoKey_ENCRYPT_DECRYPT {
 			// Set default
 			primary = &pb.CryptoKeyVersion{
-				Algorithm:       pb.CryptoKeyVersion_GOOGLE_SYMMETRIC_ENCRYPTION,
-				ProtectionLevel: pb.ProtectionLevel_SOFTWARE,
+				Algorithm:       pb.CryptoKeyVersion_GOOGLE_SYMMETRIC_ENCRYPTION.Enum(),
+				ProtectionLevel: pb.CryptoKeyVersion_SOFTWARE.Enum(),
 			}
 		} else {
+
 			primary = &pb.CryptoKeyVersion{
 				// Algorithm is required
-				Algorithm: obj.VersionTemplate.Algorithm,
+				Algorithm: pb.CryptoKeyVersion_CryptoKeyVersionAlgorithm(int32(obj.VersionTemplate.GetAlgorithm())).Enum(),
 			}
 		}
-		createVersionReq := &pb.CreateCryptoKeyVersionRequest{
-			Parent:           fqn,
-			CryptoKeyVersion: primary,
+		createVersionReq := &pb.CreateProjectsLocationsKeyRingsCryptoKeysCryptoKeyVersionRequest{
+			Parent: &fqn,
+			ProjectsLocationsKeyRingsCryptoKeysCryptoKeyVersion: primary,
 		}
-		createdVersion, err := r.CreateCryptoKeyVersion(ctx, createVersionReq)
+		createdVersion, err := r.CreateProjectsLocationsKeyRingsCryptoKeysCryptoKeyVersion(ctx, createVersionReq)
 		if err != nil {
 			return nil, err
 		}
 		obj.Primary = createdVersion
 		obj.VersionTemplate = &pb.CryptoKeyVersionTemplate{
-			Algorithm:       createdVersion.Algorithm,
-			ProtectionLevel: createdVersion.ProtectionLevel,
+			Algorithm:       pb.CryptoKeyVersion_CryptoKeyVersionAlgorithm(int32(createdVersion.GetAlgorithm())).Enum(),
+			ProtectionLevel: pb.CryptoKeyVersion_ProtectionLevel(int32(createdVersion.GetProtectionLevel())).Enum(),
 		}
 	}
 	if err := r.storage.Create(ctx, fqn, obj); err != nil {
@@ -110,8 +111,8 @@ func (r *kmsServer) CreateCryptoKey(ctx context.Context, req *pb.CreateCryptoKey
 	return obj, nil
 }
 
-func (r *kmsServer) UpdateCryptoKey(ctx context.Context, req *pb.UpdateCryptoKeyRequest) (*pb.CryptoKey, error) {
-	name, err := r.parseCryptoKeyName(req.GetCryptoKey().GetName())
+func (r *kmsServer) PatchProjectsLocationsKeyRingsCryptoKey(ctx context.Context, req *pb.PatchProjectsLocationsKeyRingsCryptoKeyRequest) (*pb.CryptoKey, error) {
+	name, err := r.parseCryptoKeyName(req.GetProjectsLocationsKeyRingsCryptoKey().GetName())
 	if err != nil {
 		return nil, err
 	}
@@ -124,10 +125,11 @@ func (r *kmsServer) UpdateCryptoKey(ctx context.Context, req *pb.UpdateCryptoKey
 	}
 
 	updateMask := req.GetUpdateMask()
-	for _, path := range updateMask.Paths {
+	paths := strings.Split(updateMask, ",")
+	for _, path := range paths {
 		switch path {
 		case "labels":
-			obj.Labels = req.GetCryptoKey().GetLabels()
+			obj.Labels = req.GetProjectsLocationsKeyRingsCryptoKey().GetLabels()
 		default:
 			return nil, status.Errorf(codes.InvalidArgument, "field %q is not yet handled in mock", path)
 		}
