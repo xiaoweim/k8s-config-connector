@@ -31,13 +31,11 @@ import (
 
 type autokeyAdminServer struct {
 	*MockService
-	pb.UnimplementedFoldersServerServer
-	pb.UnimplementedOrganizationsServerServer
-	pb.UnimplementedProjectsServerServer
+	pb.UnimplementedAutokeyAdminServer
 }
 
-func (r *autokeyAdminServer) GetAutokeyConfigFolder(ctx context.Context, req *pb.GetAutokeyConfigFolderRequest) (*pb.AutokeyConfig, error) {
-	name, err := r.parseAutokeyConfigName(req.GetName())
+func (r *autokeyAdminServer) GetAutokeyConfig(ctx context.Context, req *pb.GetAutokeyConfigRequest) (*pb.AutokeyConfig, error) {
+	name, err := r.parseAutokeyConfigName(req.Name)
 	if err != nil {
 		return nil, err
 	}
@@ -47,7 +45,7 @@ func (r *autokeyAdminServer) GetAutokeyConfigFolder(ctx context.Context, req *pb
 	obj := &pb.AutokeyConfig{}
 	if err := r.storage.Get(ctx, fqn, obj); err != nil {
 		if status.Code(err) == codes.NotFound {
-			obj.State = pb.AutokeyConfig_UNINITIALIZED.Enum()
+			obj.State = pb.AutokeyConfig_UNINITIALIZED
 			r.storage.Create(ctx, fqn, obj)
 			return obj, nil
 		}
@@ -57,8 +55,8 @@ func (r *autokeyAdminServer) GetAutokeyConfigFolder(ctx context.Context, req *pb
 	return obj, nil
 }
 
-func (r *autokeyAdminServer) UpdateAutokeyConfigFolder(ctx context.Context, req *pb.UpdateAutokeyConfigFolderRequest) (*pb.AutokeyConfig, error) {
-	reqName := req.GetFolder().GetName()
+func (r *autokeyAdminServer) UpdateAutokeyConfig(ctx context.Context, req *pb.UpdateAutokeyConfigRequest) (*pb.AutokeyConfig, error) {
+	reqName := req.GetAutokeyConfig().GetName()
 	name, err := r.parseAutokeyConfigName(reqName)
 	if err != nil {
 		return nil, err
@@ -66,12 +64,12 @@ func (r *autokeyAdminServer) UpdateAutokeyConfigFolder(ctx context.Context, req 
 
 	fqn := name.String()
 
-	obj := proto.Clone(req.GetFolder()).(*pb.AutokeyConfig)
-	obj.Name = &fqn
-	if len(req.GetFolder().GetKeyProject()) > 0 {
-		obj.State = pb.AutokeyConfig_ACTIVE.Enum()
+	obj := proto.Clone(req.GetAutokeyConfig()).(*pb.AutokeyConfig)
+	obj.Name = fqn
+	if len(req.AutokeyConfig.KeyProject) > 0 {
+		obj.State = pb.AutokeyConfig_ACTIVE
 	} else {
-		obj.State = pb.AutokeyConfig_UNINITIALIZED.Enum()
+		obj.State = pb.AutokeyConfig_UNINITIALIZED
 	}
 	if err := r.storage.Update(ctx, fqn, obj); err != nil {
 		return nil, err
@@ -80,40 +78,12 @@ func (r *autokeyAdminServer) UpdateAutokeyConfigFolder(ctx context.Context, req 
 	return obj, nil
 }
 
-func (r *autokeyAdminServer) ShowEffectiveAutokeyConfigProject(ctx context.Context, req *pb.ShowEffectiveAutokeyConfigProjectRequest) (*pb.ShowEffectiveAutokeyConfigResponse, error) {
-	project := req.GetParent()
+func (r *autokeyAdminServer) ShowEffectiveAutokeyConfig(ctx context.Context, req *pb.ShowEffectiveAutokeyConfigRequest) (*pb.ShowEffectiveAutokeyConfigResponse, error) {
+	project := req.Parent
 	obj := &pb.ShowEffectiveAutokeyConfigResponse{}
-	obj.KeyProject = &project
+	obj.KeyProject = project
 
 	return obj, nil
-}
-
-func (r *autokeyAdminServer) GetKajPolicyConfigFolder(ctx context.Context, req *pb.GetKajPolicyConfigFolderRequest) (*pb.KeyAccessJustificationsPolicyConfig, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetKajPolicyConfigFolder not implemented")
-}
-
-func (r *autokeyAdminServer) UpdateKajPolicyConfigFolder(ctx context.Context, req *pb.UpdateKajPolicyConfigFolderRequest) (*pb.KeyAccessJustificationsPolicyConfig, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UpdateKajPolicyConfigFolder not implemented")
-}
-
-func (r *autokeyAdminServer) GetKajPolicyConfigOrganization(ctx context.Context, req *pb.GetKajPolicyConfigOrganizationRequest) (*pb.KeyAccessJustificationsPolicyConfig, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetKajPolicyConfigOrganization not implemented")
-}
-
-func (r *autokeyAdminServer) UpdateKajPolicyConfigOrganization(ctx context.Context, req *pb.UpdateKajPolicyConfigOrganizationRequest) (*pb.KeyAccessJustificationsPolicyConfig, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UpdateKajPolicyConfigOrganization not implemented")
-}
-
-func (r *autokeyAdminServer) GetKajPolicyConfigProject(ctx context.Context, req *pb.GetKajPolicyConfigProjectRequest) (*pb.KeyAccessJustificationsPolicyConfig, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetKajPolicyConfigProject not implemented")
-}
-
-func (r *autokeyAdminServer) UpdateKajPolicyConfigProject(ctx context.Context, req *pb.UpdateKajPolicyConfigProjectRequest) (*pb.KeyAccessJustificationsPolicyConfig, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UpdateKajPolicyConfigProject not implemented")
-}
-
-func (r *autokeyAdminServer) ShowEffectiveKeyAccessJustificationsPolicyConfigProject(ctx context.Context, req *pb.ShowEffectiveKeyAccessJustificationsPolicyConfigProjectRequest) (*pb.ShowEffectiveKeyAccessJustificationsPolicyConfigResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ShowEffectiveKeyAccessJustificationsPolicyConfigProject not implemented")
 }
 
 type autokeyConfigName struct {

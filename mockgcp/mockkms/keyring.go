@@ -35,19 +35,11 @@ import (
 
 type kmsServer struct {
 	*MockService
-	pb.UnimplementedProjectsLocationsKeyRingsServerServer
-	pb.UnimplementedProjectsLocationsKeyRingsCryptoKeysServerServer
-	pb.UnimplementedProjectsLocationsKeyRingsCryptoKeysCryptoKeyVersionsServerServer
-	pb.UnimplementedProjectsLocationsKeyRingsImportJobsServerServer
-	pb.UnimplementedProjectsLocationsServerServer
-	pb.UnimplementedProjectsLocationsEkmConnectionsServerServer
-	pb.UnimplementedProjectsLocationsRetiredResourcesServerServer
-	pb.UnimplementedProjectsLocationsSingleTenantHsmInstancesServerServer
-	pb.UnimplementedProjectsLocationsSingleTenantHsmInstancesProposalsServerServer
+	pb.UnimplementedKeyManagementServiceServer
 }
 
-func (r *kmsServer) GetProjectsLocationsKeyRing(ctx context.Context, req *pb.GetProjectsLocationsKeyRingRequest) (*pb.KeyRing, error) {
-	name, err := r.parseKeyRingName(req.GetName())
+func (r *kmsServer) GetKeyRing(ctx context.Context, req *pb.GetKeyRingRequest) (*pb.KeyRing, error) {
+	name, err := r.parseKeyRingName(req.Name)
 	if err != nil {
 		return nil, err
 	}
@@ -65,7 +57,7 @@ func (r *kmsServer) GetProjectsLocationsKeyRing(ctx context.Context, req *pb.Get
 	return obj, nil
 }
 
-func (r *kmsServer) CreateProjectsLocationsKeyRing(ctx context.Context, req *pb.CreateProjectsLocationsKeyRingRequest) (*pb.KeyRing, error) {
+func (r *kmsServer) CreateKeyRing(ctx context.Context, req *pb.CreateKeyRingRequest) (*pb.KeyRing, error) {
 	reqName := fmt.Sprintf("%s/keyRings/%s", req.GetParent(), req.GetKeyRingId())
 	name, err := r.parseKeyRingName(reqName)
 	if err != nil {
@@ -76,8 +68,8 @@ func (r *kmsServer) CreateProjectsLocationsKeyRing(ctx context.Context, req *pb.
 
 	now := time.Now()
 
-	obj := proto.Clone(req.GetProjectsLocationsKeyRing()).(*pb.KeyRing)
-	obj.Name = &fqn
+	obj := proto.Clone(req.GetKeyRing()).(*pb.KeyRing)
+	obj.Name = fqn
 	obj.CreateTime = timestamppb.New(now)
 
 	r.populateDefaultsForKeyRing(name, obj)

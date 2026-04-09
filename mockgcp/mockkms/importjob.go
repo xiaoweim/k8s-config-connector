@@ -33,8 +33,8 @@ import (
 	"github.com/GoogleCloudPlatform/k8s-config-connector/mockgcp/pkg/storage"
 )
 
-func (s *kmsServer) GetProjectsLocationsKeyRingsImportJob(ctx context.Context, req *pb.GetProjectsLocationsKeyRingsImportJobRequest) (*pb.ImportJob, error) {
-	name, err := s.parseImportJobName(req.GetName())
+func (s *kmsServer) GetImportJob(ctx context.Context, req *pb.GetImportJobRequest) (*pb.ImportJob, error) {
+	name, err := s.parseImportJobName(req.Name)
 	if err != nil {
 		return nil, err
 	}
@@ -52,13 +52,13 @@ func (s *kmsServer) GetProjectsLocationsKeyRingsImportJob(ctx context.Context, r
 	return obj, nil
 }
 
-func (s *kmsServer) ListProjectsLocationsKeyRingsImportJobs(ctx context.Context, req *pb.ListProjectsLocationsKeyRingsImportJobsRequest) (*pb.ListImportJobsResponse, error) {
+func (s *kmsServer) ListImportJobs(ctx context.Context, req *pb.ListImportJobsRequest) (*pb.ListImportJobsResponse, error) {
 	var importJobs []*pb.ImportJob
 
 	importJobKind := (&pb.ImportJob{}).ProtoReflect().Descriptor()
 	if err := s.storage.List(ctx, importJobKind, storage.ListOptions{}, func(obj proto.Message) error {
 		importJob := obj.(*pb.ImportJob)
-		if strings.HasPrefix(importJob.GetName(), req.GetParent()) {
+		if strings.HasPrefix(importJob.GetName(), req.Parent) {
 			importJobs = append(importJobs, importJob)
 		}
 		return nil
@@ -68,11 +68,11 @@ func (s *kmsServer) ListProjectsLocationsKeyRingsImportJobs(ctx context.Context,
 
 	return &pb.ListImportJobsResponse{
 		ImportJobs: importJobs,
-		TotalSize:  PtrTo(int32(len(importJobs))),
+		TotalSize:  int32(len(importJobs)),
 	}, nil
 }
 
-func (s *kmsServer) CreateProjectsLocationsKeyRingsImportJob(ctx context.Context, req *pb.CreateProjectsLocationsKeyRingsImportJobRequest) (*pb.ImportJob, error) {
+func (s *kmsServer) CreateImportJob(ctx context.Context, req *pb.CreateImportJobRequest) (*pb.ImportJob, error) {
 	reqName := fmt.Sprintf("%s/importJobs/%s", req.GetParent(), req.GetImportJobId())
 	name, err := s.parseImportJobName(reqName)
 	if err != nil {
@@ -83,19 +83,19 @@ func (s *kmsServer) CreateProjectsLocationsKeyRingsImportJob(ctx context.Context
 
 	now := time.Now()
 
-	obj := proto.Clone(req.GetProjectsLocationsKeyRingsImportJob()).(*pb.ImportJob)
-	obj.Name = &fqn
+	obj := proto.Clone(req.GetImportJob()).(*pb.ImportJob)
+	obj.Name = fqn
 	obj.CreateTime = timestamppb.New(now)
 	obj.ExpireTime = timestamppb.New(now)
-	obj.ImportMethod = pb.ImportJob_RSA_OAEP_3072_SHA1_AES_256.Enum()
-	obj.State = pb.ImportJob_PENDING_GENERATION.Enum()
+	obj.ImportMethod = pb.ImportJob_RSA_OAEP_3072_SHA1_AES_256
+	obj.State = pb.ImportJob_PENDING_GENERATION
 
 	result := proto.Clone(obj).(*pb.ImportJob)
 
 	obj.GenerateTime = timestamppb.New(now)
-	obj.State = pb.ImportJob_ACTIVE.Enum()
+	obj.State = pb.ImportJob_ACTIVE
 	obj.Attestation = &pb.KeyOperationAttestation{
-		CertChains: &pb.CertificateChains{
+		CertChains: &pb.KeyOperationAttestation_CertificateChains{
 			CaviumCerts: []string{
 				"-----BEGIN CERTIFICATE-----\ncertificate 1\n-----END CERTIFICATE-----\n",
 				"-----BEGIN CERTIFICATE-----\ncertificate 2\n-----END CERTIFICATE-----\n",
@@ -108,10 +108,10 @@ func (s *kmsServer) CreateProjectsLocationsKeyRingsImportJob(ctx context.Context
 			},
 		},
 		Content: []byte("content"),
-		Format:  pb.KeyOperationAttestation_CAVIUM_V2_COMPRESSED.Enum(),
+		Format:  pb.KeyOperationAttestation_CAVIUM_V2_COMPRESSED,
 	}
-	obj.PublicKey = &pb.WrappingPublicKey{
-		Pem: PtrTo("-----BEGIN PUBLIC KEY-----\npublic key\n-----END PUBLIC KEY-----\n"),
+	obj.PublicKey = &pb.ImportJob_WrappingPublicKey{
+		Pem: "-----BEGIN PUBLIC KEY-----\npublic key\n-----END PUBLIC KEY-----\n",
 	}
 
 	if err := s.storage.Create(ctx, fqn, obj); err != nil {

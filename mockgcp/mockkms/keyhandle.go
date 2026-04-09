@@ -35,11 +35,11 @@ import (
 
 type autokeyServer struct {
 	*MockService
-	pb.UnimplementedProjectsLocationsKeyHandlesServerServer
+	pb.UnimplementedAutokeyServer
 }
 
-func (r *autokeyServer) GetProjectsLocationsKeyHandle(ctx context.Context, req *pb.GetProjectsLocationsKeyHandleRequest) (*pb.KeyHandle, error) {
-	keyHandleName, err := r.parseKeyHandleName(req.GetName())
+func (r *autokeyServer) GetKeyHandle(ctx context.Context, req *pb.GetKeyHandleRequest) (*pb.KeyHandle, error) {
+	keyHandleName, err := r.parseKeyHandleName(req.Name)
 	if err != nil {
 		return nil, err
 	}
@@ -57,13 +57,13 @@ func (r *autokeyServer) GetProjectsLocationsKeyHandle(ctx context.Context, req *
 	return obj, nil
 }
 
-func (r *autokeyServer) CreateProjectsLocationsKeyHandle(ctx context.Context, req *pb.CreateProjectsLocationsKeyHandleRequest) (*lro.Operation, error) {
+func (r *autokeyServer) CreateKeyHandle(ctx context.Context, req *pb.CreateKeyHandleRequest) (*lro.Operation, error) {
 	var reqName string
 	uuid := string(uuid.NewUUID())
-	if req.GetKeyHandleId() != "" {
-		reqName = req.GetParent() + "/keyHandles/" + req.GetKeyHandleId()
+	if req.KeyHandleId != "" {
+		reqName = req.Parent + "/keyHandles/" + req.KeyHandleId
 	} else {
-		reqName = req.GetParent() + "/keyHandles/" + uuid
+		reqName = req.Parent + "/keyHandles/" + uuid
 	}
 	keyHandleName, err := r.parseKeyHandleName(reqName)
 	if err != nil {
@@ -71,24 +71,24 @@ func (r *autokeyServer) CreateProjectsLocationsKeyHandle(ctx context.Context, re
 	}
 	fqn := keyHandleName.String()
 
-	obj := proto.Clone(req.GetProjectsLocationsKeyHandle()).(*pb.KeyHandle)
+	obj := proto.Clone(req.GetKeyHandle()).(*pb.KeyHandle)
 	project, err := r.Projects.GetProjectByID(keyHandleName.projectID)
 	if err != nil {
 		return nil, err
 	}
-	obj.Name = &fqn
+	obj.Name = fqn
 	// Autokey full relative name:
 	// projects/key-project/locations/us-central1/keyRings/autokey/cryptoKeys/${projectNumber}-compute-disk-ac103725a174885c
 	// key-project is a separate project that contains auto keys, see https://cloud.google.com/kms/docs/enable-autokey#set-up-key-project
 	// hard-code key-project and the generated key suffix for golden testing
-	obj.KmsKey = PtrTo(fmt.Sprintf("projects/${key_project}/locations/%s/keyRings/autokey/cryptoKeys/%d-compute-disk-${generated-id}", keyHandleName.location, project.Number))
+	obj.KmsKey = fmt.Sprintf("projects/${key_project}/locations/%s/keyRings/autokey/cryptoKeys/%d-compute-disk-${generated-id}", keyHandleName.location, project.Number)
 
 	if err := r.storage.Create(ctx, fqn, obj); err != nil {
 		return nil, err
 	}
 
 	metadata := &pb.CreateKeyHandleMetadata{}
-	return r.operations.StartLROWithOptions(ctx, req.GetParent(), metadata, func() (proto.Message, error) {
+	return r.operations.StartLROWithOptions(ctx, req.Parent, metadata, func() (proto.Message, error) {
 		return obj, nil
 	}, false)
 }

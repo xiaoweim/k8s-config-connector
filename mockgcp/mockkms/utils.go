@@ -20,7 +20,3 @@ func lastComponent(s string) string {
 	i := strings.LastIndex(s, "/")
 	return s[i+1:]
 }
-
-func PtrTo[T any](t T) *T {
-	return &t
-}
