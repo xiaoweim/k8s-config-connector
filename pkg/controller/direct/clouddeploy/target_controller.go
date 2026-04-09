@@ -42,6 +42,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog/v2"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 func init() {
@@ -89,77 +90,18 @@ func (m *modelTarget) AdapterForObject(ctx context.Context, op *directbase.Adapt
 		return nil, err
 	}
 
-	// Normalize all reference fields
-	if obj.Spec.Gke != nil && obj.Spec.Gke.ClusterRef != nil {
-		if _, err := obj.Spec.Gke.ClusterRef.NormalizedExternal(ctx, reader, obj.Namespace); err != nil {
-			return nil, err
-		}
-	}
-	if obj.Spec.AnthosCluster != nil && obj.Spec.AnthosCluster.MembershipRef != nil {
-		if err := obj.Spec.AnthosCluster.MembershipRef.Normalize(ctx, reader, obj.Namespace); err != nil {
-			return nil, err
-		}
-	}
-	if obj.Spec.MultiTarget != nil {
-		for i := range obj.Spec.MultiTarget.TargetRefs {
-			if err := obj.Spec.MultiTarget.TargetRefs[i].Normalize(ctx, reader, obj.Namespace); err != nil {
-				return nil, err
-			}
-		}
-	}
-	if obj.Spec.CustomTarget != nil && obj.Spec.CustomTarget.CustomTargetTypeRef != nil {
-		if _, err := obj.Spec.CustomTarget.CustomTargetTypeRef.NormalizedExternal(ctx, reader, obj.Namespace); err != nil {
-			return nil, err
-		}
-	}
-	for i := range obj.Spec.ExecutionConfigs {
-		ec := &obj.Spec.ExecutionConfigs[i]
-		if ec.DefaultPool != nil && ec.DefaultPool.ServiceAccountRef != nil {
-			if err := ec.DefaultPool.ServiceAccountRef.Resolve(ctx, reader, obj); err != nil {
-				return nil, err
-			}
-		}
-		if ec.PrivatePool != nil {
-			if ec.PrivatePool.ServiceAccountRef != nil {
-				if err := ec.PrivatePool.ServiceAccountRef.Resolve(ctx, reader, obj); err != nil {
-					return nil, err
-				}
-			}
-			if ec.PrivatePool.WorkerPoolRef != nil {
-				if err := refsv1beta1.Normalize(ctx, reader, ec.PrivatePool.WorkerPoolRef, obj.Namespace); err != nil {
-					return nil, err
-				}
-			}
-		}
-		if ec.WorkerPoolRef != nil {
-			if err := refsv1beta1.Normalize(ctx, reader, ec.WorkerPoolRef, obj.Namespace); err != nil {
-				return nil, err
-			}
-		}
-		if ec.ServiceAccountRef != nil {
-			if err := ec.ServiceAccountRef.Resolve(ctx, reader, obj); err != nil {
-				return nil, err
-			}
-		}
-	}
-
 	// Get clouddeploy GCP client
 	gcpClient, err := m.client(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	mapCtx := &direct.MapContext{}
-	desiredPb := CloudDeployTargetSpec_ToProto(mapCtx, &obj.Spec)
-	if mapCtx.Err() != nil {
-		return nil, mapCtx.Err()
-	}
-	desiredPb.Labels = label.NewGCPLabelsFromK8sLabels(u.GetLabels())
-
 	return &TargetAdapter{
 		id:        id.(*krm.CloudDeployTargetIdentity),
 		gcpClient: gcpClient,
-		desiredPb: desiredPb,
+		desired:   obj,
+		reader:    reader,
+		labels:    u.GetLabels(),
 	}, nil
 }
 
@@ -173,6 +115,77 @@ type TargetAdapter struct {
 	gcpClient *gcp.CloudDeployClient
 	desiredPb *clouddeploypb.Target
 	actual    *clouddeploypb.Target
+
+	desired *krm.CloudDeployTarget
+	reader  client.Reader
+	labels  map[string]string
+}
+
+func (a *TargetAdapter) resolveReferences(ctx context.Context) error {
+	obj := a.desired
+	reader := a.reader
+
+	// Normalize all reference fields
+	if obj.Spec.Gke != nil && obj.Spec.Gke.ClusterRef != nil {
+		if _, err := obj.Spec.Gke.ClusterRef.NormalizedExternal(ctx, reader, obj.Namespace); err != nil {
+			return err
+		}
+	}
+	if obj.Spec.AnthosCluster != nil && obj.Spec.AnthosCluster.MembershipRef != nil {
+		if err := obj.Spec.AnthosCluster.MembershipRef.Normalize(ctx, reader, obj.Namespace); err != nil {
+			return err
+		}
+	}
+	if obj.Spec.MultiTarget != nil {
+		for i := range obj.Spec.MultiTarget.TargetRefs {
+			if err := obj.Spec.MultiTarget.TargetRefs[i].Normalize(ctx, reader, obj.Namespace); err != nil {
+				return err
+			}
+		}
+	}
+	if obj.Spec.CustomTarget != nil && obj.Spec.CustomTarget.CustomTargetTypeRef != nil {
+		if _, err := obj.Spec.CustomTarget.CustomTargetTypeRef.NormalizedExternal(ctx, reader, obj.Namespace); err != nil {
+			return err
+		}
+	}
+	for i := range obj.Spec.ExecutionConfigs {
+		ec := &obj.Spec.ExecutionConfigs[i]
+		if ec.DefaultPool != nil && ec.DefaultPool.ServiceAccountRef != nil {
+			if err := ec.DefaultPool.ServiceAccountRef.Resolve(ctx, reader, obj); err != nil {
+				return err
+			}
+		}
+		if ec.PrivatePool != nil {
+			if ec.PrivatePool.ServiceAccountRef != nil {
+				if err := ec.PrivatePool.ServiceAccountRef.Resolve(ctx, reader, obj); err != nil {
+					return err
+				}
+			}
+			if ec.PrivatePool.WorkerPoolRef != nil {
+				if err := refsv1beta1.Normalize(ctx, reader, ec.PrivatePool.WorkerPoolRef, obj.Namespace); err != nil {
+					return err
+				}
+			}
+		}
+		if ec.WorkerPoolRef != nil {
+			if err := refsv1beta1.Normalize(ctx, reader, ec.WorkerPoolRef, obj.Namespace); err != nil {
+				return err
+			}
+		}
+		if ec.ServiceAccountRef != nil {
+			if err := ec.ServiceAccountRef.Resolve(ctx, reader, obj); err != nil {
+				return err
+			}
+		}
+	}
+
+	mapCtx := &direct.MapContext{}
+	a.desiredPb = CloudDeployTargetSpec_ToProto(mapCtx, &obj.Spec)
+	if mapCtx.Err() != nil {
+		return mapCtx.Err()
+	}
+	a.desiredPb.Labels = label.NewGCPLabelsFromK8sLabels(a.labels)
+	return nil
 }
 
 var _ directbase.Adapter = &TargetAdapter{}
@@ -202,6 +215,11 @@ func (a *TargetAdapter) Find(ctx context.Context) (bool, error) {
 func (a *TargetAdapter) Create(ctx context.Context, createOp *directbase.CreateOperation) error {
 	log := klog.FromContext(ctx)
 	log.V(2).Info("creating Target", "name", a.id.String())
+
+	if err := a.resolveReferences(ctx); err != nil {
+		return err
+	}
+
 	mapCtx := &direct.MapContext{}
 
 	req := &clouddeploypb.CreateTargetRequest{
@@ -232,6 +250,11 @@ func (a *TargetAdapter) Create(ctx context.Context, createOp *directbase.CreateO
 func (a *TargetAdapter) Update(ctx context.Context, updateOp *directbase.UpdateOperation) error {
 	log := klog.FromContext(ctx)
 	log.V(2).Info("updating Target", "name", a.id.String())
+
+	if err := a.resolveReferences(ctx); err != nil {
+		return err
+	}
+
 	mapCtx := &direct.MapContext{}
 
 	a.desiredPb.Name = a.id.String()
