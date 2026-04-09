@@ -17,6 +17,7 @@ package mockcompute
 import (
 	"context"
 	"net/http"
+	"net/url"
 	"strings"
 
 	"github.com/GoogleCloudPlatform/k8s-config-connector/mockgcp/common"
@@ -336,13 +337,24 @@ func (s *MockService) NewHTTPMux(ctx context.Context, conn *grpc.ClientConn) (ht
 				u2 := *r.URL
 				// We avoid q.Encode() because it sorts query parameters alphabetically,
 				// which would cause diffs in the HTTP logs for many tests.
-				// Instead we do a surgical replacement.
-				joinedPaths := strings.Join(paths, ",")
-				u2.RawQuery = strings.ReplaceAll(u2.RawQuery, "paths="+paths[0], "paths="+joinedPaths)
-				for _, p := range paths[1:] {
-					u2.RawQuery = strings.ReplaceAll(u2.RawQuery, "&paths="+p, "")
-					u2.RawQuery = strings.ReplaceAll(u2.RawQuery, "paths="+p+"&", "")
+				// Instead we rebuild the RawQuery while maintaining the order.
+				var newParts []string
+				pathsHandled := false
+				for _, part := range strings.Split(u2.RawQuery, "&") {
+					key := part
+					if i := strings.Index(part, "="); i >= 0 {
+						key = part[:i]
+					}
+					if key == "paths" {
+						if !pathsHandled {
+							newParts = append(newParts, "paths="+url.QueryEscape(strings.Join(paths, ",")))
+							pathsHandled = true
+						}
+						continue
+					}
+					newParts = append(newParts, part)
 				}
+				u2.RawQuery = strings.Join(newParts, "&")
 				r = httpmux.RewriteRequest(r, &u2)
 			}
 		}

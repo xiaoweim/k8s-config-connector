@@ -27,9 +27,7 @@ type GlobalOperationsV1 struct {
 }
 
 func (s *GlobalOperationsV1) Get(ctx context.Context, req *pb.GetGlobalOperationRequest) (*pb.Operation, error) {
-	projectID := lastComponent(req.GetProject())
-	operation := lastComponent(req.GetOperation())
-	fqn := s.globalOperationFQN(projectID, operation)
+	fqn := s.globalOperationFQN(req.Project, req.Operation)
 	lro, err := s.getOperation(ctx, fqn)
 	if err != nil {
 		return nil, err
@@ -39,9 +37,7 @@ func (s *GlobalOperationsV1) Get(ctx context.Context, req *pb.GetGlobalOperation
 }
 
 func (s *GlobalOperationsV1) Wait(ctx context.Context, req *pb.WaitGlobalOperationRequest) (*pb.Operation, error) {
-	projectID := lastComponent(req.GetProject())
-	operation := lastComponent(req.GetOperation())
-	fqn := s.globalOperationFQN(projectID, operation)
+	fqn := s.globalOperationFQN(req.Project, req.Operation)
 
 	deadline := 2 * time.Minute
 	timeoutAt := time.Now().Add(deadline)
@@ -61,14 +57,4 @@ func (s *GlobalOperationsV1) Wait(ctx context.Context, req *pb.WaitGlobalOperati
 
 		time.Sleep(2 * time.Second)
 	}
-}
-
-func (s *GlobalOperationsV1) List(ctx context.Context, req *pb.ListGlobalOperationsRequest) (*pb.OperationList, error) {
-	// TODO: Implement List
-	return &pb.OperationList{}, nil
-}
-
-func (s *GlobalOperationsV1) AggregatedList(ctx context.Context, req *pb.AggregatedListGlobalOperationsRequest) (*pb.OperationAggregatedList, error) {
-	// TODO: Implement AggregatedList
-	return &pb.OperationAggregatedList{}, nil
 }

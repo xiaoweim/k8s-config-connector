@@ -68,7 +68,7 @@ func (s *ReservationsV1) Insert(ctx context.Context, req *pb.InsertReservationRe
 
 	obj := proto.Clone(req.GetReservationResource()).(*pb.Reservation)
 
-	if obj.GetShareSettings().GetShareType() == "SPECIFIC_PROJECTS" {
+	if obj.GetShareSettings() != nil && obj.GetShareSettings().GetShareType() == "SPECIFIC_PROJECTS" {
 		if len(obj.GetShareSettings().GetProjectMap()) == 0 {
 			return nil, status.Errorf(codes.InvalidArgument, "project_map is required when share_type is SPECIFIC_PROJECTS")
 		}
@@ -125,12 +125,7 @@ func (s *ReservationsV1) Update(ctx context.Context, req *pb.UpdateReservationRe
 			obj.ShareSettings.ShareType = update.ShareSettings.ShareType
 		}
 		if update.ShareSettings.ProjectMap != nil {
-			if obj.ShareSettings.ProjectMap == nil {
-				obj.ShareSettings.ProjectMap = make(map[string]*pb.ShareSettingsProjectConfig)
-			}
-			for k, v := range update.ShareSettings.ProjectMap {
-				obj.ShareSettings.ProjectMap[k] = v
-			}
+			obj.ShareSettings.ProjectMap = update.ShareSettings.ProjectMap
 		}
 	}
 
@@ -181,7 +176,7 @@ func (s *ReservationsV1) Delete(ctx context.Context, req *pb.DeleteReservationRe
 
 	fqn := name.String()
 
-	deleted := (&pb.Reservation{})
+	deleted := &pb.Reservation{}
 	if err := s.storage.Delete(ctx, fqn, deleted); err != nil {
 		return nil, err
 	}
