@@ -27,7 +27,9 @@ type GlobalOperationsV1 struct {
 }
 
 func (s *GlobalOperationsV1) Get(ctx context.Context, req *pb.GetGlobalOperationRequest) (*pb.Operation, error) {
-	fqn := s.globalOperationFQN(req.Project, req.Operation)
+	projectID := lastComponent(req.GetProject())
+	operation := lastComponent(req.GetOperation())
+	fqn := s.globalOperationFQN(projectID, operation)
 	lro, err := s.getOperation(ctx, fqn)
 	if err != nil {
 		return nil, err
@@ -37,7 +39,9 @@ func (s *GlobalOperationsV1) Get(ctx context.Context, req *pb.GetGlobalOperation
 }
 
 func (s *GlobalOperationsV1) Wait(ctx context.Context, req *pb.WaitGlobalOperationRequest) (*pb.Operation, error) {
-	fqn := s.globalOperationFQN(req.Project, req.Operation)
+	projectID := lastComponent(req.GetProject())
+	operation := lastComponent(req.GetOperation())
+	fqn := s.globalOperationFQN(projectID, operation)
 
 	deadline := 2 * time.Minute
 	timeoutAt := time.Now().Add(deadline)
