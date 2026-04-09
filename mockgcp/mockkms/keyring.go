@@ -69,6 +69,9 @@ func (r *kmsServer) CreateKeyRing(ctx context.Context, req *pb.CreateKeyRingRequ
 	now := time.Now()
 
 	obj := proto.Clone(req.GetKeyRing()).(*pb.KeyRing)
+	if obj == nil {
+		obj = &pb.KeyRing{}
+	}
 	obj.Name = fqn
 	obj.CreateTime = timestamppb.New(now)
 

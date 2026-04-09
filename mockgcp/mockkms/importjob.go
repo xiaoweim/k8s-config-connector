@@ -84,6 +84,9 @@ func (s *kmsServer) CreateImportJob(ctx context.Context, req *pb.CreateImportJob
 	now := time.Now()
 
 	obj := proto.Clone(req.GetImportJob()).(*pb.ImportJob)
+	if obj == nil {
+		obj = &pb.ImportJob{}
+	}
 	obj.Name = fqn
 	obj.CreateTime = timestamppb.New(now)
 	obj.ExpireTime = timestamppb.New(now)

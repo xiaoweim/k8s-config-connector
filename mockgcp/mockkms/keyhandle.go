@@ -72,6 +72,9 @@ func (r *autokeyServer) CreateKeyHandle(ctx context.Context, req *pb.CreateKeyHa
 	fqn := keyHandleName.String()
 
 	obj := proto.Clone(req.GetKeyHandle()).(*pb.KeyHandle)
+	if obj == nil {
+		obj = &pb.KeyHandle{}
+	}
 	project, err := r.Projects.GetProjectByID(keyHandleName.projectID)
 	if err != nil {
 		return nil, err

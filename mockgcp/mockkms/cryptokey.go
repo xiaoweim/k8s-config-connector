@@ -64,6 +64,9 @@ func (r *kmsServer) CreateCryptoKey(ctx context.Context, req *pb.CreateCryptoKey
 	now := time.Now()
 
 	obj := proto.Clone(req.GetCryptoKey()).(*pb.CryptoKey)
+	if obj == nil {
+		obj = &pb.CryptoKey{}
+	}
 	obj.Name = fqn
 	obj.CreateTime = timestamppb.New(now)
 
