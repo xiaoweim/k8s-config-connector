@@ -27,10 +27,7 @@ type ZonalOperationsV1 struct {
 }
 
 func (s *ZonalOperationsV1) Get(ctx context.Context, req *pb.GetZoneOperationRequest) (*pb.Operation, error) {
-	projectID := lastComponent(req.GetProject())
-	zone := lastComponent(req.GetZone())
-	operation := lastComponent(req.GetOperation())
-	fqn := s.zonalOperationFQN(projectID, zone, operation)
+	fqn := s.zonalOperationFQN(req.Project, req.Zone, req.Operation)
 	lro, err := s.getOperation(ctx, fqn)
 	if err != nil {
 		return nil, err
@@ -40,10 +37,7 @@ func (s *ZonalOperationsV1) Get(ctx context.Context, req *pb.GetZoneOperationReq
 }
 
 func (s *ZonalOperationsV1) Wait(ctx context.Context, req *pb.WaitZoneOperationRequest) (*pb.Operation, error) {
-	projectID := lastComponent(req.GetProject())
-	zone := lastComponent(req.GetZone())
-	operation := lastComponent(req.GetOperation())
-	fqn := s.zonalOperationFQN(projectID, zone, operation)
+	fqn := s.zonalOperationFQN(req.Project, req.Zone, req.Operation)
 
 	deadline := 2 * time.Minute
 	timeoutAt := time.Now().Add(deadline)

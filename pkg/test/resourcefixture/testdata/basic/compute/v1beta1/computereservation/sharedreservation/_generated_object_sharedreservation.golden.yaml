@@ -11,22 +11,17 @@ metadata:
   generation: 3
   labels:
     cnrm-test: "true"
-    label-one: value-one
-  name: computereservation-${uniqueId}
+  name: ${reservationID}
   namespace: ${uniqueId}
 spec:
   description: Shared Reservation for 1 machines which will be shared with other projects.
-  resourceID: computereservation-${uniqueId}
+  resourceID: ${reservationID}
   shareSettings:
     projectMap:
     - idRef:
-        external: another-project-id-${uniqueId}
+        external: project2-${uniqueId}
       projectIDRef:
-        external: another-project-id-${uniqueId}
-    - idRef:
-        external: project-id-${uniqueId}
-      projectIDRef:
-        external: project-id-${uniqueId}
+        external: project2-${uniqueId}
     shareType: SPECIFIC_PROJECTS
   specificReservation:
     count: 1
@@ -42,5 +37,5 @@ status:
     type: Ready
   creationTimestamp: "1970-01-01T00:00:00Z"
   observedGeneration: 3
-  selfLink: https://www.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a/reservations/computereservation-${uniqueId}
+  selfLink: https://www.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a/reservations/${reservationID}
   status: READY

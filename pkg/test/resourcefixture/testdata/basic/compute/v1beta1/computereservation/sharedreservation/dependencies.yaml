@@ -12,21 +12,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-apiVersion: compute.cnrm.cloud.google.com/v1beta1
-kind: ComputeReservation
+apiVersion: resourcemanager.cnrm.cloud.google.com/v1beta1
+kind: Project
 metadata:
-  name: computereservation-${uniqueId}
+  annotations:
+    cnrm.cloud.google.com/reconcile-interval-in-seconds: "0"
+  name: project-${uniqueId}
 spec:
-  description: Shared Reservation for 1 machines which will be shared with other projects.
-  zone: us-central1-a
-  shareSettings:
-    shareType: SPECIFIC_PROJECTS
-    projectMap:
-      - idRef:
-          external: project2-${uniqueId}
-        projectIDRef:
-          external: project2-${uniqueId}
-  specificReservation:
-    count: 1
-    instanceProperties:
-      machineType: n1-standard-1
+  organizationRef:
+    external: "${TEST_ORG_ID}"
+  name: "project-${uniqueId}"
+
+---
+
+apiVersion: resourcemanager.cnrm.cloud.google.com/v1beta1
+kind: Project
+metadata:
+  annotations:
+    cnrm.cloud.google.com/reconcile-interval-in-seconds: "0"
+  name: project2-${uniqueId}
+spec:
+  organizationRef:
+    external: "${TEST_ORG_ID}"
+  name: "project2-${uniqueId}"

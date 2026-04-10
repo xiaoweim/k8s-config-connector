@@ -1,4 +1,412 @@
-GET https://compute.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a/reservations/computereservation-${uniqueId}?alt=json
+GET https://cloudresourcemanager.googleapis.com/v1/projects/project-${uniqueId}?alt=json&prettyPrint=false
+User-Agent: google-api-go-client/0.5 kcc/${kccVersion} (+https://github.com/GoogleCloudPlatform/k8s-config-connector) kcc/controller-manager/${kccVersion}
+
+403 Forbidden
+Content-Type: application/json; charset=UTF-8
+Server: ESF
+Vary: Origin
+Vary: X-Origin
+Vary: Referer
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+X-Xss-Protection: 0
+
+{
+  "error": {
+    "code": 403,
+    "message": "The caller does not have permission",
+    "status": "PERMISSION_DENIED"
+  }
+}
+
+---
+
+POST https://cloudresourcemanager.googleapis.com/v1/projects?alt=json&prettyPrint=false
+Content-Type: application/json
+User-Agent: google-api-go-client/0.5 kcc/${kccVersion} (+https://github.com/GoogleCloudPlatform/k8s-config-connector) kcc/controller-manager/${kccVersion}
+
+{
+  "labels": {
+    "cnrm-test": "true",
+    "managed-by-cnrm": "true"
+  },
+  "name": "project-${uniqueId}",
+  "parent": {
+    "id": "${organizationID}",
+    "type": "organization"
+  },
+  "projectId": "project-${uniqueId}"
+}
+
+200 OK
+Content-Type: application/json; charset=UTF-8
+Server: ESF
+Vary: Origin
+Vary: X-Origin
+Vary: Referer
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+X-Xss-Protection: 0
+
+{
+  "name": "operations/${operationID}"
+}
+
+---
+
+GET https://cloudresourcemanager.googleapis.com/v1/operations/${operationID}?alt=json
+Content-Type: application/json
+User-Agent: kcc/${kccVersion} (+https://github.com/GoogleCloudPlatform/k8s-config-connector) kcc/controller-manager/${kccVersion}
+
+200 OK
+Content-Type: application/json; charset=UTF-8
+Server: ESF
+Vary: Origin
+Vary: X-Origin
+Vary: Referer
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+X-Xss-Protection: 0
+
+{
+  "done": true,
+  "metadata": {
+    "@type": "type.googleapis.com/google.cloudresourcemanager.v1.ProjectCreationStatus",
+    "gettable": true,
+    "ready": true
+  },
+  "name": "operations/${operationID}",
+  "response": {
+    "@type": "type.googleapis.com/google.cloudresourcemanager.v1.Project",
+    "createTime": "2024-04-01T12:34:56.123456Z",
+    "labels": {
+      "cnrm-test": "true",
+      "managed-by-cnrm": "true"
+    },
+    "lifecycleState": "ACTIVE",
+    "name": "project-${uniqueId}",
+    "parent": {
+      "id": "${organizationID}",
+      "type": "organization"
+    },
+    "projectId": "project-${uniqueId}",
+    "projectNumber": "${projectNumber}"
+  }
+}
+
+---
+
+GET https://cloudresourcemanager.googleapis.com/v1/projects/project-${uniqueId}?alt=json&prettyPrint=false
+User-Agent: google-api-go-client/0.5 kcc/${kccVersion} (+https://github.com/GoogleCloudPlatform/k8s-config-connector) kcc/controller-manager/${kccVersion}
+
+200 OK
+Content-Type: application/json; charset=UTF-8
+Server: ESF
+Vary: Origin
+Vary: X-Origin
+Vary: Referer
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+X-Xss-Protection: 0
+
+{
+  "createTime": "2024-04-01T12:34:56.123456Z",
+  "labels": {
+    "cnrm-test": "true",
+    "managed-by-cnrm": "true"
+  },
+  "lifecycleState": "ACTIVE",
+  "name": "project-${uniqueId}",
+  "parent": {
+    "id": "${organizationID}",
+    "type": "organization"
+  },
+  "projectId": "project-${uniqueId}",
+  "projectNumber": "${projectNumber}"
+}
+
+---
+
+GET https://cloudbilling.googleapis.com/v1/projects/project-${uniqueId}/billingInfo?alt=json&prettyPrint=false
+User-Agent: google-api-go-client/0.5 kcc/${kccVersion} (+https://github.com/GoogleCloudPlatform/k8s-config-connector) kcc/controller-manager/${kccVersion}
+
+200 OK
+Content-Type: application/json; charset=UTF-8
+Server: ESF
+Vary: Origin
+Vary: X-Origin
+Vary: Referer
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+X-Xss-Protection: 0
+
+{
+  "billingAccountName": "",
+  "billingEnabled": false,
+  "name": "projects/project-${uniqueId}/billingInfo",
+  "projectId": "project-${uniqueId}"
+}
+
+---
+
+GET https://cloudresourcemanager.googleapis.com/v1/projects/project-${uniqueId}?alt=json&prettyPrint=false
+User-Agent: google-api-go-client/0.5 kcc/${kccVersion} (+https://github.com/GoogleCloudPlatform/k8s-config-connector) kcc/controller-manager/${kccVersion}
+
+200 OK
+Content-Type: application/json; charset=UTF-8
+Server: ESF
+Vary: Origin
+Vary: X-Origin
+Vary: Referer
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+X-Xss-Protection: 0
+
+{
+  "createTime": "2024-04-01T12:34:56.123456Z",
+  "labels": {
+    "cnrm-test": "true",
+    "managed-by-cnrm": "true"
+  },
+  "lifecycleState": "ACTIVE",
+  "name": "project-${uniqueId}",
+  "parent": {
+    "id": "${organizationID}",
+    "type": "organization"
+  },
+  "projectId": "project-${uniqueId}",
+  "projectNumber": "${projectNumber}"
+}
+
+---
+
+GET https://cloudbilling.googleapis.com/v1/projects/project-${uniqueId}/billingInfo?alt=json&prettyPrint=false
+User-Agent: google-api-go-client/0.5 kcc/${kccVersion} (+https://github.com/GoogleCloudPlatform/k8s-config-connector) kcc/controller-manager/${kccVersion}
+
+200 OK
+Content-Type: application/json; charset=UTF-8
+Server: ESF
+Vary: Origin
+Vary: X-Origin
+Vary: Referer
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+X-Xss-Protection: 0
+
+{
+  "billingAccountName": "",
+  "billingEnabled": false,
+  "name": "projects/project-${uniqueId}/billingInfo",
+  "projectId": "project-${uniqueId}"
+}
+
+---
+
+GET https://cloudresourcemanager.googleapis.com/v1/projects/project2-${uniqueId}?alt=json&prettyPrint=false
+User-Agent: google-api-go-client/0.5 kcc/${kccVersion} (+https://github.com/GoogleCloudPlatform/k8s-config-connector) kcc/controller-manager/${kccVersion}
+
+403 Forbidden
+Content-Type: application/json; charset=UTF-8
+Server: ESF
+Vary: Origin
+Vary: X-Origin
+Vary: Referer
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+X-Xss-Protection: 0
+
+{
+  "error": {
+    "code": 403,
+    "message": "The caller does not have permission",
+    "status": "PERMISSION_DENIED"
+  }
+}
+
+---
+
+POST https://cloudresourcemanager.googleapis.com/v1/projects?alt=json&prettyPrint=false
+Content-Type: application/json
+User-Agent: google-api-go-client/0.5 kcc/${kccVersion} (+https://github.com/GoogleCloudPlatform/k8s-config-connector) kcc/controller-manager/${kccVersion}
+
+{
+  "labels": {
+    "cnrm-test": "true",
+    "managed-by-cnrm": "true"
+  },
+  "name": "project2-${uniqueId}",
+  "parent": {
+    "id": "${organizationID}",
+    "type": "organization"
+  },
+  "projectId": "project2-${uniqueId}"
+}
+
+200 OK
+Content-Type: application/json; charset=UTF-8
+Server: ESF
+Vary: Origin
+Vary: X-Origin
+Vary: Referer
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+X-Xss-Protection: 0
+
+{
+  "name": "operations/${operationID}"
+}
+
+---
+
+GET https://cloudresourcemanager.googleapis.com/v1/operations/${operationID}?alt=json
+Content-Type: application/json
+User-Agent: kcc/${kccVersion} (+https://github.com/GoogleCloudPlatform/k8s-config-connector) kcc/controller-manager/${kccVersion}
+
+200 OK
+Content-Type: application/json; charset=UTF-8
+Server: ESF
+Vary: Origin
+Vary: X-Origin
+Vary: Referer
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+X-Xss-Protection: 0
+
+{
+  "done": true,
+  "metadata": {
+    "@type": "type.googleapis.com/google.cloudresourcemanager.v1.ProjectCreationStatus",
+    "gettable": true,
+    "ready": true
+  },
+  "name": "operations/${operationID}",
+  "response": {
+    "@type": "type.googleapis.com/google.cloudresourcemanager.v1.Project",
+    "createTime": "2024-04-01T12:34:56.123456Z",
+    "labels": {
+      "cnrm-test": "true",
+      "managed-by-cnrm": "true"
+    },
+    "lifecycleState": "ACTIVE",
+    "name": "project2-${uniqueId}",
+    "parent": {
+      "id": "${organizationID}",
+      "type": "organization"
+    },
+    "projectId": "project2-${uniqueId}",
+    "projectNumber": "${projectNumber}"
+  }
+}
+
+---
+
+GET https://cloudresourcemanager.googleapis.com/v1/projects/project2-${uniqueId}?alt=json&prettyPrint=false
+User-Agent: google-api-go-client/0.5 kcc/${kccVersion} (+https://github.com/GoogleCloudPlatform/k8s-config-connector) kcc/controller-manager/${kccVersion}
+
+200 OK
+Content-Type: application/json; charset=UTF-8
+Server: ESF
+Vary: Origin
+Vary: X-Origin
+Vary: Referer
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+X-Xss-Protection: 0
+
+{
+  "createTime": "2024-04-01T12:34:56.123456Z",
+  "labels": {
+    "cnrm-test": "true",
+    "managed-by-cnrm": "true"
+  },
+  "lifecycleState": "ACTIVE",
+  "name": "project2-${uniqueId}",
+  "parent": {
+    "id": "${organizationID}",
+    "type": "organization"
+  },
+  "projectId": "project2-${uniqueId}",
+  "projectNumber": "${projectNumber}"
+}
+
+---
+
+GET https://cloudbilling.googleapis.com/v1/projects/project2-${uniqueId}/billingInfo?alt=json&prettyPrint=false
+User-Agent: google-api-go-client/0.5 kcc/${kccVersion} (+https://github.com/GoogleCloudPlatform/k8s-config-connector) kcc/controller-manager/${kccVersion}
+
+200 OK
+Content-Type: application/json; charset=UTF-8
+Server: ESF
+Vary: Origin
+Vary: X-Origin
+Vary: Referer
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+X-Xss-Protection: 0
+
+{
+  "billingAccountName": "",
+  "billingEnabled": false,
+  "name": "projects/project2-${uniqueId}/billingInfo",
+  "projectId": "project2-${uniqueId}"
+}
+
+---
+
+GET https://cloudresourcemanager.googleapis.com/v1/projects/project2-${uniqueId}?alt=json&prettyPrint=false
+User-Agent: google-api-go-client/0.5 kcc/${kccVersion} (+https://github.com/GoogleCloudPlatform/k8s-config-connector) kcc/controller-manager/${kccVersion}
+
+200 OK
+Content-Type: application/json; charset=UTF-8
+Server: ESF
+Vary: Origin
+Vary: X-Origin
+Vary: Referer
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+X-Xss-Protection: 0
+
+{
+  "createTime": "2024-04-01T12:34:56.123456Z",
+  "labels": {
+    "cnrm-test": "true",
+    "managed-by-cnrm": "true"
+  },
+  "lifecycleState": "ACTIVE",
+  "name": "project2-${uniqueId}",
+  "parent": {
+    "id": "${organizationID}",
+    "type": "organization"
+  },
+  "projectId": "project2-${uniqueId}",
+  "projectNumber": "${projectNumber}"
+}
+
+---
+
+GET https://cloudbilling.googleapis.com/v1/projects/project2-${uniqueId}/billingInfo?alt=json&prettyPrint=false
+User-Agent: google-api-go-client/0.5 kcc/${kccVersion} (+https://github.com/GoogleCloudPlatform/k8s-config-connector) kcc/controller-manager/${kccVersion}
+
+200 OK
+Content-Type: application/json; charset=UTF-8
+Server: ESF
+Vary: Origin
+Vary: X-Origin
+Vary: Referer
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+X-Xss-Protection: 0
+
+{
+  "billingAccountName": "",
+  "billingEnabled": false,
+  "name": "projects/project2-${uniqueId}/billingInfo",
+  "projectId": "project2-${uniqueId}"
+}
+
+---
+
+GET https://compute.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a/reservations/${reservationID}?alt=json
 Content-Type: application/json
 User-Agent: kcc/${kccVersion} (+https://github.com/GoogleCloudPlatform/k8s-config-connector) kcc/controller-manager/${kccVersion}
 
@@ -18,11 +426,11 @@ X-Xss-Protection: 0
     "errors": [
       {
         "domain": "global",
-        "message": "The resource 'projects/${projectId}/zones/us-central1-a/reservations/computereservation-${uniqueId}' was not found",
+        "message": "The resource 'projects/${projectId}/zones/us-central1-a/reservations/${reservationID}' was not found",
         "reason": "notFound"
       }
     ],
-    "message": "The resource 'projects/${projectId}/zones/us-central1-a/reservations/computereservation-${uniqueId}' was not found"
+    "message": "The resource 'projects/${projectId}/zones/us-central1-a/reservations/${reservationID}' was not found"
   }
 }
 
@@ -34,11 +442,11 @@ User-Agent: kcc/${kccVersion} (+https://github.com/GoogleCloudPlatform/k8s-confi
 
 {
   "description": "Shared Reservation for 1 machines which will be shared with other projects.",
-  "name": "computereservation-${uniqueId}",
+  "name": "${reservationID}",
   "shareSettings": {
     "projectMap": {
-      "project-id-${uniqueId}": {
-        "projectId": "project-id-${uniqueId}"
+      "project-${uniqueId}": {
+        "projectId": "project-${uniqueId}"
       }
     },
     "shareType": "SPECIFIC_PROJECTS"
@@ -67,15 +475,52 @@ X-Xss-Protection: 0
   "insertTime": "2024-04-01T12:34:56.123456Z",
   "kind": "compute#operation",
   "name": "${operationID}",
+  "operationType": "insert",
   "progress": 0,
   "selfLink": "https://www.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a/operations/${operationID}",
   "startTime": "2024-04-01T12:34:56.123456Z",
-  "status": "DONE"
+  "status": "RUNNING",
+  "targetId": "${reservationID}",
+  "targetLink": "https://www.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a/reservations/${reservationID}",
+  "user": "user@example.com",
+  "zone": "https://www.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a"
 }
 
 ---
 
-GET https://compute.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a/reservations/computereservation-${uniqueId}?alt=json
+GET https://compute.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a/operations/${operationID}?alt=json&prettyPrint=false
+User-Agent: google-api-go-client/0.5 kcc/${kccVersion} (+https://github.com/GoogleCloudPlatform/k8s-config-connector) kcc/controller-manager/${kccVersion}
+
+200 OK
+Content-Type: application/json; charset=UTF-8
+Server: ESF
+Vary: Origin
+Vary: X-Origin
+Vary: Referer
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+X-Xss-Protection: 0
+
+{
+  "endTime": "2024-04-01T12:34:56.123456Z",
+  "id": "000000000000000000000",
+  "insertTime": "2024-04-01T12:34:56.123456Z",
+  "kind": "compute#operation",
+  "name": "${operationID}",
+  "operationType": "insert",
+  "progress": 100,
+  "selfLink": "https://www.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a/operations/${operationID}",
+  "startTime": "2024-04-01T12:34:56.123456Z",
+  "status": "DONE",
+  "targetId": "${reservationID}",
+  "targetLink": "https://www.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a/reservations/${reservationID}",
+  "user": "user@example.com",
+  "zone": "https://www.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a"
+}
+
+---
+
+GET https://compute.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a/reservations/${reservationID}?alt=json
 Content-Type: application/json
 User-Agent: kcc/${kccVersion} (+https://github.com/GoogleCloudPlatform/k8s-config-connector) kcc/controller-manager/${kccVersion}
 
@@ -94,12 +539,12 @@ X-Xss-Protection: 0
   "description": "Shared Reservation for 1 machines which will be shared with other projects.",
   "id": "000000000000000000000",
   "kind": "compute#reservation",
-  "name": "computereservation-${uniqueId}",
-  "selfLink": "https://www.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a/reservations/computereservation-${uniqueId}",
+  "name": "${reservationID}",
+  "selfLink": "https://www.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a/reservations/${reservationID}",
   "shareSettings": {
     "projectMap": {
-      "project-id-${uniqueId}": {
-        "projectId": "project-id-${uniqueId}"
+      "project-${uniqueId}": {
+        "projectId": "project-${uniqueId}"
       }
     },
     "shareType": "SPECIFIC_PROJECTS"
@@ -117,16 +562,16 @@ X-Xss-Protection: 0
 
 ---
 
-PATCH https://compute.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a/reservations/computereservation-${uniqueId}?alt=json&paths=shareSettings.projectMap.project-id-${uniqueId}
+PATCH https://compute.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a/reservations/${reservationID}?alt=json&paths=shareSettings.projectMap.project-${uniqueId}
 Content-Type: application/json
 User-Agent: kcc/${kccVersion} (+https://github.com/GoogleCloudPlatform/k8s-config-connector) kcc/controller-manager/${kccVersion}
 
 {
-  "name": "computereservation-${uniqueId}",
+  "name": "${reservationID}",
   "shareSettings": {
     "projectMap": {
-      "project-id-${uniqueId}": {
-        "projectId": "project-id-${uniqueId}"
+      "project-${uniqueId}": {
+        "projectId": "project-${uniqueId}"
       }
     },
     "shareType": "SPECIFIC_PROJECTS"
@@ -149,15 +594,52 @@ X-Xss-Protection: 0
   "insertTime": "2024-04-01T12:34:56.123456Z",
   "kind": "compute#operation",
   "name": "${operationID}",
+  "operationType": "update",
   "progress": 0,
   "selfLink": "https://www.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a/operations/${operationID}",
   "startTime": "2024-04-01T12:34:56.123456Z",
-  "status": "DONE"
+  "status": "RUNNING",
+  "targetId": "${reservationID}",
+  "targetLink": "https://www.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a/reservations/${reservationID}",
+  "user": "user@example.com",
+  "zone": "https://www.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a"
 }
 
 ---
 
-GET https://compute.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a/reservations/computereservation-${uniqueId}?alt=json
+GET https://compute.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a/operations/${operationID}?alt=json&prettyPrint=false
+User-Agent: google-api-go-client/0.5 kcc/${kccVersion} (+https://github.com/GoogleCloudPlatform/k8s-config-connector) kcc/controller-manager/${kccVersion}
+
+200 OK
+Content-Type: application/json; charset=UTF-8
+Server: ESF
+Vary: Origin
+Vary: X-Origin
+Vary: Referer
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+X-Xss-Protection: 0
+
+{
+  "endTime": "2024-04-01T12:34:56.123456Z",
+  "id": "000000000000000000000",
+  "insertTime": "2024-04-01T12:34:56.123456Z",
+  "kind": "compute#operation",
+  "name": "${operationID}",
+  "operationType": "update",
+  "progress": 100,
+  "selfLink": "https://www.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a/operations/${operationID}",
+  "startTime": "2024-04-01T12:34:56.123456Z",
+  "status": "DONE",
+  "targetId": "${reservationID}",
+  "targetLink": "https://www.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a/reservations/${reservationID}",
+  "user": "user@example.com",
+  "zone": "https://www.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a"
+}
+
+---
+
+GET https://compute.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a/reservations/${reservationID}?alt=json
 Content-Type: application/json
 User-Agent: kcc/${kccVersion} (+https://github.com/GoogleCloudPlatform/k8s-config-connector) kcc/controller-manager/${kccVersion}
 
@@ -176,12 +658,12 @@ X-Xss-Protection: 0
   "description": "Shared Reservation for 1 machines which will be shared with other projects.",
   "id": "000000000000000000000",
   "kind": "compute#reservation",
-  "name": "computereservation-${uniqueId}",
-  "selfLink": "https://www.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a/reservations/computereservation-${uniqueId}",
+  "name": "${reservationID}",
+  "selfLink": "https://www.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a/reservations/${reservationID}",
   "shareSettings": {
     "projectMap": {
-      "project-id-${uniqueId}": {
-        "projectId": "project-id-${uniqueId}"
+      "project-${uniqueId}": {
+        "projectId": "project-${uniqueId}"
       }
     },
     "shareType": "SPECIFIC_PROJECTS"
@@ -199,19 +681,16 @@ X-Xss-Protection: 0
 
 ---
 
-PATCH https://compute.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a/reservations/computereservation-${uniqueId}?alt=json&paths=shareSettings.projectMap.project-id-${uniqueId}&paths=shareSettings.projectMap.another-project-id-${uniqueId}
+PATCH https://compute.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a/reservations/${reservationID}?alt=json&paths=shareSettings.projectMap.project2-${uniqueId}
 Content-Type: application/json
 User-Agent: kcc/${kccVersion} (+https://github.com/GoogleCloudPlatform/k8s-config-connector) kcc/controller-manager/${kccVersion}
 
 {
-  "name": "computereservation-${uniqueId}",
+  "name": "${reservationID}",
   "shareSettings": {
     "projectMap": {
-      "another-project-id-${uniqueId}": {
-        "projectId": "another-project-id-${uniqueId}"
-      },
-      "project-id-${uniqueId}": {
-        "projectId": "project-id-${uniqueId}"
+      "project2-${uniqueId}": {
+        "projectId": "project2-${uniqueId}"
       }
     },
     "shareType": "SPECIFIC_PROJECTS"
@@ -234,15 +713,52 @@ X-Xss-Protection: 0
   "insertTime": "2024-04-01T12:34:56.123456Z",
   "kind": "compute#operation",
   "name": "${operationID}",
+  "operationType": "update",
   "progress": 0,
   "selfLink": "https://www.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a/operations/${operationID}",
   "startTime": "2024-04-01T12:34:56.123456Z",
-  "status": "DONE"
+  "status": "RUNNING",
+  "targetId": "${reservationID}",
+  "targetLink": "https://www.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a/reservations/${reservationID}",
+  "user": "user@example.com",
+  "zone": "https://www.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a"
 }
 
 ---
 
-GET https://compute.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a/reservations/computereservation-${uniqueId}?alt=json
+GET https://compute.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a/operations/${operationID}?alt=json&prettyPrint=false
+User-Agent: google-api-go-client/0.5 kcc/${kccVersion} (+https://github.com/GoogleCloudPlatform/k8s-config-connector) kcc/controller-manager/${kccVersion}
+
+200 OK
+Content-Type: application/json; charset=UTF-8
+Server: ESF
+Vary: Origin
+Vary: X-Origin
+Vary: Referer
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+X-Xss-Protection: 0
+
+{
+  "endTime": "2024-04-01T12:34:56.123456Z",
+  "id": "000000000000000000000",
+  "insertTime": "2024-04-01T12:34:56.123456Z",
+  "kind": "compute#operation",
+  "name": "${operationID}",
+  "operationType": "update",
+  "progress": 100,
+  "selfLink": "https://www.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a/operations/${operationID}",
+  "startTime": "2024-04-01T12:34:56.123456Z",
+  "status": "DONE",
+  "targetId": "${reservationID}",
+  "targetLink": "https://www.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a/reservations/${reservationID}",
+  "user": "user@example.com",
+  "zone": "https://www.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a"
+}
+
+---
+
+GET https://compute.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a/reservations/${reservationID}?alt=json
 Content-Type: application/json
 User-Agent: kcc/${kccVersion} (+https://github.com/GoogleCloudPlatform/k8s-config-connector) kcc/controller-manager/${kccVersion}
 
@@ -261,15 +777,12 @@ X-Xss-Protection: 0
   "description": "Shared Reservation for 1 machines which will be shared with other projects.",
   "id": "000000000000000000000",
   "kind": "compute#reservation",
-  "name": "computereservation-${uniqueId}",
-  "selfLink": "https://www.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a/reservations/computereservation-${uniqueId}",
+  "name": "${reservationID}",
+  "selfLink": "https://www.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a/reservations/${reservationID}",
   "shareSettings": {
     "projectMap": {
-      "another-project-id-${uniqueId}": {
-        "projectId": "another-project-id-${uniqueId}"
-      },
-      "project-id-${uniqueId}": {
-        "projectId": "project-id-${uniqueId}"
+      "project2-${uniqueId}": {
+        "projectId": "project2-${uniqueId}"
       }
     },
     "shareType": "SPECIFIC_PROJECTS"
@@ -287,7 +800,7 @@ X-Xss-Protection: 0
 
 ---
 
-DELETE https://compute.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a/reservations/computereservation-${uniqueId}?alt=json
+DELETE https://compute.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a/reservations/${reservationID}?alt=json
 Content-Type: application/json
 User-Agent: kcc/${kccVersion} (+https://github.com/GoogleCloudPlatform/k8s-config-connector) kcc/controller-manager/${kccVersion}
 
@@ -306,8 +819,185 @@ X-Xss-Protection: 0
   "insertTime": "2024-04-01T12:34:56.123456Z",
   "kind": "compute#operation",
   "name": "${operationID}",
+  "operationType": "delete",
   "progress": 0,
   "selfLink": "https://www.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a/operations/${operationID}",
   "startTime": "2024-04-01T12:34:56.123456Z",
-  "status": "DONE"
+  "status": "RUNNING",
+  "targetId": "${reservationID}",
+  "targetLink": "https://www.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a/reservations/${reservationID}",
+  "user": "user@example.com",
+  "zone": "https://www.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a"
 }
+
+---
+
+GET https://compute.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a/operations/${operationID}?alt=json&prettyPrint=false
+User-Agent: google-api-go-client/0.5 kcc/${kccVersion} (+https://github.com/GoogleCloudPlatform/k8s-config-connector) kcc/controller-manager/${kccVersion}
+
+200 OK
+Content-Type: application/json; charset=UTF-8
+Server: ESF
+Vary: Origin
+Vary: X-Origin
+Vary: Referer
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+X-Xss-Protection: 0
+
+{
+  "endTime": "2024-04-01T12:34:56.123456Z",
+  "id": "000000000000000000000",
+  "insertTime": "2024-04-01T12:34:56.123456Z",
+  "kind": "compute#operation",
+  "name": "${operationID}",
+  "operationType": "delete",
+  "progress": 100,
+  "selfLink": "https://www.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a/operations/${operationID}",
+  "startTime": "2024-04-01T12:34:56.123456Z",
+  "status": "DONE",
+  "targetId": "${reservationID}",
+  "targetLink": "https://www.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a/reservations/${reservationID}",
+  "user": "user@example.com",
+  "zone": "https://www.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a"
+}
+
+---
+
+GET https://cloudresourcemanager.googleapis.com/v1/projects/project2-${uniqueId}?alt=json&prettyPrint=false
+User-Agent: google-api-go-client/0.5 kcc/${kccVersion} (+https://github.com/GoogleCloudPlatform/k8s-config-connector) kcc/controller-manager/${kccVersion}
+
+200 OK
+Content-Type: application/json; charset=UTF-8
+Server: ESF
+Vary: Origin
+Vary: X-Origin
+Vary: Referer
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+X-Xss-Protection: 0
+
+{
+  "createTime": "2024-04-01T12:34:56.123456Z",
+  "labels": {
+    "cnrm-test": "true",
+    "managed-by-cnrm": "true"
+  },
+  "lifecycleState": "ACTIVE",
+  "name": "project2-${uniqueId}",
+  "parent": {
+    "id": "${organizationID}",
+    "type": "organization"
+  },
+  "projectId": "project2-${uniqueId}",
+  "projectNumber": "${projectNumber}"
+}
+
+---
+
+GET https://cloudbilling.googleapis.com/v1/projects/project2-${uniqueId}/billingInfo?alt=json&prettyPrint=false
+User-Agent: google-api-go-client/0.5 kcc/${kccVersion} (+https://github.com/GoogleCloudPlatform/k8s-config-connector) kcc/controller-manager/${kccVersion}
+
+200 OK
+Content-Type: application/json; charset=UTF-8
+Server: ESF
+Vary: Origin
+Vary: X-Origin
+Vary: Referer
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+X-Xss-Protection: 0
+
+{
+  "billingAccountName": "",
+  "billingEnabled": false,
+  "name": "projects/project2-${uniqueId}/billingInfo",
+  "projectId": "project2-${uniqueId}"
+}
+
+---
+
+DELETE https://cloudresourcemanager.googleapis.com/v1/projects/project2-${uniqueId}?alt=json&prettyPrint=false
+User-Agent: google-api-go-client/0.5 kcc/${kccVersion} (+https://github.com/GoogleCloudPlatform/k8s-config-connector) kcc/controller-manager/${kccVersion}
+
+200 OK
+Content-Type: application/json; charset=UTF-8
+Server: ESF
+Vary: Origin
+Vary: X-Origin
+Vary: Referer
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+X-Xss-Protection: 0
+
+{}
+
+---
+
+GET https://cloudresourcemanager.googleapis.com/v1/projects/project-${uniqueId}?alt=json&prettyPrint=false
+User-Agent: google-api-go-client/0.5 kcc/${kccVersion} (+https://github.com/GoogleCloudPlatform/k8s-config-connector) kcc/controller-manager/${kccVersion}
+
+200 OK
+Content-Type: application/json; charset=UTF-8
+Server: ESF
+Vary: Origin
+Vary: X-Origin
+Vary: Referer
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+X-Xss-Protection: 0
+
+{
+  "createTime": "2024-04-01T12:34:56.123456Z",
+  "labels": {
+    "cnrm-test": "true",
+    "managed-by-cnrm": "true"
+  },
+  "lifecycleState": "ACTIVE",
+  "name": "project-${uniqueId}",
+  "parent": {
+    "id": "${organizationID}",
+    "type": "organization"
+  },
+  "projectId": "project-${uniqueId}",
+  "projectNumber": "${projectNumber}"
+}
+
+---
+
+GET https://cloudbilling.googleapis.com/v1/projects/project-${uniqueId}/billingInfo?alt=json&prettyPrint=false
+User-Agent: google-api-go-client/0.5 kcc/${kccVersion} (+https://github.com/GoogleCloudPlatform/k8s-config-connector) kcc/controller-manager/${kccVersion}
+
+200 OK
+Content-Type: application/json; charset=UTF-8
+Server: ESF
+Vary: Origin
+Vary: X-Origin
+Vary: Referer
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+X-Xss-Protection: 0
+
+{
+  "billingAccountName": "",
+  "billingEnabled": false,
+  "name": "projects/project-${uniqueId}/billingInfo",
+  "projectId": "project-${uniqueId}"
+}
+
+---
+
+DELETE https://cloudresourcemanager.googleapis.com/v1/projects/project-${uniqueId}?alt=json&prettyPrint=false
+User-Agent: google-api-go-client/0.5 kcc/${kccVersion} (+https://github.com/GoogleCloudPlatform/k8s-config-connector) kcc/controller-manager/${kccVersion}
+
+200 OK
+Content-Type: application/json; charset=UTF-8
+Server: ESF
+Vary: Origin
+Vary: X-Origin
+Vary: Referer
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+X-Xss-Protection: 0
+
+{}
