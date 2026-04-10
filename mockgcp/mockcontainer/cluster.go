@@ -108,6 +108,7 @@ func (s *ClusterManagerV1) CreateCluster(ctx context.Context, req *pb.CreateClus
 	if obj.NetworkConfig.ServiceExternalIpsConfig == nil {
 		obj.NetworkConfig.ServiceExternalIpsConfig = &pb.ServiceExternalIPsConfig{}
 	}
+	obj.NetworkConfig.Subnetwork = strings.TrimPrefix(obj.NetworkConfig.Subnetwork, "https://www.googleapis.com/compute/v1/")
 
 	// On output, Network and Subnetwork show the ID instead of the full name
 	obj.Network = lastComponent(obj.Network)

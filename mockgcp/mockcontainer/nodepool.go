@@ -155,6 +155,7 @@ func (s *ClusterManagerV1) populateNodePoolDefaults(project *projects.ProjectDat
 	if obj.NetworkConfig.Subnetwork == "" {
 		obj.NetworkConfig.Subnetwork = cluster.NetworkConfig.Subnetwork
 	}
+	obj.NetworkConfig.Subnetwork = strings.TrimPrefix(obj.NetworkConfig.Subnetwork, "https://www.googleapis.com/compute/v1/")
 
 	if obj.PodIpv4CidrSize == 0 {
 		obj.PodIpv4CidrSize = 24
