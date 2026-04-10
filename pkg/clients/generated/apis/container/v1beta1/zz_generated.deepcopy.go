@@ -3645,6 +3645,11 @@ func (in *NodepoolNetworkConfig) DeepCopyInto(out *NodepoolNetworkConfig) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.SubnetworkRef != nil {
+		in, out := &in.SubnetworkRef, &out.SubnetworkRef
+		*out = new(v1alpha1.ResourceRef)
+		**out = **in
+	}
 	return
 }
 

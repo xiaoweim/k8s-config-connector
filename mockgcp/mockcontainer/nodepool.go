@@ -363,6 +363,33 @@ func (s *ClusterManagerV1) UpdateNodePool(ctx context.Context, req *pb.UpdateNod
 	})
 }
 
+func (s *ClusterManagerV1) SetNodePoolSize(ctx context.Context, req *pb.SetNodePoolSizeRequest) (*pb.Operation, error) {
+	name, err := s.parseNodePoolName(req.Name)
+	if err != nil {
+		return nil, err
+	}
+
+	fqn := name.String()
+	obj := &pb.NodePool{}
+	if err := s.storage.Get(ctx, fqn, obj); err != nil {
+		return nil, err
+	}
+
+	obj.InitialNodeCount = req.NodeCount
+
+	if err := s.storage.Update(ctx, fqn, obj); err != nil {
+		return nil, err
+	}
+
+	op := &pb.Operation{
+		Zone:       name.Location,
+		TargetLink: obj.SelfLink,
+	}
+	return s.startLRO(ctx, name.Project, op, func() (proto.Message, error) {
+		return obj, nil
+	})
+}
+
 func (s *ClusterManagerV1) DeleteNodePool(ctx context.Context, req *pb.DeleteNodePoolRequest) (*pb.Operation, error) {
 	name, err := s.parseNodePoolName(req.Name)
 	if err != nil {
