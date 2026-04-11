@@ -154,10 +154,17 @@ func (s *ClusterManagerV1) CreateCluster(ctx context.Context, req *pb.CreateClus
 		return nil, err
 	}
 
+	if err := s.createMockIGM(ctx, name.Project, obj.InstanceGroupUrls, obj.CurrentNodeCount); err != nil {
+		klog.Errorf("failed to create mock IGM: %v", err)
+	}
+
 	for _, nodePool := range obj.NodePools {
 		nodePoolFqn := name.String() + "/nodePools/" + nodePool.GetName()
 		if err := s.storage.Create(ctx, nodePoolFqn, nodePool); err != nil {
 			return nil, err
+		}
+		if err := s.createMockIGM(ctx, name.Project, nodePool.InstanceGroupUrls, nodePool.InitialNodeCount); err != nil {
+			klog.Errorf("failed to create mock IGM: %v", err)
 		}
 	}
 

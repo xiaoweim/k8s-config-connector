@@ -26,7 +26,9 @@ import (
 	"k8s.io/klog/v2"
 
 	"github.com/GoogleCloudPlatform/k8s-config-connector/mockgcp/common/projects"
+	computepb "github.com/GoogleCloudPlatform/k8s-config-connector/mockgcp/generated/mockgcp/cloud/compute/v1"
 	pb "github.com/GoogleCloudPlatform/k8s-config-connector/mockgcp/generated/mockgcp/container/v1beta1"
+	"github.com/GoogleCloudPlatform/k8s-config-connector/mockgcp/mockcompute"
 )
 
 func (s *ClusterManagerV1) GetNodePool(ctx context.Context, req *pb.GetNodePoolRequest) (*pb.NodePool, error) {
@@ -70,6 +72,10 @@ func (s *ClusterManagerV1) CreateNodePool(ctx context.Context, req *pb.CreateNod
 
 	if err := s.storage.Create(ctx, fqn, obj); err != nil {
 		return nil, err
+	}
+
+	if err := s.createMockIGM(ctx, name.Project, obj.InstanceGroupUrls, obj.InitialNodeCount); err != nil {
+		klog.Errorf("failed to create mock IGM: %v", err)
 	}
 
 	op := &pb.Operation{
@@ -404,6 +410,10 @@ func (s *ClusterManagerV1) DeleteNodePool(ctx context.Context, req *pb.DeleteNod
 		return nil, err
 	}
 
+	if err := s.deleteMockIGM(ctx, oldObj.InstanceGroupUrls); err != nil {
+		klog.Errorf("failed to delete mock IGM: %v", err)
+	}
+
 	op := &pb.Operation{
 		Zone:          name.Location,
 		OperationType: pb.Operation_DELETE_NODE_POOL,
@@ -455,4 +465,78 @@ func (s *MockService) parseNodePoolName(name string) (*nodePoolName, error) {
 	} else {
 		return nil, status.Errorf(codes.InvalidArgument, "name %q is not valid", name)
 	}
+}
+
+func (s *ClusterManagerV1) createMockIGM(ctx context.Context, project *projects.ProjectData, instanceGroupUrls []string, initialNodeCount int32) error {
+	for _, igmUrl := range instanceGroupUrls {
+		// Extract FQN from URL
+		// https://www.googleapis.com/compute/v1/projects/%s/zones/%s/instanceGroupManagers/%s
+		prefix := "https://www.googleapis.com/compute/v1/"
+		if !strings.HasPrefix(igmUrl, prefix) {
+			continue
+		}
+		fqn := strings.TrimPrefix(igmUrl, prefix)
+
+		tokens := strings.Split(fqn, "/")
+		if len(tokens) < 6 {
+			continue
+		}
+		igmName := tokens[5]
+		zone := tokens[3]
+
+		igm := &computepb.InstanceGroupManager{
+			Name:             PtrTo(igmName),
+			BaseInstanceName: PtrTo(strings.TrimSuffix(igmName, "-grp")),
+			TargetSize:       PtrTo(initialNodeCount),
+			SelfLink:         PtrTo(igmUrl),
+			Zone:             PtrTo(mockcompute.BuildComputeSelfLink(ctx, fmt.Sprintf("projects/%s/zones/%s", project.ID, zone))),
+			Status: &computepb.InstanceGroupManagerStatus{
+				IsStable: PtrTo(true),
+			},
+			CurrentActions: &computepb.InstanceGroupManagerActionsSummary{
+				None: PtrTo(initialNodeCount),
+			},
+			Kind:              PtrTo("compute#instanceGroupManager"),
+			Id:                PtrTo(uint64(123456789012)),
+			CreationTimestamp: PtrTo("2024-04-01T12:34:56.123456Z"),
+			Fingerprint:       PtrTo("abcdef0123A="),
+			UpdatePolicy: &computepb.InstanceGroupManagerUpdatePolicy{
+				Type: PtrTo("OPPORTUNISTIC"),
+				MaxSurge: &computepb.FixedOrPercent{
+					Fixed: PtrTo(int32(1)),
+				},
+				MaxUnavailable: &computepb.FixedOrPercent{
+					Fixed: PtrTo(int32(1)),
+				},
+				MinimalAction:     PtrTo("REPLACE"),
+				ReplacementMethod: PtrTo("SUBSTITUTE"),
+			},
+			InstanceLifecyclePolicy: &computepb.InstanceGroupManagerInstanceLifecyclePolicy{
+				DefaultActionOnFailure: PtrTo("REPAIR"),
+				ForceUpdateOnRepair:    PtrTo("YES"),
+			},
+			InstanceGroup:    PtrTo(mockcompute.BuildComputeSelfLink(ctx, fmt.Sprintf("projects/%s/zones/%s/instanceGroups/%s", project.ID, zone, igmName))),
+			InstanceTemplate: PtrTo(mockcompute.BuildComputeSelfLink(ctx, fmt.Sprintf("projects/%s/global/instanceTemplates/%s", project.ID, strings.TrimSuffix(igmName, "-grp")))),
+		}
+
+		if err := s.storage.Create(ctx, fqn, igm); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (s *ClusterManagerV1) deleteMockIGM(ctx context.Context, instanceGroupUrls []string) error {
+	for _, igmUrl := range instanceGroupUrls {
+		prefix := "https://www.googleapis.com/compute/v1/"
+		if !strings.HasPrefix(igmUrl, prefix) {
+			continue
+		}
+		fqn := strings.TrimPrefix(igmUrl, prefix)
+
+		if err := s.storage.Delete(ctx, fqn, &computepb.InstanceGroupManager{}); err != nil {
+			return err
+		}
+	}
+	return nil
 }
