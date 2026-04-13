@@ -56,9 +56,9 @@ func TestCheckGCPRequestIsAllowed(t *testing.T) {
 			allowed:  true,
 		},
 		{
-			name:    "POST testIamPermissions allowed",
+			name:    "POST getOrgPolicy allowed",
 			method:  "POST",
-			path:    "/v1/projects/foo:testIamPermissions",
+			path:    "/v1/projects/foo:getOrgPolicy",
 			allowed: true,
 		},
 		{
