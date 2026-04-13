@@ -161,10 +161,7 @@ func (c *interceptingGCPClient) RoundTrip(req *http.Request) (*http.Response, er
 	ctx := req.Context()
 	log := klog.FromContext(ctx)
 
-	requestIsAllowed := false
-	if req.Method == "GET" {
-		requestIsAllowed = true
-	}
+	requestIsAllowed := c.checkGCPRequestIsAllowed(req)
 	if c.qps > 0 {
 		limiter, err := c.getOrCreateRateLimiter(req.URL)
 		if err != nil {
@@ -194,6 +191,27 @@ func (c *interceptingGCPClient) RoundTrip(req *http.Request) (*http.Response, er
 	}
 
 	return c.blockedHTTPMethod(req)
+}
+
+func (c *interceptingGCPClient) checkGCPRequestIsAllowed(req *http.Request) bool {
+	if req.Method == "GET" {
+		return true
+	}
+
+	if req.Method == "POST" {
+		allowedCustomMethods := map[string]bool{
+			"getIamPolicy": true,
+			"getOrgPolicy": true,
+		}
+
+		if idx := strings.LastIndex(req.URL.Path, ":"); idx != -1 {
+			customMethod := req.URL.Path[idx+1:]
+			if allowedCustomMethods[customMethod] {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 // GRPCUnaryClientInterceptor intercepts GCP GRPC API calls.
