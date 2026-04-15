@@ -96,7 +96,7 @@ type ReservationShareSettings struct {
 	// +optional
 	ProjectMap []ReservationProjectMap `json:"projectMap,omitempty"`
 
-	/* Type of sharing for this shared-reservation Possible values: ["LOCAL", "SPECIFIC_PROJECTS"]. */
+	/* Type of sharing for this shared-reservation. Possible values: ["LOCAL", "ORGANIZATION", "SPECIFIC_PROJECTS"]. */
 	// +optional
 	ShareType *string `json:"shareType,omitempty"`
 }
