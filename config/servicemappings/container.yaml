@@ -172,7 +172,7 @@ spec:
             group: compute.cnrm.cloud.google.com
         - tfField: network_config.subnetwork
           description: |-
-            The subnetwork path for the node pool. Format: projects/{project}/regions/{region}/subnetworks/{subnetwork}. If not set, the provider/API will choose the subnetwork (e.g. based on IP utilization) and report it here.
+            Immutable. The subnetwork path for the node pool. Format: projects/{project}/regions/{region}/subnetworks/{subnetwork}. If not set, the provider/API will choose the subnetwork (e.g. based on IP utilization) and report it here.
           key: subnetworkRef
           gvk:
             kind: ComputeSubnetwork

@@ -242,7 +242,7 @@ type NodepoolNetworkConfig struct {
 	// +optional
 	PodRange *string `json:"podRange,omitempty"`
 
-	/* The subnetwork path for the node pool. Format: projects/{project}/regions/{region}/subnetworks/{subnetwork}. If not set, the provider/API will choose the subnetwork (e.g. based on IP utilization) and report it here. */
+	/* Immutable. The subnetwork path for the node pool. Format: projects/{project}/regions/{region}/subnetworks/{subnetwork}. If not set, the provider/API will choose the subnetwork (e.g. based on IP utilization) and report it here. */
 	// +optional
 	SubnetworkRef *v1alpha1.ResourceRef `json:"subnetworkRef,omitempty"`
 }

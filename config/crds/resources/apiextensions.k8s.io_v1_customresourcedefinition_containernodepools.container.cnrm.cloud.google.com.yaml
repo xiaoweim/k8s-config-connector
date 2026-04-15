@@ -296,7 +296,8 @@ spec:
                       range with this ID.
                     type: string
                   subnetworkRef:
-                    description: 'The subnetwork path for the node pool. Format: projects/{project}/regions/{region}/subnetworks/{subnetwork}.
+                    description: 'Immutable. The subnetwork path for the node pool.
+                      Format: projects/{project}/regions/{region}/subnetworks/{subnetwork}.
                       If not set, the provider/API will choose the subnetwork (e.g.
                       based on IP utilization) and report it here.'
                     oneOf:
