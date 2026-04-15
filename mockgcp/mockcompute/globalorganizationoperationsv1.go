@@ -26,7 +26,8 @@ type GlobalOrganizationOperationsV1 struct {
 }
 
 func (s *GlobalOrganizationOperationsV1) Get(ctx context.Context, req *pb.GetGlobalOrganizationOperationRequest) (*pb.Operation, error) {
-	fqn := s.globalOrganizationOperationFQN(req.Operation)
+	operation := lastComponent(req.GetOperation())
+	fqn := s.globalOrganizationOperationFQN(operation)
 	lro, err := s.getOperation(ctx, fqn)
 	if err != nil {
 		return nil, err
