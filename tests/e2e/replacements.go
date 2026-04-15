@@ -128,8 +128,6 @@ func (r *Replacements) placeholderForGCPResource(resource string, name string) s
 		return "${jobID}"
 	case "uptimeCheckConfigs":
 		return "${uptimeCheckConfigID}"
-	case "reservations":
-		return "${reservationID}"
 	case "operations":
 		if name == "projects" {
 			// This is not an operation ID, it's an unusual prefix used by bigtable
