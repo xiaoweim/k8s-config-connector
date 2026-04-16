@@ -67,6 +67,12 @@ func TestCheckGCPRequestIsAllowed(t *testing.T) {
 			path:    "/v1/projects/foo:setIamPolicy",
 			allowed: false,
 		},
+		{
+			name:    "POST with multiple colons blocked",
+			method:  "POST",
+			path:    "/v1/projects/foo:bar:getIamPolicy",
+			allowed: false,
+		},
 	}
 
 	for _, tc := range tests {
