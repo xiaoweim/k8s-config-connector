@@ -88,9 +88,6 @@ func (r *Replacements) ApplyReplacements(s string) string {
 	if testgcp.IsolatedTestOrgName.Get() != "" {
 		normalizers = append(normalizers, ReplaceString(testgcp.IsolatedTestOrgName.Get(), "${ISOLATED_TEST_ORG_NAME}"))
 	}
-	if testgcp.TestSharedReservationsProject.Get() != "" {
-		normalizers = append(normalizers, ReplaceString(testgcp.TestSharedReservationsProject.Get(), "${TEST_SHARED_RESERVATIONS_PROJECT}"))
-	}
 
 	for _, normalizer := range normalizers {
 		s = normalizer(s)

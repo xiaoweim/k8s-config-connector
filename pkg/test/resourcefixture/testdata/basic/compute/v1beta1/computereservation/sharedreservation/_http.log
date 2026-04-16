@@ -14,6 +14,13 @@ X-Xss-Protection: 0
 {
   "error": {
     "code": 403,
+    "errors": [
+      {
+        "domain": "global",
+        "message": "The caller does not have permission",
+        "reason": "forbidden"
+      }
+    ],
     "message": "The caller does not have permission",
     "status": "PERMISSION_DENIED"
   }
@@ -218,6 +225,13 @@ X-Xss-Protection: 0
 {
   "error": {
     "code": 403,
+    "errors": [
+      {
+        "domain": "global",
+        "message": "The caller does not have permission",
+        "reason": "forbidden"
+      }
+    ],
     "message": "The caller does not have permission",
     "status": "PERMISSION_DENIED"
   }
@@ -406,7 +420,7 @@ X-Xss-Protection: 0
 
 ---
 
-GET https://compute.googleapis.com/compute/v1/projects/${TEST_SHARED_RESERVATIONS_PROJECT}/zones/us-central1-a/reservations/${reservationID}?alt=json
+GET https://compute.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a/reservations/${reservationID}?alt=json
 Content-Type: application/json
 User-Agent: kcc/${kccVersion} (+https://github.com/GoogleCloudPlatform/k8s-config-connector) kcc/controller-manager/${kccVersion}
 
@@ -426,17 +440,17 @@ X-Xss-Protection: 0
     "errors": [
       {
         "domain": "global",
-        "message": "The resource 'projects/${TEST_SHARED_RESERVATIONS_PROJECT}/zones/us-central1-a/reservations/${reservationID}' was not found",
+        "message": "The resource 'projects/${projectId}/zones/us-central1-a/reservations/${reservationID}' was not found",
         "reason": "notFound"
       }
     ],
-    "message": "The resource 'projects/${TEST_SHARED_RESERVATIONS_PROJECT}/zones/us-central1-a/reservations/${reservationID}' was not found"
+    "message": "The resource 'projects/${projectId}/zones/us-central1-a/reservations/${reservationID}' was not found"
   }
 }
 
 ---
 
-POST https://compute.googleapis.com/compute/v1/projects/${TEST_SHARED_RESERVATIONS_PROJECT}/zones/us-central1-a/reservations?alt=json
+POST https://compute.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a/reservations?alt=json
 Content-Type: application/json
 User-Agent: kcc/${kccVersion} (+https://github.com/GoogleCloudPlatform/k8s-config-connector) kcc/controller-manager/${kccVersion}
 
@@ -457,7 +471,7 @@ User-Agent: kcc/${kccVersion} (+https://github.com/GoogleCloudPlatform/k8s-confi
       "machineType": "n1-standard-1"
     }
   },
-  "zone": "projects/${TEST_SHARED_RESERVATIONS_PROJECT}/global/zones/us-central1-a"
+  "zone": "projects/${projectId}/global/zones/us-central1-a"
 }
 
 200 OK
@@ -477,18 +491,18 @@ X-Xss-Protection: 0
   "name": "${operationID}",
   "operationType": "insert",
   "progress": 0,
-  "selfLink": "https://www.googleapis.com/compute/v1/projects/${TEST_SHARED_RESERVATIONS_PROJECT}/zones/us-central1-a/operations/${operationID}",
+  "selfLink": "https://www.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a/operations/${operationID}",
   "startTime": "2024-04-01T12:34:56.123456Z",
   "status": "RUNNING",
   "targetId": "${reservationID}",
-  "targetLink": "https://www.googleapis.com/compute/v1/projects/${TEST_SHARED_RESERVATIONS_PROJECT}/zones/us-central1-a/reservations/${reservationID}",
+  "targetLink": "https://www.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a/reservations/${reservationID}",
   "user": "user@example.com",
-  "zone": "https://www.googleapis.com/compute/v1/projects/${TEST_SHARED_RESERVATIONS_PROJECT}/zones/us-central1-a"
+  "zone": "https://www.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a"
 }
 
 ---
 
-GET https://compute.googleapis.com/compute/v1/projects/${TEST_SHARED_RESERVATIONS_PROJECT}/zones/us-central1-a/operations/${operationID}?alt=json&prettyPrint=false
+GET https://compute.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a/operations/${operationID}?alt=json&prettyPrint=false
 User-Agent: google-api-go-client/0.5 kcc/${kccVersion} (+https://github.com/GoogleCloudPlatform/k8s-config-connector) kcc/controller-manager/${kccVersion}
 
 200 OK
@@ -509,18 +523,18 @@ X-Xss-Protection: 0
   "name": "${operationID}",
   "operationType": "insert",
   "progress": 100,
-  "selfLink": "https://www.googleapis.com/compute/v1/projects/${TEST_SHARED_RESERVATIONS_PROJECT}/zones/us-central1-a/operations/${operationID}",
+  "selfLink": "https://www.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a/operations/${operationID}",
   "startTime": "2024-04-01T12:34:56.123456Z",
   "status": "DONE",
   "targetId": "${reservationID}",
-  "targetLink": "https://www.googleapis.com/compute/v1/projects/${TEST_SHARED_RESERVATIONS_PROJECT}/zones/us-central1-a/reservations/${reservationID}",
+  "targetLink": "https://www.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a/reservations/${reservationID}",
   "user": "user@example.com",
-  "zone": "https://www.googleapis.com/compute/v1/projects/${TEST_SHARED_RESERVATIONS_PROJECT}/zones/us-central1-a"
+  "zone": "https://www.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a"
 }
 
 ---
 
-GET https://compute.googleapis.com/compute/v1/projects/${TEST_SHARED_RESERVATIONS_PROJECT}/zones/us-central1-a/reservations/${reservationID}?alt=json
+GET https://compute.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a/reservations/${reservationID}?alt=json
 Content-Type: application/json
 User-Agent: kcc/${kccVersion} (+https://github.com/GoogleCloudPlatform/k8s-config-connector) kcc/controller-manager/${kccVersion}
 
@@ -546,13 +560,16 @@ X-Xss-Protection: 0
   "resourceStatus": {
     "specificSkuAllocation": {}
   },
-  "selfLink": "https://www.googleapis.com/compute/v1/projects/${TEST_SHARED_RESERVATIONS_PROJECT}/zones/us-central1-a/reservations/${reservationID}",
+  "selfLink": "https://www.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a/reservations/${reservationID}",
   "shareSettings": {
     "projectMap": {
-      "project-${uniqueId}": {
-        "projectId": "project-${uniqueId}"
+      "${projectNumber}": {
+        "projectId": "${projectNumber}"
       }
     },
+    "projects": [
+      "${projectNumber}"
+    ],
     "shareType": "SPECIFIC_PROJECTS"
   },
   "specificReservation": {
@@ -565,12 +582,12 @@ X-Xss-Protection: 0
   },
   "specificReservationRequired": false,
   "status": "READY",
-  "zone": "https://www.googleapis.com/compute/v1/projects/${TEST_SHARED_RESERVATIONS_PROJECT}/zones/us-central1-a"
+  "zone": "https://www.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a"
 }
 
 ---
 
-PATCH https://compute.googleapis.com/compute/v1/projects/${TEST_SHARED_RESERVATIONS_PROJECT}/zones/us-central1-a/reservations/${reservationID}?alt=json&paths=shareSettings.projectMap.project-${uniqueId}
+PATCH https://compute.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a/reservations/${reservationID}?alt=json&paths=shareSettings.projectMap.project-${uniqueId}
 Content-Type: application/json
 User-Agent: kcc/${kccVersion} (+https://github.com/GoogleCloudPlatform/k8s-config-connector) kcc/controller-manager/${kccVersion}
 
@@ -584,7 +601,7 @@ User-Agent: kcc/${kccVersion} (+https://github.com/GoogleCloudPlatform/k8s-confi
     },
     "shareType": "SPECIFIC_PROJECTS"
   },
-  "zone": "projects/${TEST_SHARED_RESERVATIONS_PROJECT}/global/zones/us-central1-a"
+  "zone": "projects/${projectId}/global/zones/us-central1-a"
 }
 
 200 OK
@@ -604,18 +621,18 @@ X-Xss-Protection: 0
   "name": "${operationID}",
   "operationType": "compute.allocations.update",
   "progress": 0,
-  "selfLink": "https://www.googleapis.com/compute/v1/projects/${TEST_SHARED_RESERVATIONS_PROJECT}/zones/us-central1-a/operations/${operationID}",
+  "selfLink": "https://www.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a/operations/${operationID}",
   "startTime": "2024-04-01T12:34:56.123456Z",
   "status": "RUNNING",
   "targetId": "${reservationID}",
-  "targetLink": "https://www.googleapis.com/compute/v1/projects/${TEST_SHARED_RESERVATIONS_PROJECT}/zones/us-central1-a/reservations/${reservationID}",
+  "targetLink": "https://www.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a/reservations/${reservationID}",
   "user": "user@example.com",
-  "zone": "https://www.googleapis.com/compute/v1/projects/${TEST_SHARED_RESERVATIONS_PROJECT}/zones/us-central1-a"
+  "zone": "https://www.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a"
 }
 
 ---
 
-GET https://compute.googleapis.com/compute/v1/projects/${TEST_SHARED_RESERVATIONS_PROJECT}/zones/us-central1-a/operations/${operationID}?alt=json&prettyPrint=false
+GET https://compute.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a/operations/${operationID}?alt=json&prettyPrint=false
 User-Agent: google-api-go-client/0.5 kcc/${kccVersion} (+https://github.com/GoogleCloudPlatform/k8s-config-connector) kcc/controller-manager/${kccVersion}
 
 200 OK
@@ -636,18 +653,18 @@ X-Xss-Protection: 0
   "name": "${operationID}",
   "operationType": "compute.allocations.update",
   "progress": 100,
-  "selfLink": "https://www.googleapis.com/compute/v1/projects/${TEST_SHARED_RESERVATIONS_PROJECT}/zones/us-central1-a/operations/${operationID}",
+  "selfLink": "https://www.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a/operations/${operationID}",
   "startTime": "2024-04-01T12:34:56.123456Z",
   "status": "DONE",
   "targetId": "${reservationID}",
-  "targetLink": "https://www.googleapis.com/compute/v1/projects/${TEST_SHARED_RESERVATIONS_PROJECT}/zones/us-central1-a/reservations/${reservationID}",
+  "targetLink": "https://www.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a/reservations/${reservationID}",
   "user": "user@example.com",
-  "zone": "https://www.googleapis.com/compute/v1/projects/${TEST_SHARED_RESERVATIONS_PROJECT}/zones/us-central1-a"
+  "zone": "https://www.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a"
 }
 
 ---
 
-GET https://compute.googleapis.com/compute/v1/projects/${TEST_SHARED_RESERVATIONS_PROJECT}/zones/us-central1-a/reservations/${reservationID}?alt=json
+GET https://compute.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a/reservations/${reservationID}?alt=json
 Content-Type: application/json
 User-Agent: kcc/${kccVersion} (+https://github.com/GoogleCloudPlatform/k8s-config-connector) kcc/controller-manager/${kccVersion}
 
@@ -673,13 +690,16 @@ X-Xss-Protection: 0
   "resourceStatus": {
     "specificSkuAllocation": {}
   },
-  "selfLink": "https://www.googleapis.com/compute/v1/projects/${TEST_SHARED_RESERVATIONS_PROJECT}/zones/us-central1-a/reservations/${reservationID}",
+  "selfLink": "https://www.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a/reservations/${reservationID}",
   "shareSettings": {
     "projectMap": {
-      "project-${uniqueId}": {
-        "projectId": "project-${uniqueId}"
+      "${projectNumber}": {
+        "projectId": "${projectNumber}"
       }
     },
+    "projects": [
+      "${projectNumber}"
+    ],
     "shareType": "SPECIFIC_PROJECTS"
   },
   "specificReservation": {
@@ -692,115 +712,17 @@ X-Xss-Protection: 0
   },
   "specificReservationRequired": false,
   "status": "READY",
-  "zone": "https://www.googleapis.com/compute/v1/projects/${TEST_SHARED_RESERVATIONS_PROJECT}/zones/us-central1-a"
+  "zone": "https://www.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a"
 }
 
 ---
 
-PATCH https://compute.googleapis.com/compute/v1/projects/${TEST_SHARED_RESERVATIONS_PROJECT}/zones/us-central1-a/reservations/${reservationID}?alt=json&paths=shareSettings.projectMap.project2-${uniqueId}
+PATCH https://compute.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a/reservations/${reservationID}?alt=json&paths=shareSettings.projectMap.project2-${uniqueId}&paths=shareSettings.projectMap.project-${uniqueId}
 Content-Type: application/json
 User-Agent: kcc/${kccVersion} (+https://github.com/GoogleCloudPlatform/k8s-config-connector) kcc/controller-manager/${kccVersion}
 
 {
   "name": "${reservationID}",
-  "shareSettings": {
-    "projectMap": {
-      "project2-${uniqueId}": {
-        "projectId": "project2-${uniqueId}"
-      }
-    },
-    "shareType": "SPECIFIC_PROJECTS"
-  },
-  "zone": "projects/${TEST_SHARED_RESERVATIONS_PROJECT}/global/zones/us-central1-a"
-}
-
-200 OK
-Content-Type: application/json; charset=UTF-8
-Server: ESF
-Vary: Origin
-Vary: X-Origin
-Vary: Referer
-X-Content-Type-Options: nosniff
-X-Frame-Options: SAMEORIGIN
-X-Xss-Protection: 0
-
-{
-  "id": "000000000000000000000",
-  "insertTime": "2024-04-01T12:34:56.123456Z",
-  "kind": "compute#operation",
-  "name": "${operationID}",
-  "operationType": "compute.allocations.update",
-  "progress": 0,
-  "selfLink": "https://www.googleapis.com/compute/v1/projects/${TEST_SHARED_RESERVATIONS_PROJECT}/zones/us-central1-a/operations/${operationID}",
-  "startTime": "2024-04-01T12:34:56.123456Z",
-  "status": "RUNNING",
-  "targetId": "${reservationID}",
-  "targetLink": "https://www.googleapis.com/compute/v1/projects/${TEST_SHARED_RESERVATIONS_PROJECT}/zones/us-central1-a/reservations/${reservationID}",
-  "user": "user@example.com",
-  "zone": "https://www.googleapis.com/compute/v1/projects/${TEST_SHARED_RESERVATIONS_PROJECT}/zones/us-central1-a"
-}
-
----
-
-GET https://compute.googleapis.com/compute/v1/projects/${TEST_SHARED_RESERVATIONS_PROJECT}/zones/us-central1-a/operations/${operationID}?alt=json&prettyPrint=false
-User-Agent: google-api-go-client/0.5 kcc/${kccVersion} (+https://github.com/GoogleCloudPlatform/k8s-config-connector) kcc/controller-manager/${kccVersion}
-
-200 OK
-Content-Type: application/json; charset=UTF-8
-Server: ESF
-Vary: Origin
-Vary: X-Origin
-Vary: Referer
-X-Content-Type-Options: nosniff
-X-Frame-Options: SAMEORIGIN
-X-Xss-Protection: 0
-
-{
-  "endTime": "2024-04-01T12:34:56.123456Z",
-  "id": "000000000000000000000",
-  "insertTime": "2024-04-01T12:34:56.123456Z",
-  "kind": "compute#operation",
-  "name": "${operationID}",
-  "operationType": "compute.allocations.update",
-  "progress": 100,
-  "selfLink": "https://www.googleapis.com/compute/v1/projects/${TEST_SHARED_RESERVATIONS_PROJECT}/zones/us-central1-a/operations/${operationID}",
-  "startTime": "2024-04-01T12:34:56.123456Z",
-  "status": "DONE",
-  "targetId": "${reservationID}",
-  "targetLink": "https://www.googleapis.com/compute/v1/projects/${TEST_SHARED_RESERVATIONS_PROJECT}/zones/us-central1-a/reservations/${reservationID}",
-  "user": "user@example.com",
-  "zone": "https://www.googleapis.com/compute/v1/projects/${TEST_SHARED_RESERVATIONS_PROJECT}/zones/us-central1-a"
-}
-
----
-
-GET https://compute.googleapis.com/compute/v1/projects/${TEST_SHARED_RESERVATIONS_PROJECT}/zones/us-central1-a/reservations/${reservationID}?alt=json
-Content-Type: application/json
-User-Agent: kcc/${kccVersion} (+https://github.com/GoogleCloudPlatform/k8s-config-connector) kcc/controller-manager/${kccVersion}
-
-200 OK
-Content-Type: application/json; charset=UTF-8
-Server: ESF
-Vary: Origin
-Vary: X-Origin
-Vary: Referer
-X-Content-Type-Options: nosniff
-X-Frame-Options: SAMEORIGIN
-X-Xss-Protection: 0
-
-{
-  "creationTimestamp": "2024-04-01T12:34:56.123456Z",
-  "description": "Shared Reservation for 1 machines which will be shared with other projects.",
-  "id": "000000000000000000000",
-  "kind": "compute#reservation",
-  "name": "${reservationID}",
-  "reservationSharingPolicy": {
-    "serviceShareType": "DISALLOW_ALL"
-  },
-  "resourceStatus": {
-    "specificSkuAllocation": {}
-  },
-  "selfLink": "https://www.googleapis.com/compute/v1/projects/${TEST_SHARED_RESERVATIONS_PROJECT}/zones/us-central1-a/reservations/${reservationID}",
   "shareSettings": {
     "projectMap": {
       "project-${uniqueId}": {
@@ -812,6 +734,111 @@ X-Xss-Protection: 0
     },
     "shareType": "SPECIFIC_PROJECTS"
   },
+  "zone": "projects/${projectId}/global/zones/us-central1-a"
+}
+
+200 OK
+Content-Type: application/json; charset=UTF-8
+Server: ESF
+Vary: Origin
+Vary: X-Origin
+Vary: Referer
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+X-Xss-Protection: 0
+
+{
+  "id": "000000000000000000000",
+  "insertTime": "2024-04-01T12:34:56.123456Z",
+  "kind": "compute#operation",
+  "name": "${operationID}",
+  "operationType": "compute.allocations.update",
+  "progress": 0,
+  "selfLink": "https://www.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a/operations/${operationID}",
+  "startTime": "2024-04-01T12:34:56.123456Z",
+  "status": "RUNNING",
+  "targetId": "${reservationID}",
+  "targetLink": "https://www.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a/reservations/${reservationID}",
+  "user": "user@example.com",
+  "zone": "https://www.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a"
+}
+
+---
+
+GET https://compute.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a/operations/${operationID}?alt=json&prettyPrint=false
+User-Agent: google-api-go-client/0.5 kcc/${kccVersion} (+https://github.com/GoogleCloudPlatform/k8s-config-connector) kcc/controller-manager/${kccVersion}
+
+200 OK
+Content-Type: application/json; charset=UTF-8
+Server: ESF
+Vary: Origin
+Vary: X-Origin
+Vary: Referer
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+X-Xss-Protection: 0
+
+{
+  "endTime": "2024-04-01T12:34:56.123456Z",
+  "id": "000000000000000000000",
+  "insertTime": "2024-04-01T12:34:56.123456Z",
+  "kind": "compute#operation",
+  "name": "${operationID}",
+  "operationType": "compute.allocations.update",
+  "progress": 100,
+  "selfLink": "https://www.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a/operations/${operationID}",
+  "startTime": "2024-04-01T12:34:56.123456Z",
+  "status": "DONE",
+  "targetId": "${reservationID}",
+  "targetLink": "https://www.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a/reservations/${reservationID}",
+  "user": "user@example.com",
+  "zone": "https://www.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a"
+}
+
+---
+
+GET https://compute.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a/reservations/${reservationID}?alt=json
+Content-Type: application/json
+User-Agent: kcc/${kccVersion} (+https://github.com/GoogleCloudPlatform/k8s-config-connector) kcc/controller-manager/${kccVersion}
+
+200 OK
+Content-Type: application/json; charset=UTF-8
+Server: ESF
+Vary: Origin
+Vary: X-Origin
+Vary: Referer
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+X-Xss-Protection: 0
+
+{
+  "creationTimestamp": "2024-04-01T12:34:56.123456Z",
+  "description": "Shared Reservation for 1 machines which will be shared with other projects.",
+  "id": "000000000000000000000",
+  "kind": "compute#reservation",
+  "name": "${reservationID}",
+  "reservationSharingPolicy": {
+    "serviceShareType": "DISALLOW_ALL"
+  },
+  "resourceStatus": {
+    "specificSkuAllocation": {}
+  },
+  "selfLink": "https://www.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a/reservations/${reservationID}",
+  "shareSettings": {
+    "projectMap": {
+      "${projectNumber}": {
+        "projectId": "${projectNumber}"
+      },
+      "${projectNumber}": {
+        "projectId": "${projectNumber}"
+      }
+    },
+    "projects": [
+      "${projectNumber}",
+      "${projectNumber}"
+    ],
+    "shareType": "SPECIFIC_PROJECTS"
+  },
   "specificReservation": {
     "assuredCount": "1",
     "count": "1",
@@ -822,12 +849,12 @@ X-Xss-Protection: 0
   },
   "specificReservationRequired": false,
   "status": "READY",
-  "zone": "https://www.googleapis.com/compute/v1/projects/${TEST_SHARED_RESERVATIONS_PROJECT}/zones/us-central1-a"
+  "zone": "https://www.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a"
 }
 
 ---
 
-DELETE https://compute.googleapis.com/compute/v1/projects/${TEST_SHARED_RESERVATIONS_PROJECT}/zones/us-central1-a/reservations/${reservationID}?alt=json
+DELETE https://compute.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a/reservations/${reservationID}?alt=json
 Content-Type: application/json
 User-Agent: kcc/${kccVersion} (+https://github.com/GoogleCloudPlatform/k8s-config-connector) kcc/controller-manager/${kccVersion}
 
@@ -848,18 +875,18 @@ X-Xss-Protection: 0
   "name": "${operationID}",
   "operationType": "delete",
   "progress": 0,
-  "selfLink": "https://www.googleapis.com/compute/v1/projects/${TEST_SHARED_RESERVATIONS_PROJECT}/zones/us-central1-a/operations/${operationID}",
+  "selfLink": "https://www.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a/operations/${operationID}",
   "startTime": "2024-04-01T12:34:56.123456Z",
   "status": "RUNNING",
   "targetId": "${reservationID}",
-  "targetLink": "https://www.googleapis.com/compute/v1/projects/${TEST_SHARED_RESERVATIONS_PROJECT}/zones/us-central1-a/reservations/${reservationID}",
+  "targetLink": "https://www.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a/reservations/${reservationID}",
   "user": "user@example.com",
-  "zone": "https://www.googleapis.com/compute/v1/projects/${TEST_SHARED_RESERVATIONS_PROJECT}/zones/us-central1-a"
+  "zone": "https://www.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a"
 }
 
 ---
 
-GET https://compute.googleapis.com/compute/v1/projects/${TEST_SHARED_RESERVATIONS_PROJECT}/zones/us-central1-a/operations/${operationID}?alt=json&prettyPrint=false
+GET https://compute.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a/operations/${operationID}?alt=json&prettyPrint=false
 User-Agent: google-api-go-client/0.5 kcc/${kccVersion} (+https://github.com/GoogleCloudPlatform/k8s-config-connector) kcc/controller-manager/${kccVersion}
 
 200 OK
@@ -880,13 +907,13 @@ X-Xss-Protection: 0
   "name": "${operationID}",
   "operationType": "delete",
   "progress": 100,
-  "selfLink": "https://www.googleapis.com/compute/v1/projects/${TEST_SHARED_RESERVATIONS_PROJECT}/zones/us-central1-a/operations/${operationID}",
+  "selfLink": "https://www.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a/operations/${operationID}",
   "startTime": "2024-04-01T12:34:56.123456Z",
   "status": "DONE",
   "targetId": "${reservationID}",
-  "targetLink": "https://www.googleapis.com/compute/v1/projects/${TEST_SHARED_RESERVATIONS_PROJECT}/zones/us-central1-a/reservations/${reservationID}",
+  "targetLink": "https://www.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a/reservations/${reservationID}",
   "user": "user@example.com",
-  "zone": "https://www.googleapis.com/compute/v1/projects/${TEST_SHARED_RESERVATIONS_PROJECT}/zones/us-central1-a"
+  "zone": "https://www.googleapis.com/compute/v1/projects/${projectId}/zones/us-central1-a"
 }
 
 ---

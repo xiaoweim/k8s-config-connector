@@ -25,6 +25,11 @@ spec:
     shareType: SPECIFIC_PROJECTS
     projectMap:
       - idRef:
+          name: project-${uniqueId}
+        projectIDRef:
+          name:
+            project-${uniqueId}
+      - idRef:
           name: project2-${uniqueId}
         projectIDRef:
           name: project2-${uniqueId}
