@@ -17,6 +17,7 @@ package mockcompute
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"strings"
 
 	"google.golang.org/grpc/codes"
@@ -72,6 +73,11 @@ func (s *ReservationsV1) Insert(ctx context.Context, req *pb.InsertReservationRe
 		if len(obj.GetShareSettings().GetProjectMap()) == 0 {
 			return nil, status.Errorf(codes.InvalidArgument, "project_map is required when share_type is SPECIFIC_PROJECTS")
 		}
+		newMap, err := s.convertProjectMap(ctx, obj.GetShareSettings().GetProjectMap())
+		if err != nil {
+			return nil, err
+		}
+		obj.ShareSettings.ProjectMap = newMap
 	}
 
 	obj.SelfLink = PtrTo(BuildComputeSelfLink(ctx, fqn))
@@ -82,7 +88,7 @@ func (s *ReservationsV1) Insert(ctx context.Context, req *pb.InsertReservationRe
 	obj.Status = PtrTo("READY")
 	if obj.SpecificReservation != nil {
 		obj.SpecificReservation.InUseCount = PtrTo(int64(0))
-		obj.SpecificReservation.AssuredCount = PtrTo(int64(1))
+		obj.SpecificReservation.AssuredCount = obj.SpecificReservation.Count
 	}
 	if obj.SpecificReservationRequired == nil {
 		obj.SpecificReservationRequired = PtrTo(false)
@@ -92,6 +98,9 @@ func (s *ReservationsV1) Insert(ctx context.Context, req *pb.InsertReservationRe
 	}
 	if obj.ResourceStatus == nil {
 		obj.ResourceStatus = &pb.AllocationResourceStatus{SpecificSkuAllocation: &pb.AllocationResourceStatusSpecificSKUAllocation{}}
+	}
+	if obj.ShareSettings == nil {
+		obj.ShareSettings = &pb.ShareSettings{ShareType: PtrTo("LOCAL")}
 	}
 
 	if err := s.storage.Create(ctx, fqn, obj); err != nil {
@@ -135,7 +144,11 @@ func (s *ReservationsV1) Update(ctx context.Context, req *pb.UpdateReservationRe
 			obj.ShareSettings.ShareType = update.ShareSettings.ShareType
 		}
 		if update.ShareSettings.ProjectMap != nil {
-			obj.ShareSettings.ProjectMap = update.ShareSettings.ProjectMap
+			newMap, err := s.convertProjectMap(ctx, update.ShareSettings.ProjectMap)
+			if err != nil {
+				return nil, err
+			}
+			obj.ShareSettings.ProjectMap = newMap
 		}
 	}
 
@@ -231,4 +244,22 @@ func (s *MockService) parseZonalReservationName(name string) (*zonalReservationN
 	} else {
 		return nil, status.Errorf(codes.InvalidArgument, "name %q is not valid", name)
 	}
+}
+
+func (s *ReservationsV1) convertProjectMap(ctx context.Context, projectMap map[string]*pb.ShareSettingsProjectConfig) (map[string]*pb.ShareSettingsProjectConfig, error) {
+	if projectMap == nil {
+		return nil, nil
+	}
+	newMap := make(map[string]*pb.ShareSettingsProjectConfig)
+	for idOrNumber, config := range projectMap {
+		project, err := s.Projects.GetProjectByIDOrNumber(idOrNumber)
+		if err != nil {
+			return nil, err
+		}
+		projectNumber := strconv.FormatInt(project.Number, 10)
+		newConfig := proto.Clone(config).(*pb.ShareSettingsProjectConfig)
+		newConfig.ProjectId = &projectNumber
+		newMap[projectNumber] = newConfig
+	}
+	return newMap, nil
 }

@@ -27,8 +27,7 @@ spec:
       - idRef:
           name: project-${uniqueId}
         projectIDRef:
-          name:
-            project-${uniqueId}
+          name: project-${uniqueId}
       - idRef:
           name: project2-${uniqueId}
         projectIDRef:

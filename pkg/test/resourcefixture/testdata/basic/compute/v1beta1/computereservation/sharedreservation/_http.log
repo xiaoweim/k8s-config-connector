@@ -14,13 +14,6 @@ X-Xss-Protection: 0
 {
   "error": {
     "code": 403,
-    "errors": [
-      {
-        "domain": "global",
-        "message": "The caller does not have permission",
-        "reason": "forbidden"
-      }
-    ],
     "message": "The caller does not have permission",
     "status": "PERMISSION_DENIED"
   }
@@ -225,13 +218,6 @@ X-Xss-Protection: 0
 {
   "error": {
     "code": 403,
-    "errors": [
-      {
-        "domain": "global",
-        "message": "The caller does not have permission",
-        "reason": "forbidden"
-      }
-    ],
     "message": "The caller does not have permission",
     "status": "PERMISSION_DENIED"
   }
@@ -567,9 +553,6 @@ X-Xss-Protection: 0
         "projectId": "${projectNumber}"
       }
     },
-    "projects": [
-      "${projectNumber}"
-    ],
     "shareType": "SPECIFIC_PROJECTS"
   },
   "specificReservation": {
@@ -697,9 +680,6 @@ X-Xss-Protection: 0
         "projectId": "${projectNumber}"
       }
     },
-    "projects": [
-      "${projectNumber}"
-    ],
     "shareType": "SPECIFIC_PROJECTS"
   },
   "specificReservation": {
@@ -833,10 +813,6 @@ X-Xss-Protection: 0
         "projectId": "${projectNumber}"
       }
     },
-    "projects": [
-      "${projectNumber}",
-      "${projectNumber}"
-    ],
     "shareType": "SPECIFIC_PROJECTS"
   },
   "specificReservation": {
