@@ -15,8 +15,11 @@
 apiVersion: compute.cnrm.cloud.google.com/v1beta1
 kind: ComputeReservation
 metadata:
-  labels:
-    label-one: "value-one"
+  annotations:
+    # replace ${TEST_SHARED_RESERVATIONS_PROJECT?} with the project within the shared reservations owner projects
+    # (compute.sharedReservationsOwnerProjects) organization policy constraint
+    # See https://docs.cloud.google.com/compute/docs/instances/manage-shared-reservations-creation#allow-restrict-projects
+    cnrm.cloud.google.com/project-id: ${TEST_SHARED_RESERVATIONS_PROJECT?}
   name: computereservation-sample-shared
 spec:
   description: Shared Reservation for 1 machines which will be shared with other projects.
@@ -25,9 +28,9 @@ spec:
     shareType: SPECIFIC_PROJECTS
     projectMap:
     - idRef:
-        external: project-id-to-share-with
+        external: ${PROJECT_ID?}
       projectIDRef:
-        external: project-id-to-share-with
+        external: ${PROJECT_ID?}
   specificReservation:
     count: 1
     instanceProperties:
