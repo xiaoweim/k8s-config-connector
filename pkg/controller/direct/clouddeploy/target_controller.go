@@ -56,14 +56,10 @@ func NewTargetModel(ctx context.Context, config *config.ControllerConfig) (direc
 var _ directbase.Model = &modelTarget{}
 
 type modelTarget struct {
-	config    config.ControllerConfig
-	gcpClient *gcp.CloudDeployClient
+	config config.ControllerConfig
 }
 
 func (m *modelTarget) client(ctx context.Context) (*gcp.CloudDeployClient, error) {
-	if m.gcpClient != nil {
-		return m.gcpClient, nil
-	}
 	var opts []option.ClientOption
 	opts, err := m.config.RESTClientOptions()
 	if err != nil {
@@ -73,8 +69,7 @@ func (m *modelTarget) client(ctx context.Context) (*gcp.CloudDeployClient, error
 	if err != nil {
 		return nil, fmt.Errorf("building Target client: %w", err)
 	}
-	m.gcpClient = gcpClient
-	return m.gcpClient, err
+	return gcpClient, nil
 }
 
 func (m *modelTarget) AdapterForObject(ctx context.Context, op *directbase.AdapterForObjectOperation) (directbase.Adapter, error) {
@@ -271,17 +266,22 @@ func (a *TargetAdapter) Update(ctx context.Context, updateOp *directbase.UpdateO
 		}
 	}
 
-	// etag, execution_configs, uid, create_time, update_time, and target_id are server-generated.
-	// We skip the diff when they show up in path to avoid unnecessary drift.
+	// etag is server-generated, but we use it for optimistic concurrency.
+	// We skip the diff when it shows up in path to avoid unnecessary drift.
 	paths, err := common.CompareProtoMessage(a.desiredPb, a.actual, func(fieldName protoreflect.Name, a, b proto.Message) (bool, error) {
-		if fieldName == "etag" || fieldName == "uid" || fieldName == "create_time" || fieldName == "update_time" || fieldName == "target_id" {
+		if fieldName == "etag" {
 			return false, nil
 		}
-		// Compare execution_configs if it's specified in the desired state
+		// If execution_configs is empty in the desired state, we check if the actual state
+		// matches the server-side default (a single execution config with a default pool).
+		// If it does, we skip the diff to avoid re-reconciliation loops.
 		if fieldName == "execution_configs" {
 			desired := a.(*clouddeploypb.Target)
 			if len(desired.ExecutionConfigs) == 0 {
-				return false, nil
+				actual := b.(*clouddeploypb.Target)
+				if len(actual.ExecutionConfigs) == 1 && actual.ExecutionConfigs[0].GetDefaultPool() != nil {
+					return false, nil
+				}
 			}
 		}
 		return common.BasicDiff(fieldName, a, b)
