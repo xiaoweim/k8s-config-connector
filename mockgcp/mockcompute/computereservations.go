@@ -135,9 +135,7 @@ func (s *ReservationsV1) Update(ctx context.Context, req *pb.UpdateReservationRe
 			obj.ShareSettings.ShareType = update.ShareSettings.ShareType
 		}
 		if update.ShareSettings.ProjectMap != nil {
-			for k, v := range update.ShareSettings.ProjectMap {
-				obj.ShareSettings.ProjectMap[k] = v
-			}
+			obj.ShareSettings.ProjectMap = update.ShareSettings.ProjectMap
 		}
 	}
 
