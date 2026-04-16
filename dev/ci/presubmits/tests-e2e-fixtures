@@ -90,10 +90,8 @@ SKIP_TEST_APIGROUPS=(
     "networksecurity.cnrm.cloud.google.com"
     "networkservices.cnrm.cloud.google.com"
     "notebooks.cnrm.cloud.google.com"
-    "oslogin.cnrm.cloud.google.com"
-    "privateca.cnrm.cloud.google.com"
+    "orgpolicy.cnrm.cloud.google.com"
     "privilegedaccessmanager.cnrm.cloud.google.com"
-
     "pubsub.cnrm.cloud.google.com"
     "recaptchaenterprise.cnrm.cloud.google.com"
     "redis.cnrm.cloud.google.com"
