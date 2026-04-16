@@ -32,6 +32,10 @@ const PlaceholderID = "1234567890"
 var _ mockgcpregistry.SupportsNormalization = &MockService{}
 
 func (s *MockService) ConfigureVisitor(url string, replacements mockgcpregistry.NormalizingVisitor) {
+	if !strings.Contains(url, "compute.googleapis.com") && !strings.Contains(url, "www.googleapis.com") {
+		return
+	}
+
 	// General
 	replacements.ReplacePath(".creationTimestamp", PlaceholderTimestamp)
 	replacements.ReplacePath(".items[].creationTimestamp", PlaceholderTimestamp)
