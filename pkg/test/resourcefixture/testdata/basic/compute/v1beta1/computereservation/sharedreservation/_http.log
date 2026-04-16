@@ -14,13 +14,6 @@ X-Xss-Protection: 0
 {
   "error": {
     "code": 403,
-    "errors": [
-      {
-        "domain": "global",
-        "message": "The caller does not have permission",
-        "reason": "forbidden"
-      }
-    ],
     "message": "The caller does not have permission",
     "status": "PERMISSION_DENIED"
   }
@@ -225,13 +218,6 @@ X-Xss-Protection: 0
 {
   "error": {
     "code": 403,
-    "errors": [
-      {
-        "domain": "global",
-        "message": "The caller does not have permission",
-        "reason": "forbidden"
-      }
-    ],
     "message": "The caller does not have permission",
     "status": "PERMISSION_DENIED"
   }
@@ -563,13 +549,10 @@ X-Xss-Protection: 0
   "selfLink": "https://www.googleapis.com/compute/v1/projects/${TEST_SHARED_RESERVATIONS_PROJECT}/zones/us-central1-a/reservations/${reservationID}",
   "shareSettings": {
     "projectMap": {
-      "${projectNumber}": {
-        "projectId": "${projectNumber}"
+      "project-${uniqueId}": {
+        "projectId": "project-${uniqueId}"
       }
     },
-    "projects": [
-      "${projectNumber}"
-    ],
     "shareType": "SPECIFIC_PROJECTS"
   },
   "specificReservation": {
@@ -693,13 +676,10 @@ X-Xss-Protection: 0
   "selfLink": "https://www.googleapis.com/compute/v1/projects/${TEST_SHARED_RESERVATIONS_PROJECT}/zones/us-central1-a/reservations/${reservationID}",
   "shareSettings": {
     "projectMap": {
-      "${projectNumber}": {
-        "projectId": "${projectNumber}"
+      "project-${uniqueId}": {
+        "projectId": "project-${uniqueId}"
       }
     },
-    "projects": [
-      "${projectNumber}"
-    ],
     "shareType": "SPECIFIC_PROJECTS"
   },
   "specificReservation": {
@@ -823,17 +803,13 @@ X-Xss-Protection: 0
   "selfLink": "https://www.googleapis.com/compute/v1/projects/${TEST_SHARED_RESERVATIONS_PROJECT}/zones/us-central1-a/reservations/${reservationID}",
   "shareSettings": {
     "projectMap": {
-      "${projectNumber}": {
-        "projectId": "${projectNumber}"
+      "project-${uniqueId}": {
+        "projectId": "project-${uniqueId}"
       },
-      "${projectNumber}": {
-        "projectId": "${projectNumber}"
+      "project2-${uniqueId}": {
+        "projectId": "project2-${uniqueId}"
       }
     },
-    "projects": [
-      "${projectNumber}",
-      "${projectNumber}"
-    ],
     "shareType": "SPECIFIC_PROJECTS"
   },
   "specificReservation": {

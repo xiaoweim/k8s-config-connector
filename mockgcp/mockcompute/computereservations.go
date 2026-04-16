@@ -82,6 +82,16 @@ func (s *ReservationsV1) Insert(ctx context.Context, req *pb.InsertReservationRe
 	obj.Status = PtrTo("READY")
 	if obj.SpecificReservation != nil {
 		obj.SpecificReservation.InUseCount = PtrTo(int64(0))
+		obj.SpecificReservation.AssuredCount = PtrTo(int64(1))
+	}
+	if obj.SpecificReservationRequired == nil {
+		obj.SpecificReservationRequired = PtrTo(false)
+	}
+	if obj.ReservationSharingPolicy == nil {
+		obj.ReservationSharingPolicy = &pb.AllocationReservationSharingPolicy{ServiceShareType: PtrTo("DISALLOW_ALL")}
+	}
+	if obj.ResourceStatus == nil {
+		obj.ResourceStatus = &pb.AllocationResourceStatus{SpecificSkuAllocation: &pb.AllocationResourceStatusSpecificSKUAllocation{}}
 	}
 
 	if err := s.storage.Create(ctx, fqn, obj); err != nil {
@@ -125,7 +135,9 @@ func (s *ReservationsV1) Update(ctx context.Context, req *pb.UpdateReservationRe
 			obj.ShareSettings.ShareType = update.ShareSettings.ShareType
 		}
 		if update.ShareSettings.ProjectMap != nil {
-			obj.ShareSettings.ProjectMap = update.ShareSettings.ProjectMap
+			for k, v := range update.ShareSettings.ProjectMap {
+				obj.ShareSettings.ProjectMap[k] = v
+			}
 		}
 	}
 
@@ -159,7 +171,7 @@ func (s *ReservationsV1) Update(ctx context.Context, req *pb.UpdateReservationRe
 	op := &pb.Operation{
 		TargetId:      obj.Id,
 		TargetLink:    obj.SelfLink,
-		OperationType: PtrTo("update"),
+		OperationType: PtrTo("compute.allocations.update"),
 		User:          PtrTo("user@example.com"),
 	}
 	return s.startZonalLRO(ctx, name.Project.ID, name.Zone, op, func() (proto.Message, error) {
