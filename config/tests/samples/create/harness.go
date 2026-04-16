@@ -504,6 +504,7 @@ func NewHarness(ctx context.Context, t *testing.T, opts ...HarnessOption) *Harne
 		testgcp.RecaptchaEnterpriseTestProject.Set("kcc-recaptcha-enterprise")
 		testgcp.TestKCCAlloyDBProject.Set("mock-project")
 		testgcp.TestKCCAlloyDBProjectNumber.Set("518915279")
+		testgcp.TestSharedReservationsProject.Set("mock-project")
 
 		crm := h.getCloudResourceManagerClient(kccConfig.HTTPClient)
 		req := &cloudresourcemanagerv1.Project{
