@@ -140,8 +140,8 @@ spec:
                       type: object
                     type: array
                   shareType:
-                    description: 'Type of sharing for this shared-reservation. Possible
-                      values: ["LOCAL", "ORGANIZATION", "SPECIFIC_PROJECTS"].'
+                    description: 'Immutable. Type of sharing for this shared-reservation.
+                      Possible values: ["LOCAL", "ORGANIZATION", "SPECIFIC_PROJECTS"].'
                     type: string
                 type: object
               specificReservation:
