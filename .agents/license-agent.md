@@ -1,6 +1,6 @@
 ---
-name: License Updater
-description: Updates the license metadata every week on Monday morning.
+name: License Update Scheduler
+description: Checks for new dependencies and creates issues to update license metadata.
 schedule: "0 9 * * 1"
 ---
 
@@ -21,26 +21,52 @@ limitations under the License.
 -->
 
 # Role
-You are a license manager for the Kubernetes Config Connector project.
-Your goal is to ensure that the license metadata files are up to date with the current dependencies.
+You are a license update scheduler for the Kubernetes Config Connector project.
+Your goal is to monitor for new dependencies that need license verification and create GitHub Issues for them.
 
-# Task: Update License Metadata
+# Scan Trigger: New Dependencies Needing License Verification
+1.  **Preparation**:
+    - Ensure you are on a clean and updated master branch: `git fetch upstream master && git checkout master && git reset --hard upstream/master`.
+2.  **Scan**:
+    - Run the license generation script to check for new dependencies: `./dev/tasks/generate-licenses`.
+3.  **Identify Work**:
+    - Check if a `modules` directory was created in the repository root containing files with `TODO`: `grep -r "TODO" modules/ || true`.
+4.  **Verify Necessity**:
+    - Check if a GitHub Issue already exists for updating licenses: `gh issue list --state open --search "Update licenses for new dependencies"`.
+5.  **Task**: If `TODO` files exist and no issue is open, create an issue titled `Update licenses for new dependencies` with the labels `area/license`, `priority/medium`.
+    - Include the instructions from the **LICENSE UPDATE ISSUE BODY TEMPLATE** below.
+
+---
+
+## LICENSE UPDATE ISSUE BODY TEMPLATE
+# Role
+You are a license manager for the Config Connector project.
+Your task is to resolve missing licenses for new dependencies.
+
+# Task
 1.  **Preparation**:
     - Ensure you are on a clean and updated master branch: `git fetch upstream master && git checkout master && git reset --hard upstream/master`.
     - Create a new branch for the update: `git checkout -b update-licenses-$(date +%Y%m%d)`.
-2.  **Generation**:
-    - Run the license generation script: `./dev/tasks/generate-licenses`.
-3.  **Verify Changes**:
-    - Check if any files in `dev/metadata/` were modified: `git status --short dev/metadata/`.
-    - If no files are modified, stop here. No PR is needed.
-4.  **Push & PR**:
-    - If files are modified, commit the changes:
+2.  **Resolve Licenses**:
+    - Run the `find-license` script on files marked with `TODO` in the temporary `modules/` directory:
       ```bash
-      git add dev/metadata/
-      git commit -m "Update license metadata" -m "Automated update of license metadata by License Updater agent." -m "TAG=agy"
+      grep -r "TODO" modules/ | awk -F: '{print $1}' | xargs -I {} ./dev/tasks/find-license.sh {}
+      ```
+3.  **Apply Updates**:
+    - Move the updated modules to the `experiments/tools/licensescan/modules/` folder:
+      ```bash
+      cp -r -n modules/* experiments/tools/licensescan/modules/
+      ```
+    - *Note: The license update should be strictly within the `experiments/tools/licensescan` folder.*
+    - Clean up the temporary directory: `rm -rf modules/`.
+4.  **Push & PR**:
+    - Commit the changes:
+      ```bash
+      git add experiments/tools/licensescan/modules/
+      git commit -m "Update license database for new dependencies" -m "Automated update of license database." -m "TAG=agy"
       ```
     - Push the generated branch to your fork: `git push origin update-licenses-$(date +%Y%m%d)`.
     - Create a Pull Request using GitHub CLI:
       ```bash
-      gh pr create --title "Update license metadata" --body "Automated update of license metadata.<br><br>Triggered by chore: \`.agents/license-agent.md\`" --head update-licenses-$(date +%Y%m%d) --label "area/license"
+      gh pr create --title "Update license database" --body "Automated update of license database for new dependencies.<br><br>Triggered by chore: \`.agents/license-agent.md\`" --head update-licenses-$(date +%Y%m%d) --label "area/license"
       ```
