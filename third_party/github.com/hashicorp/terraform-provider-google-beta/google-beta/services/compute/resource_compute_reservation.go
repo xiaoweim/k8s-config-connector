@@ -22,6 +22,7 @@ import (
 	"log"
 	"net/url"
 	"reflect"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -1134,7 +1135,11 @@ func resourceComputeReservationUpdateEncoder(d *schema.ResourceData, meta interf
 			after = schema.NewSet(schema.HashString, []interface{}{})
 		}
 
-		for _, raw := range after.Difference(before).List() {
+		added := after.Difference(before).List()
+		sort.Slice(added, func(i, j int) bool {
+			return added[i].(map[string]interface{})["id"].(string) < added[j].(map[string]interface{})["id"].(string)
+		})
+		for _, raw := range added {
 			original := raw.(map[string]interface{})
 			singleProject := make(map[string]interface{})
 			// set up project_map.
@@ -1162,7 +1167,11 @@ func resourceComputeReservationUpdateEncoder(d *schema.ResourceData, meta interf
 
 		// add removed projects to updateMask
 		firstProject = true
-		for _, raw := range before.Difference(after).List() {
+		removed := before.Difference(after).List()
+		sort.Slice(removed, func(i, j int) bool {
+			return fmt.Sprintf("%v", removed[i].(map[string]interface{})["project_id"]) < fmt.Sprintf("%v", removed[j].(map[string]interface{})["project_id"])
+		})
+		for _, raw := range removed {
 			original := raw.(map[string]interface{})
 			// To remove a project we need project number.
 			projectId := fmt.Sprintf("%s", original["project_id"])
