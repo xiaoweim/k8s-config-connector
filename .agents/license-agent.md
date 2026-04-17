@@ -51,7 +51,7 @@ Your task is to resolve missing licenses for new dependencies.
     - Run the license generation script to ensure we have the latest state: `./dev/tasks/generate-licenses`.
     - Run the following command to resolve `TODO`s (assuming you are at the repository root):
       ```bash
-      grep -r "TODO" | awk -F: '{print $1}' | xargs -I {} dev/tasks/find-license.sh {}
+      grep -r "TODO" | awk -F: '{print $1}' | xargs -I {} ./dev/tasks/find-license.sh {}
       ```
     - **Iteration Rule**: If there are still `TODO`s present, run the command again. You can iterate the command up to **5 times max** to populate the `TODO`s.
     - **Fallback Rule**: If after 5 times the `TODO`s are still present, check the log to see if the license or the library version does not exist. If the version of the library does not exist (e.g., the link in the `TODO` file returns 404), remove that version license file.
