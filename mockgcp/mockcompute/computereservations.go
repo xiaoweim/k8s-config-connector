@@ -136,25 +136,13 @@ func (s *ReservationsV1) Update(ctx context.Context, req *pb.UpdateReservationRe
 	}
 
 	update := req.GetReservationResource()
-	if update.ShareSettings != nil {
-		if obj.ShareSettings == nil {
-			obj.ShareSettings = &pb.ShareSettings{}
-		}
-		if update.ShareSettings.ShareType != nil {
-			obj.ShareSettings.ShareType = update.ShareSettings.ShareType
-		}
-		if update.ShareSettings.ProjectMap != nil {
-			newMap, err := s.convertProjectMap(ctx, update.ShareSettings.ProjectMap)
-			if err != nil {
-				return nil, err
-			}
-			obj.ShareSettings.ProjectMap = newMap
-		}
+	// Changing shareType is not supported.
+	if update.GetShareSettings().GetShareType() != obj.GetShareSettings().GetShareType() {
+		return nil, status.Errorf(codes.InvalidArgument, "Invalid value for field 'resource.shareSettings.shareType': '%s'. Changing shareType is not supported.", update.GetShareSettings().GetShareType())
 	}
 
 	// For other fields, we use proto.Merge
 	updateCopy := proto.Clone(update).(*pb.Reservation)
-	updateCopy.ShareSettings = nil
 	// Preserve immutable fields
 	updateCopy.Zone = nil
 	updateCopy.SelfLink = nil
@@ -162,9 +150,27 @@ func (s *ReservationsV1) Update(ctx context.Context, req *pb.UpdateReservationRe
 	updateCopy.Kind = nil
 	updateCopy.Status = nil
 	updateCopy.CreationTimestamp = nil
+
+	// We handle ShareSettings separately because we need to convert projectMap
+	updateCopy.ShareSettings = nil
 	proto.Merge(obj, updateCopy)
 
-	if obj.GetShareSettings() != nil && obj.GetShareSettings().GetShareType() == "SPECIFIC_PROJECTS" {
+	if update.ShareSettings != nil {
+		newMap, err := s.convertProjectMap(ctx, update.ShareSettings.ProjectMap)
+		if err != nil {
+			return nil, err
+		}
+		if obj.ShareSettings.ProjectMap == nil {
+			obj.ShareSettings.ProjectMap = make(map[string]*pb.ShareSettingsProjectConfig)
+		}
+		if newMap != nil {
+			for k, v := range newMap {
+				obj.ShareSettings.ProjectMap[k] = v
+			}
+		}
+	}
+
+	if obj.GetShareSettings().GetShareType() == "SPECIFIC_PROJECTS" {
 		if len(obj.GetShareSettings().GetProjectMap()) == 0 {
 			return nil, status.Errorf(codes.InvalidArgument, "project_map is required when share_type is SPECIFIC_PROJECTS")
 		}
@@ -173,6 +179,7 @@ func (s *ReservationsV1) Update(ctx context.Context, req *pb.UpdateReservationRe
 	obj.Status = PtrTo("READY")
 	if obj.SpecificReservation != nil {
 		obj.SpecificReservation.InUseCount = PtrTo(int64(0))
+		obj.SpecificReservation.AssuredCount = obj.SpecificReservation.Count
 	}
 
 	if err := s.storage.Update(ctx, fqn, obj); err != nil {
