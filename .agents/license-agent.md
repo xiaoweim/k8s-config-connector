@@ -49,20 +49,13 @@ Your task is to resolve missing licenses for new dependencies.
     - Create a new branch for the update: `git checkout -b update-licenses-$(date +%Y%m%d)`.
 2.  **Resolve Licenses**:
     - Run the license generation script to ensure we have the latest state: `./dev/tasks/generate-licenses`.
-    - Run the following command to resolve `TODO`s (assuming you are at the repository root):
+    - Run the following command to resolve `TODO`s in the license database (assuming you are at the repository root):
       ```bash
-      grep -r "TODO" | awk -F: '{print $1}' | xargs -I {} ./dev/tasks/find-license.sh {}
+      grep -r "TODO" experiments/tools/licensescan/modules/ | awk -F: '{print $1}' | xargs -I {} ./dev/tasks/find-license.sh {}
       ```
     - **Iteration Rule**: If there are still `TODO`s present, run the command again. You can iterate the command up to **5 times max** to populate the `TODO`s.
     - **Fallback Rule**: If after 5 times the `TODO`s are still present, check the log to see if the license or the library version does not exist. If the version of the library does not exist (e.g., the link in the `TODO` file returns 404), remove that version license file.
-3.  **Apply Updates**:
-    - Move the updated modules to the `experiments/tools/licensescan/modules/` folder:
-      ```bash
-      cp -r -n modules/* experiments/tools/licensescan/modules/
-      ```
-    - *Note: The license update should be strictly within the `experiments/tools/licensescan` folder.*
-    - Clean up the temporary directory: `rm -rf modules/`.
-4.  **Push & PR**:
+3.  **Push & PR**:
     - Commit the changes:
       ```bash
       git add experiments/tools/licensescan/modules/
