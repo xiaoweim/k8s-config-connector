@@ -48,10 +48,13 @@ Your task is to resolve missing licenses for new dependencies.
     - Ensure you are on a clean and updated master branch: `git fetch upstream master && git checkout master && git reset --hard upstream/master`.
     - Create a new branch for the update: `git checkout -b update-licenses-$(date +%Y%m%d)`.
 2.  **Resolve Licenses**:
-    - Run the `find-license` script on files marked with `TODO` in the temporary `modules/` directory:
+    - Run the license generation script to ensure we have the latest state: `./dev/tasks/generate-licenses`.
+    - Run the following command to resolve `TODO`s:
       ```bash
-      grep -r "TODO" modules/ | awk -F: '{print $1}' | xargs -I {} ./dev/tasks/find-license.sh {}
+      grep -r "TODO" | awk -F: '{print $1}' | xargs -I {} ../find-license.sh {}
       ```
+    - **Iteration Rule**: If there are still `TODO`s present, run the command again. You can iterate the command up to **5 times max** to populate the `TODO`s.
+    - **Fallback Rule**: If after 5 times the `TODO`s are still present, check the log to see if the license or the library version does not exist. If the version of the library does not exist (e.g., the link in the `TODO` file returns 404), remove that version license file.
 3.  **Apply Updates**:
     - Move the updated modules to the `experiments/tools/licensescan/modules/` folder:
       ```bash
