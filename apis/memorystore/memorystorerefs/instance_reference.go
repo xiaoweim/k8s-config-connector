@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package v1beta1
+package memorystorerefs
 
 import (
 	"context"
@@ -22,9 +22,16 @@ import (
 	"github.com/GoogleCloudPlatform/k8s-config-connector/pkg/k8s"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
+
+var MemorystoreInstanceGVK = schema.GroupVersionKind{
+	Group:   "memorystore.cnrm.cloud.google.com",
+	Version: "v1beta1",
+	Kind:    "MemorystoreInstance",
+}
 
 var _ refsv1beta1.ExternalNormalizer = &InstanceRef{}
 

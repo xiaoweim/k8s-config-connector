@@ -15,10 +15,17 @@
 package v1beta1
 
 import (
+	"context"
+	"fmt"
+
+	"github.com/GoogleCloudPlatform/k8s-config-connector/apis/common"
 	computev1beta1 "github.com/GoogleCloudPlatform/k8s-config-connector/apis/compute/v1beta1"
+	"github.com/GoogleCloudPlatform/k8s-config-connector/apis/memorystore/memorystorerefs"
 	refs "github.com/GoogleCloudPlatform/k8s-config-connector/apis/refs/v1beta1"
+	refsv1beta1 "github.com/GoogleCloudPlatform/k8s-config-connector/apis/refs/v1beta1"
 	"github.com/GoogleCloudPlatform/k8s-config-connector/pkg/apis/k8s/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 var MemorystoreInstanceGVK = GroupVersion.WithKind("MemorystoreInstance")
@@ -85,6 +92,57 @@ type MemorystoreInstanceSpec struct {
 	// Optional. The mode config for the instance.
 	// +kcc:proto:field=google.cloud.memorystore.v1.Instance.mode
 	Mode *string `json:"mode,omitempty"`
+}
+
+// New builds a InstanceIdentity from the Config Connector Instance object.
+func NewInstanceIdentity(ctx context.Context, reader client.Reader, obj *MemorystoreInstance) (*memorystorerefs.InstanceIdentity, error) {
+
+	// Get Parent
+	projectRef, err := refsv1beta1.ResolveProject(ctx, reader, obj.GetNamespace(), obj.Spec.ProjectRef)
+	if err != nil {
+		return nil, err
+	}
+	projectID := projectRef.ProjectID
+	if projectID == "" {
+		return nil, fmt.Errorf("cannot resolve project")
+	}
+	location := obj.Spec.Location
+
+	// Get desired ID
+	resourceID := common.ValueOf(obj.Spec.ResourceID)
+	if resourceID == "" {
+		resourceID = obj.GetName()
+	}
+	if resourceID == "" {
+		return nil, fmt.Errorf("cannot resolve resource ID")
+	}
+
+	// Use approved External
+	externalRef := common.ValueOf(obj.Status.ExternalRef)
+	if externalRef != "" {
+		// Validate desired with actual
+		actualParent, actualResourceID, err := memorystorerefs.ParseInstanceExternal(externalRef)
+		if err != nil {
+			return nil, err
+		}
+		if actualParent.ProjectID != projectID {
+			return nil, fmt.Errorf("spec.projectRef changed, expect %s, got %s", actualParent.ProjectID, projectID)
+		}
+		if actualParent.Location != location {
+			return nil, fmt.Errorf("spec.location changed, expect %s, got %s", actualParent.Location, location)
+		}
+		if actualResourceID != resourceID {
+			return nil, fmt.Errorf("cannot reset `metadata.name` or `spec.resourceID` to %s, since it has already assigned to %s",
+				resourceID, actualResourceID)
+		}
+	}
+	return &memorystorerefs.InstanceIdentity{
+		Parent_: &memorystorerefs.InstanceParent{
+			ProjectID: projectID,
+			Location:  location,
+		},
+		ID_: resourceID,
+	}, nil
 }
 
 type Parent struct {

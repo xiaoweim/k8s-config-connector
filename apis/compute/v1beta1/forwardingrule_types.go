@@ -15,6 +15,7 @@
 package v1beta1
 
 import (
+	"github.com/GoogleCloudPlatform/k8s-config-connector/apis/memorystore/memorystorerefs"
 	refs "github.com/GoogleCloudPlatform/k8s-config-connector/apis/refs/v1beta1"
 	commonv1alpha1 "github.com/GoogleCloudPlatform/k8s-config-connector/pkg/apis/common/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -85,9 +86,9 @@ type Target struct {
 	// +optional
 	GoogleAPIsBundle *string `json:"googleAPIsBundle,omitempty"`
 
-	// The service attachment for a Memorystore for Valkey instance.
+	// Target a serviceAttachment for a Memorystore for Valkey instance.
 	// +optional
-	MemorystoreInstanceServiceAttachmentRef *refs.MemorystoreInstanceServiceAttachmentRef `json:"memorystoreInstanceServiceAttachmentRef,omitempty"`
+	MemorystoreInstanceServiceAttachment *MemorystoreInstanceServiceAttachment `json:"memorystoreInstanceServiceAttachment,omitempty"`
 
 	// +optional
 	ServiceAttachmentRef *refs.ComputeServiceAttachmentRef `json:"serviceAttachmentRef,omitempty"`
@@ -109,6 +110,22 @@ type Target struct {
 
 	// +optional
 	TargetVPNGatewayRef *refs.ComputeTargetVPNGatewayRef `json:"targetVPNGatewayRef,omitempty"`
+}
+
+// MemorystoreInstanceServiceAttachment defines the resource reference to the GCP identifier
+// for the ServiceAttachment managed by the MemorystoreInstance pointed by the MemorystoreInstanceRef.
+// +k8s:deepcopy-gen=true
+type MemorystoreInstanceServiceAttachment struct {
+	// A reference to a MemorystoreInstance resource.
+	// +required
+	MemorystoreInstanceRef *memorystorerefs.InstanceRef `json:"memorystoreInstanceRef,omitempty"`
+
+	// The connection type of the serviceAttachment.
+	// A memorystore instance has multiple serviceAttachments, each with a different connection type.
+	// Use connectionType to control which serviceAttachment to target.
+	// The empty value matches a serviceAttachment with an empty connectionType.
+	// +optional
+	ConnectionType *string `json:"connectionType,omitempty"`
 }
 
 // +kcc:spec:proto=google.cloud.compute.v1.ForwardingRule

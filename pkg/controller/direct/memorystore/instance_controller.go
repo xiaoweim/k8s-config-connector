@@ -18,6 +18,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/GoogleCloudPlatform/k8s-config-connector/apis/memorystore/memorystorerefs"
 	krm "github.com/GoogleCloudPlatform/k8s-config-connector/apis/memorystore/v1beta1"
 	refs "github.com/GoogleCloudPlatform/k8s-config-connector/apis/refs/v1beta1"
 	"github.com/GoogleCloudPlatform/k8s-config-connector/pkg/config"
@@ -120,7 +121,7 @@ func (m *modelInstance) AdapterForURL(ctx context.Context, url string) (directba
 }
 
 type InstanceAdapter struct {
-	id        *krm.InstanceIdentity
+	id        *memorystorerefs.InstanceIdentity
 	gcpClient *gcp.Client
 	desired   *memorystorepb.Instance
 	actual    *memorystorepb.Instance
