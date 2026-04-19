@@ -48,12 +48,10 @@ X-Frame-Options: SAMEORIGIN
 X-Xss-Protection: 0
 
 {
-  "done": false,
   "metadata": {
     "@type": "type.googleapis.com/google.cloud.certificatemanager.v1.OperationMetadata",
     "apiVersion": "v1",
     "createTime": "2024-04-01T12:34:56.123456Z",
-    "requestedCancellation": false,
     "target": "projects/${projectId}/locations/global/dnsAuthorizations/certificatemanagerdnsauthorization1${uniqueId}",
     "verb": "create"
   },
@@ -83,8 +81,6 @@ X-Xss-Protection: 0
     "@type": "type.googleapis.com/google.cloud.certificatemanager.v1.OperationMetadata",
     "apiVersion": "v1",
     "createTime": "2024-04-01T12:34:56.123456Z",
-    "endTime": "2024-04-01T12:34:56.123456Z",
-    "requestedCancellation": false,
     "target": "projects/${projectId}/locations/global/dnsAuthorizations/certificatemanagerdnsauthorization1${uniqueId}",
     "verb": "create"
   },
@@ -157,12 +153,10 @@ X-Frame-Options: SAMEORIGIN
 X-Xss-Protection: 0
 
 {
-  "done": false,
   "metadata": {
     "@type": "type.googleapis.com/google.cloud.certificatemanager.v1.OperationMetadata",
     "apiVersion": "v1",
     "createTime": "2024-04-01T12:34:56.123456Z",
-    "requestedCancellation": false,
     "target": "projects/${projectId}/locations/global/dnsAuthorizations/certificatemanagerdnsauthorization2${uniqueId}",
     "verb": "create"
   },
@@ -192,8 +186,6 @@ X-Xss-Protection: 0
     "@type": "type.googleapis.com/google.cloud.certificatemanager.v1.OperationMetadata",
     "apiVersion": "v1",
     "createTime": "2024-04-01T12:34:56.123456Z",
-    "endTime": "2024-04-01T12:34:56.123456Z",
-    "requestedCancellation": false,
     "target": "projects/${projectId}/locations/global/dnsAuthorizations/certificatemanagerdnsauthorization2${uniqueId}",
     "verb": "create"
   },
@@ -275,12 +267,10 @@ X-Frame-Options: SAMEORIGIN
 X-Xss-Protection: 0
 
 {
-  "done": false,
   "metadata": {
     "@type": "type.googleapis.com/google.cloud.certificatemanager.v1.OperationMetadata",
     "apiVersion": "v1",
     "createTime": "2024-04-01T12:34:56.123456Z",
-    "requestedCancellation": false,
     "target": "projects/${projectId}/locations/global/certificates/certificatemanagercertificate${uniqueId}",
     "verb": "create"
   },
@@ -309,49 +299,36 @@ X-Xss-Protection: 0
     "@type": "type.googleapis.com/google.cloud.certificatemanager.v1.OperationMetadata",
     "apiVersion": "v1",
     "createTime": "2024-04-01T12:34:56.123456Z",
-    "endTime": "2024-04-01T12:34:56.123456Z",
-    "requestedCancellation": false,
     "target": "projects/${projectId}/locations/global/certificates/certificatemanagercertificate${uniqueId}",
     "verb": "create"
   },
   "name": "projects/${projectId}/locations/global/operations/${operationID}",
   "response": {
     "@type": "type.googleapis.com/google.cloud.certificatemanager.v1.Certificate",
-    "createTime": "2024-04-01T12:34:56.123456Z",
     "description": "sample managed cert for kcc",
-    "labels": {
-      "cnrm-test": "true",
-      "label-one": "value-one",
-      "managed-by-cnrm": "true"
-    },
     "managed": {
       "authorizationAttemptInfo": [
         {
           "domain": "${uniqueId}1.hashicorptest.com",
-          "state": "AUTHORIZING"
+          "state": "AUTHORIZED"
         },
         {
           "domain": "${uniqueId}2.hashicorptest.com",
-          "state": "AUTHORIZING"
+          "state": "AUTHORIZED"
         }
       ],
       "dnsAuthorizations": [
-        "projects/${projectNumber}/locations/global/dnsAuthorizations/certificatemanagerdnsauthorization1${uniqueId}",
-        "projects/${projectNumber}/locations/global/dnsAuthorizations/certificatemanagerdnsauthorization2${uniqueId}"
+        "projects/${projectId}/locations/global/dnsAuthorizations/certificatemanagerdnsauthorization1${uniqueId}",
+        "projects/${projectId}/locations/global/dnsAuthorizations/certificatemanagerdnsauthorization2${uniqueId}"
       ],
       "domains": [
         "${uniqueId}1.hashicorptest.com",
         "${uniqueId}2.hashicorptest.com"
       ],
-      "state": "PROVISIONING"
+      "state": "ACTIVE"
     },
     "name": "projects/${projectId}/locations/global/certificates/certificatemanagercertificate${uniqueId}",
-    "sanDnsnames": [
-      "${uniqueId}1.hashicorptest.com",
-      "${uniqueId}2.hashicorptest.com"
-    ],
-    "scope": "EDGE_CACHE",
-    "updateTime": "2024-04-01T12:34:56.123456Z"
+    "scope": "EDGE_CACHE"
   }
 }
 
@@ -372,7 +349,6 @@ X-Frame-Options: SAMEORIGIN
 X-Xss-Protection: 0
 
 {
-  "createTime": "2024-04-01T12:34:56.123456Z",
   "description": "sample managed cert for kcc",
   "labels": {
     "cnrm-test": "true",
@@ -383,30 +359,25 @@ X-Xss-Protection: 0
     "authorizationAttemptInfo": [
       {
         "domain": "${uniqueId}1.hashicorptest.com",
-        "state": "AUTHORIZING"
+        "state": "AUTHORIZED"
       },
       {
         "domain": "${uniqueId}2.hashicorptest.com",
-        "state": "AUTHORIZING"
+        "state": "AUTHORIZED"
       }
     ],
     "dnsAuthorizations": [
-      "projects/${projectNumber}/locations/global/dnsAuthorizations/certificatemanagerdnsauthorization1${uniqueId}",
-      "projects/${projectNumber}/locations/global/dnsAuthorizations/certificatemanagerdnsauthorization2${uniqueId}"
+      "projects/${projectId}/locations/global/dnsAuthorizations/certificatemanagerdnsauthorization1${uniqueId}",
+      "projects/${projectId}/locations/global/dnsAuthorizations/certificatemanagerdnsauthorization2${uniqueId}"
     ],
     "domains": [
       "${uniqueId}1.hashicorptest.com",
       "${uniqueId}2.hashicorptest.com"
     ],
-    "state": "PROVISIONING"
+    "state": "ACTIVE"
   },
   "name": "projects/${projectId}/locations/global/certificates/certificatemanagercertificate${uniqueId}",
-  "sanDnsnames": [
-    "${uniqueId}1.hashicorptest.com",
-    "${uniqueId}2.hashicorptest.com"
-  ],
-  "scope": "EDGE_CACHE",
-  "updateTime": "2024-04-01T12:34:56.123456Z"
+  "scope": "EDGE_CACHE"
 }
 
 ---
@@ -435,12 +406,10 @@ X-Frame-Options: SAMEORIGIN
 X-Xss-Protection: 0
 
 {
-  "done": false,
   "metadata": {
     "@type": "type.googleapis.com/google.cloud.certificatemanager.v1.OperationMetadata",
     "apiVersion": "v1",
     "createTime": "2024-04-01T12:34:56.123456Z",
-    "requestedCancellation": false,
     "target": "projects/${projectId}/locations/global/certificates/certificatemanagercertificate${uniqueId}",
     "verb": "update"
   },
@@ -469,8 +438,6 @@ X-Xss-Protection: 0
     "@type": "type.googleapis.com/google.cloud.certificatemanager.v1.OperationMetadata",
     "apiVersion": "v1",
     "createTime": "2024-04-01T12:34:56.123456Z",
-    "endTime": "2024-04-01T12:34:56.123456Z",
-    "requestedCancellation": false,
     "target": "projects/${projectId}/locations/global/certificates/certificatemanagercertificate${uniqueId}",
     "verb": "update"
   },
@@ -479,39 +446,29 @@ X-Xss-Protection: 0
     "@type": "type.googleapis.com/google.cloud.certificatemanager.v1.Certificate",
     "createTime": "2024-04-01T12:34:56.123456Z",
     "description": "updated description of a managed cert for kcc",
-    "labels": {
-      "cnrm-test": "true",
-      "label-one": "value-two",
-      "managed-by-cnrm": "true"
-    },
     "managed": {
       "authorizationAttemptInfo": [
         {
           "domain": "${uniqueId}1.hashicorptest.com",
-          "state": "AUTHORIZING"
+          "state": "AUTHORIZED"
         },
         {
           "domain": "${uniqueId}2.hashicorptest.com",
-          "state": "AUTHORIZING"
+          "state": "AUTHORIZED"
         }
       ],
       "dnsAuthorizations": [
-        "projects/${projectNumber}/locations/global/dnsAuthorizations/certificatemanagerdnsauthorization1${uniqueId}",
-        "projects/${projectNumber}/locations/global/dnsAuthorizations/certificatemanagerdnsauthorization2${uniqueId}"
+        "projects/${projectId}/locations/global/dnsAuthorizations/certificatemanagerdnsauthorization1${uniqueId}",
+        "projects/${projectId}/locations/global/dnsAuthorizations/certificatemanagerdnsauthorization2${uniqueId}"
       ],
       "domains": [
         "${uniqueId}1.hashicorptest.com",
         "${uniqueId}2.hashicorptest.com"
       ],
-      "state": "PROVISIONING"
+      "state": "ACTIVE"
     },
     "name": "projects/${projectId}/locations/global/certificates/certificatemanagercertificate${uniqueId}",
-    "sanDnsnames": [
-      "${uniqueId}1.hashicorptest.com",
-      "${uniqueId}2.hashicorptest.com"
-    ],
-    "scope": "EDGE_CACHE",
-    "updateTime": "2024-04-01T12:34:56.123456Z"
+    "scope": "EDGE_CACHE"
   }
 }
 
@@ -532,7 +489,6 @@ X-Frame-Options: SAMEORIGIN
 X-Xss-Protection: 0
 
 {
-  "createTime": "2024-04-01T12:34:56.123456Z",
   "description": "updated description of a managed cert for kcc",
   "labels": {
     "cnrm-test": "true",
@@ -543,30 +499,25 @@ X-Xss-Protection: 0
     "authorizationAttemptInfo": [
       {
         "domain": "${uniqueId}1.hashicorptest.com",
-        "state": "AUTHORIZING"
+        "state": "AUTHORIZED"
       },
       {
         "domain": "${uniqueId}2.hashicorptest.com",
-        "state": "AUTHORIZING"
+        "state": "AUTHORIZED"
       }
     ],
     "dnsAuthorizations": [
-      "projects/${projectNumber}/locations/global/dnsAuthorizations/certificatemanagerdnsauthorization1${uniqueId}",
-      "projects/${projectNumber}/locations/global/dnsAuthorizations/certificatemanagerdnsauthorization2${uniqueId}"
+      "projects/${projectId}/locations/global/dnsAuthorizations/certificatemanagerdnsauthorization1${uniqueId}",
+      "projects/${projectId}/locations/global/dnsAuthorizations/certificatemanagerdnsauthorization2${uniqueId}"
     ],
     "domains": [
       "${uniqueId}1.hashicorptest.com",
       "${uniqueId}2.hashicorptest.com"
     ],
-    "state": "PROVISIONING"
+    "state": "ACTIVE"
   },
   "name": "projects/${projectId}/locations/global/certificates/certificatemanagercertificate${uniqueId}",
-  "sanDnsnames": [
-    "${uniqueId}1.hashicorptest.com",
-    "${uniqueId}2.hashicorptest.com"
-  ],
-  "scope": "EDGE_CACHE",
-  "updateTime": "2024-04-01T12:34:56.123456Z"
+  "scope": "EDGE_CACHE"
 }
 
 ---
@@ -586,12 +537,10 @@ X-Frame-Options: SAMEORIGIN
 X-Xss-Protection: 0
 
 {
-  "done": false,
   "metadata": {
     "@type": "type.googleapis.com/google.cloud.certificatemanager.v1.OperationMetadata",
     "apiVersion": "v1",
     "createTime": "2024-04-01T12:34:56.123456Z",
-    "requestedCancellation": false,
     "target": "projects/${projectId}/locations/global/certificates/certificatemanagercertificate${uniqueId}",
     "verb": "delete"
   },
@@ -620,8 +569,6 @@ X-Xss-Protection: 0
     "@type": "type.googleapis.com/google.cloud.certificatemanager.v1.OperationMetadata",
     "apiVersion": "v1",
     "createTime": "2024-04-01T12:34:56.123456Z",
-    "endTime": "2024-04-01T12:34:56.123456Z",
-    "requestedCancellation": false,
     "target": "projects/${projectId}/locations/global/certificates/certificatemanagercertificate${uniqueId}",
     "verb": "delete"
   },
@@ -652,7 +599,7 @@ X-Xss-Protection: 0
   "createTime": "2024-04-01T12:34:56.123456Z",
   "description": "second sample dns for testing creating a certificate with dns-auth",
   "dnsResourceRecord": {
-    "data": "91993526-05ee-4cfe-9ebb-7922915036c3.13.authorize.certificatemanager.goog.",
+    "data": "authorize.certificatemanager.goog.",
     "name": "_acme-challenge.${uniqueId}2.hashicorptest.com.",
     "type": "CNAME"
   },
@@ -684,12 +631,10 @@ X-Frame-Options: SAMEORIGIN
 X-Xss-Protection: 0
 
 {
-  "done": false,
   "metadata": {
     "@type": "type.googleapis.com/google.cloud.certificatemanager.v1.OperationMetadata",
     "apiVersion": "v1",
     "createTime": "2024-04-01T12:34:56.123456Z",
-    "requestedCancellation": false,
     "target": "projects/${projectId}/locations/global/dnsAuthorizations/certificatemanagerdnsauthorization2${uniqueId}",
     "verb": "delete"
   },
@@ -719,8 +664,6 @@ X-Xss-Protection: 0
     "@type": "type.googleapis.com/google.cloud.certificatemanager.v1.OperationMetadata",
     "apiVersion": "v1",
     "createTime": "2024-04-01T12:34:56.123456Z",
-    "endTime": "2024-04-01T12:34:56.123456Z",
-    "requestedCancellation": false,
     "target": "projects/${projectId}/locations/global/dnsAuthorizations/certificatemanagerdnsauthorization2${uniqueId}",
     "verb": "delete"
   },
@@ -751,7 +694,7 @@ X-Xss-Protection: 0
   "createTime": "2024-04-01T12:34:56.123456Z",
   "description": "first sample dns for testing creating a certificate with dns-auth",
   "dnsResourceRecord": {
-    "data": "b22ecda7-13d2-4bed-983a-aad4ca882103.7.authorize.certificatemanager.goog.",
+    "data": "authorize.certificatemanager.goog.",
     "name": "_acme-challenge.${uniqueId}1.hashicorptest.com.",
     "type": "CNAME"
   },
@@ -783,12 +726,10 @@ X-Frame-Options: SAMEORIGIN
 X-Xss-Protection: 0
 
 {
-  "done": false,
   "metadata": {
     "@type": "type.googleapis.com/google.cloud.certificatemanager.v1.OperationMetadata",
     "apiVersion": "v1",
     "createTime": "2024-04-01T12:34:56.123456Z",
-    "requestedCancellation": false,
     "target": "projects/${projectId}/locations/global/dnsAuthorizations/certificatemanagerdnsauthorization1${uniqueId}",
     "verb": "delete"
   },
@@ -818,8 +759,6 @@ X-Xss-Protection: 0
     "@type": "type.googleapis.com/google.cloud.certificatemanager.v1.OperationMetadata",
     "apiVersion": "v1",
     "createTime": "2024-04-01T12:34:56.123456Z",
-    "endTime": "2024-04-01T12:34:56.123456Z",
-    "requestedCancellation": false,
     "target": "projects/${projectId}/locations/global/dnsAuthorizations/certificatemanagerdnsauthorization1${uniqueId}",
     "verb": "delete"
   },

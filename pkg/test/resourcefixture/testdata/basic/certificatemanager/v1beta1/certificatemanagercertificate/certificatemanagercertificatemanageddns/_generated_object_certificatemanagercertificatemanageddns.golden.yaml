@@ -40,7 +40,7 @@ status:
     managed:
       authorizationAttemptInfo:
       - domain: ${uniqueId}1.hashicorptest.com
-        state: AUTHORIZING
+        state: AUTHORIZED
       - domain: ${uniqueId}2.hashicorptest.com
-        state: AUTHORIZING
-      state: PROVISIONING
+        state: AUTHORIZED
+      state: ACTIVE
