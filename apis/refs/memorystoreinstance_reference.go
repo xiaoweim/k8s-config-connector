@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package memorystorerefs
+package refs
 
 import (
 	"context"
@@ -27,17 +27,17 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-var MemorystoreInstanceGVK = schema.GroupVersionKind{
+var memorystoreInstanceGVK = schema.GroupVersionKind{
 	Group:   "memorystore.cnrm.cloud.google.com",
 	Version: "v1beta1",
 	Kind:    "MemorystoreInstance",
 }
 
-var _ refsv1beta1.ExternalNormalizer = &InstanceRef{}
+var _ refsv1beta1.ExternalNormalizer = &MemorystoreInstanceRef{}
 
-// InstanceRef defines the resource reference to MemorystoreInstance, which "External" field
+// MemorystoreInstanceRef defines the resource reference to MemorystoreInstance, which "External" field
 // holds the GCP identifier for the KRM object.
-type InstanceRef struct {
+type MemorystoreInstanceRef struct {
 	// A reference to an externally managed MemorystoreInstance resource.
 	// Should be in the format "projects/{{projectID}}/locations/{{location}}/instances/{{instanceID}}".
 	External string `json:"external,omitempty"`
@@ -52,9 +52,9 @@ type InstanceRef struct {
 // NormalizedExternal provision the "External" value for other resource that depends on MemorystoreInstance.
 // If the "External" is given in the other resource's spec.MemorystoreInstanceRef, the given value will be used.
 // Otherwise, the "Name" and "Namespace" will be used to query the actual MemorystoreInstance object from the cluster.
-func (r *InstanceRef) NormalizedExternal(ctx context.Context, reader client.Reader, otherNamespace string) (string, error) {
+func (r *MemorystoreInstanceRef) NormalizedExternal(ctx context.Context, reader client.Reader, otherNamespace string) (string, error) {
 	if r.External != "" && r.Name != "" {
-		return "", fmt.Errorf("cannot specify both name and external on %s reference", MemorystoreInstanceGVK.Kind)
+		return "", fmt.Errorf("cannot specify both name and external on %s reference", memorystoreInstanceGVK.Kind)
 	}
 	// From given External
 	if r.External != "" {
@@ -70,12 +70,12 @@ func (r *InstanceRef) NormalizedExternal(ctx context.Context, reader client.Read
 	}
 	key := types.NamespacedName{Name: r.Name, Namespace: r.Namespace}
 	u := &unstructured.Unstructured{}
-	u.SetGroupVersionKind(MemorystoreInstanceGVK)
+	u.SetGroupVersionKind(memorystoreInstanceGVK)
 	if err := reader.Get(ctx, key, u); err != nil {
 		if apierrors.IsNotFound(err) {
 			return "", k8s.NewReferenceNotFoundError(u.GroupVersionKind(), key)
 		}
-		return "", fmt.Errorf("reading referenced %s %s: %w", MemorystoreInstanceGVK, key, err)
+		return "", fmt.Errorf("reading referenced %s %s: %w", memorystoreInstanceGVK, key, err)
 	}
 	// Get external from status.externalRef. This is the most trustworthy place.
 	actualExternalRef, _, err := unstructured.NestedString(u.Object, "status", "externalRef")

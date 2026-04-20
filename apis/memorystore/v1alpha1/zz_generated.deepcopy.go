@@ -20,7 +20,7 @@ package v1alpha1
 
 import (
 	"github.com/GoogleCloudPlatform/k8s-config-connector/apis/compute/v1beta1"
-	"github.com/GoogleCloudPlatform/k8s-config-connector/apis/memorystore/memorystorerefs"
+	"github.com/GoogleCloudPlatform/k8s-config-connector/apis/refs"
 	k8sv1alpha1 "github.com/GoogleCloudPlatform/k8s-config-connector/pkg/apis/k8s/v1alpha1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 )
@@ -195,7 +195,7 @@ func (in *MemorystoreInstanceEndpointSpec) DeepCopyInto(out *MemorystoreInstance
 	*out = *in
 	if in.InstanceRef != nil {
 		in, out := &in.InstanceRef, &out.InstanceRef
-		*out = new(memorystorerefs.InstanceRef)
+		*out = new(refs.MemorystoreInstanceRef)
 		**out = **in
 	}
 	if in.ResourceID != nil {

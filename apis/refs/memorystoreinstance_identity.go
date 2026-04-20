@@ -1,4 +1,4 @@
-// Copyright 2025 Google LLC
+// Copyright 2026 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,47 +12,47 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package memorystorerefs
+package refs
 
 import (
 	"fmt"
 	"strings"
 )
 
-// InstanceIdentity defines the resource reference to MemorystoreInstance, which "External" field
+// MemorystoreInstanceIdentity defines the resource reference to MemorystoreInstance, which "External" field
 // holds the GCP identifier for the KRM object.
-type InstanceIdentity struct {
-	Parent_ *InstanceParent
+type MemorystoreInstanceIdentity struct {
+	Parent_ *MemorystoreInstanceParent
 	ID_     string
 }
 
-func (i *InstanceIdentity) String() string {
+func (i *MemorystoreInstanceIdentity) String() string {
 	return i.Parent_.String() + "/instances/" + i.ID_
 }
 
-func (i *InstanceIdentity) ID() string {
+func (i *MemorystoreInstanceIdentity) ID() string {
 	return i.ID_
 }
 
-func (i *InstanceIdentity) Parent() *InstanceParent {
+func (i *MemorystoreInstanceIdentity) Parent() *MemorystoreInstanceParent {
 	return i.Parent_
 }
 
-type InstanceParent struct {
+type MemorystoreInstanceParent struct {
 	ProjectID string
 	Location  string
 }
 
-func (p *InstanceParent) String() string {
+func (p *MemorystoreInstanceParent) String() string {
 	return "projects/" + p.ProjectID + "/locations/" + p.Location
 }
 
-func ParseInstanceExternal(external string) (parent *InstanceParent, resourceID string, err error) {
+func ParseInstanceExternal(external string) (parent *MemorystoreInstanceParent, resourceID string, err error) {
 	tokens := strings.Split(external, "/")
 	if len(tokens) != 6 || tokens[0] != "projects" || tokens[2] != "locations" || tokens[4] != "instances" {
 		return nil, "", fmt.Errorf("format of MemorystoreInstance external=%q was not known (use projects/{{projectID}}/locations/{{location}}/instances/{{instanceID}})", external)
 	}
-	parent = &InstanceParent{
+	parent = &MemorystoreInstanceParent{
 		ProjectID: tokens[1],
 		Location:  tokens[3],
 	}

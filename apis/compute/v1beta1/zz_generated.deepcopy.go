@@ -20,7 +20,7 @@ package v1beta1
 
 import (
 	"github.com/GoogleCloudPlatform/k8s-config-connector/apis/common/parent"
-	"github.com/GoogleCloudPlatform/k8s-config-connector/apis/memorystore/memorystorerefs"
+	"github.com/GoogleCloudPlatform/k8s-config-connector/apis/refs"
 	refsv1beta1 "github.com/GoogleCloudPlatform/k8s-config-connector/apis/refs/v1beta1"
 	"github.com/GoogleCloudPlatform/k8s-config-connector/pkg/apis/k8s/v1alpha1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
@@ -2092,7 +2092,7 @@ func (in *MemorystoreInstanceServiceAttachment) DeepCopyInto(out *MemorystoreIns
 	*out = *in
 	if in.MemorystoreInstanceRef != nil {
 		in, out := &in.MemorystoreInstanceRef, &out.MemorystoreInstanceRef
-		*out = new(memorystorerefs.InstanceRef)
+		*out = new(refs.MemorystoreInstanceRef)
 		**out = **in
 	}
 	if in.ConnectionType != nil {

@@ -20,8 +20,7 @@ import (
 
 	"github.com/GoogleCloudPlatform/k8s-config-connector/apis/common"
 	computev1beta1 "github.com/GoogleCloudPlatform/k8s-config-connector/apis/compute/v1beta1"
-	"github.com/GoogleCloudPlatform/k8s-config-connector/apis/memorystore/memorystorerefs"
-	refs "github.com/GoogleCloudPlatform/k8s-config-connector/apis/refs/v1beta1"
+	"github.com/GoogleCloudPlatform/k8s-config-connector/apis/refs"
 	refsv1beta1 "github.com/GoogleCloudPlatform/k8s-config-connector/apis/refs/v1beta1"
 	"github.com/GoogleCloudPlatform/k8s-config-connector/pkg/apis/k8s/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -95,7 +94,7 @@ type MemorystoreInstanceSpec struct {
 }
 
 // New builds a InstanceIdentity from the Config Connector Instance object.
-func NewInstanceIdentity(ctx context.Context, reader client.Reader, obj *MemorystoreInstance) (*memorystorerefs.InstanceIdentity, error) {
+func NewInstanceIdentity(ctx context.Context, reader client.Reader, obj *MemorystoreInstance) (*refs.MemorystoreInstanceIdentity, error) {
 
 	// Get Parent
 	projectRef, err := refsv1beta1.ResolveProject(ctx, reader, obj.GetNamespace(), obj.Spec.ProjectRef)
@@ -121,7 +120,7 @@ func NewInstanceIdentity(ctx context.Context, reader client.Reader, obj *Memorys
 	externalRef := common.ValueOf(obj.Status.ExternalRef)
 	if externalRef != "" {
 		// Validate desired with actual
-		actualParent, actualResourceID, err := memorystorerefs.ParseInstanceExternal(externalRef)
+		actualParent, actualResourceID, err := refs.ParseInstanceExternal(externalRef)
 		if err != nil {
 			return nil, err
 		}
@@ -136,8 +135,8 @@ func NewInstanceIdentity(ctx context.Context, reader client.Reader, obj *Memorys
 				resourceID, actualResourceID)
 		}
 	}
-	return &memorystorerefs.InstanceIdentity{
-		Parent_: &memorystorerefs.InstanceParent{
+	return &refs.MemorystoreInstanceIdentity{
+		Parent_: &refs.MemorystoreInstanceParent{
 			ProjectID: projectID,
 			Location:  location,
 		},
@@ -147,7 +146,7 @@ func NewInstanceIdentity(ctx context.Context, reader client.Reader, obj *Memorys
 
 type Parent struct {
 	// +required
-	ProjectRef *refs.ProjectRef `json:"projectRef"`
+	ProjectRef *refsv1beta1.ProjectRef `json:"projectRef"`
 
 	// +kubebuilder:validation:XValidation:rule="self == oldSelf",message="Location field is immutable"
 	// Immutable.
@@ -265,7 +264,7 @@ type PscAutoConnection struct {
 	//  This should be the same project_id that the instance is being created in.
 	// +kcc:proto:field=google.cloud.memorystore.v1.PscAutoConnection.project_id
 	// +required
-	ProjectRef *refs.ProjectRef `json:"projectRef"`
+	ProjectRef *refsv1beta1.ProjectRef `json:"projectRef"`
 
 	// Required. The network where the PSC endpoints are created, in the form of
 	//  projects/{project_id}/global/networks/{network_id}.
