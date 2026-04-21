@@ -361,6 +361,17 @@ func (r *Reconciler) sync(ctx context.Context, resource *dcl.Resource) (requeue 
 		return false, err
 	}
 	lifecycleParams := append(LifecycleParams, stateHintApplyOption)
+	if liveLite == nil {
+		u, err := resource.MarshalAsUnstructured()
+		if err != nil {
+			return false, fmt.Errorf("error marshaling resource as unstructured: %w", err)
+		}
+		diff := structuredreporting.Diff{
+			Object:      u,
+			IsNewObject: true,
+		}
+		structuredreporting.ReportDiff(ctx, &diff)
+	}
 	newState, err := dclunstruct.Apply(ctx, dclConfig, dclResource, lifecycleParams...)
 	if err != nil {
 		r.logger.Error(err, "error applying desired state", "resource", resource.GetNamespacedName())
