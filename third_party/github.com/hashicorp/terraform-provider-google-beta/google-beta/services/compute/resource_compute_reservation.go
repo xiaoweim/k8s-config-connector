@@ -189,7 +189,7 @@ for information on available CPU platforms.`,
 						"project_map": {
 							Type:        schema.TypeSet,
 							Optional:    true,
-							Description: `A map of project number and project config. This is only valid when shareType's value is SPECIFIC_PROJECTS.`,
+							Description: `A map of project id and project config. This is only valid when shareType's value is SPECIFIC_PROJECTS.`,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"id": {
