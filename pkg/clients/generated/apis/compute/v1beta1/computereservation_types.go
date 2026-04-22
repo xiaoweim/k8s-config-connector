@@ -83,20 +83,19 @@ type ReservationLocalSsds struct {
 
 type ReservationProjectMap struct {
 	/* The key of this project config in the parent map. */
-	IdRef v1alpha1.ResourceRef `json:"idRef"`
+	KeyRef v1alpha1.ResourceRef `json:"keyRef"`
 
-	/* The project id/number should be the same as the key of this project
-	config in the project map. */
+	/* The project id, should be the same as the key of this project config in the project map. */
 	// +optional
 	ProjectIDRef *v1alpha1.ResourceRef `json:"projectIDRef,omitempty"`
 }
 
 type ReservationShareSettings struct {
-	/* A map of project number and project config. This is only valid when shareType's value is SPECIFIC_PROJECTS. */
+	/* A map of project id and project config. This is only valid when shareType's value is SPECIFIC_PROJECTS. */
 	// +optional
 	ProjectMap []ReservationProjectMap `json:"projectMap,omitempty"`
 
-	/* Type of sharing for this shared-reservation. Possible values: ["LOCAL", "ORGANIZATION", "SPECIFIC_PROJECTS"]. */
+	/* Immutable. Type of sharing for this shared-reservation. Possible values: ["LOCAL", "ORGANIZATION", "SPECIFIC_PROJECTS"]. */
 	// +optional
 	ShareType *string `json:"shareType,omitempty"`
 }

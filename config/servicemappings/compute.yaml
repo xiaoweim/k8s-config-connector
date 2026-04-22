@@ -1952,7 +1952,7 @@ spec:
         targetField: name
       resourceReferences:
         - tfField: share_settings.project_map.id
-          key: idRef
+          key: keyRef
           description: |-
             The key of this project config in the parent map.
           gvk:
@@ -1962,8 +1962,7 @@ spec:
         - tfField: share_settings.project_map.project_id
           key: projectIDRef
           description: |-
-            The project id/number should be the same as the key of this project
-            config in the project map.
+            The project id, should be the same as the key of this project config in the project map.
           gvk:
             kind: Project
             version: v1beta1

@@ -70,11 +70,11 @@ spec:
                 description: The share setting for reservations.
                 properties:
                   projectMap:
-                    description: A map of project number and project config. This
-                      is only valid when shareType's value is SPECIFIC_PROJECTS.
+                    description: A map of project id and project config. This is only
+                      valid when shareType's value is SPECIFIC_PROJECTS.
                     items:
                       properties:
-                        idRef:
+                        keyRef:
                           description: The key of this project config in the parent
                             map.
                           oneOf:
@@ -105,9 +105,8 @@ spec:
                               type: string
                           type: object
                         projectIDRef:
-                          description: |-
-                            The project id/number should be the same as the key of this project
-                            config in the project map.
+                          description: The project id, should be the same as the key
+                            of this project config in the project map.
                           oneOf:
                           - not:
                               required:
@@ -136,7 +135,7 @@ spec:
                               type: string
                           type: object
                       required:
-                      - idRef
+                      - keyRef
                       type: object
                     type: array
                   shareType:

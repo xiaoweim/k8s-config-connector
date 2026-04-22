@@ -24,7 +24,7 @@ spec:
   shareSettings:
     shareType: SPECIFIC_PROJECTS
     projectMap:
-    - idRef:
+    - keyRef:
         name: project-${uniqueId}
       projectIDRef:
         name: project-${uniqueId}
