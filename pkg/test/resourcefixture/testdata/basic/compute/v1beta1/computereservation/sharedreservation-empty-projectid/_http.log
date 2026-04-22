@@ -459,9 +459,7 @@ User-Agent: kcc/${kccVersion} (+https://github.com/GoogleCloudPlatform/k8s-confi
   "name": "${reservationID}",
   "shareSettings": {
     "projectMap": {
-      "project-${uniqueId}": {
-        "projectId": "project-${uniqueId}"
-      }
+      "project-${uniqueId}": {}
     },
     "shareType": "SPECIFIC_PROJECTS"
   },
@@ -595,9 +593,7 @@ User-Agent: kcc/${kccVersion} (+https://github.com/GoogleCloudPlatform/k8s-confi
   "name": "${reservationID}",
   "shareSettings": {
     "projectMap": {
-      "project-${uniqueId}": {
-        "projectId": "project-${uniqueId}"
-      }
+      "project-${uniqueId}": {}
     },
     "shareType": "SPECIFIC_PROJECTS"
   },
@@ -725,12 +721,8 @@ User-Agent: kcc/${kccVersion} (+https://github.com/GoogleCloudPlatform/k8s-confi
   "name": "${reservationID}",
   "shareSettings": {
     "projectMap": {
-      "project-${uniqueId}": {
-        "projectId": "project-${uniqueId}"
-      },
-      "project2-${uniqueId}": {
-        "projectId": "project2-${uniqueId}"
-      }
+      "project-${uniqueId}": {},
+      "project2-${uniqueId}": {}
     },
     "shareType": "SPECIFIC_PROJECTS"
   },
